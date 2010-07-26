@@ -12,11 +12,16 @@ using namespace cv;
 static void
 ia_init_input_struct ( struct ia_input *input )
 {
-  input->iif = (char*)"intrinsics.cfg"; //this is the default value
+  /*
+   * We default to calculating the intrinsics of the camera.  User must specify
+   * an intrinsics file to change behavior.
+   */
+  input->iif = NULL;
+  input->calInt = true;
+
   input->camMat = Mat::zeros(3, 3, CV_64F);
   input->disMat = Mat::zeros(5, 1, CV_64F);
   input->corDist = false;
-  input->calInt = true;
 
   /*
    * Chessboard default size will be 0,0.  If the user does not specify the
@@ -80,10 +85,9 @@ ia_usage ( char *command )
   printf( "%s [OPTIONS] IMAGES\n\n"
           "OPTIONS:\n"
           "-h | --help    Print this help message.\n"
-          "-c | --noincalc Avoid intrinsics calculations  from the images.\n"
           "-i | --ininput Intrinsics file name.  Defaults to intrinsics.cfg\n"
-          "--cw           Chessboard width in inner squares\n"
-          "--ch           Chessboard height in inner squares\n\n"
+          "-W | --cw      Chessboard width in inner squares\n"
+          "-H | --ch      Chessboard height in inner squares\n\n"
           "The intrinsics file should have two lines specifying the\n"
           "distortion values and the camera matrix values.  The distortion\n"
           "values are given by a line that begins with 'distortion ' followed\n"
@@ -98,19 +102,27 @@ ia_usage ( char *command )
           , command);
 }
 
-/*
- * Return true if all the intrinsics were found in the filename. false
+/** Get intrinsics from file.
+ *
+ * camMat and disMat will remain unchanged unless both values are successfully
+ * found in the file.
+ *
+ * @param filename Name of the file where the intrinsics are
+ * @param camMat Mat where the camera matrix will end up.
+ * @param disMat Mat where the distortion matrix will end up.
+ *
+ * @return true if all the intrinsics were found in the filename. false
  * otherwise.
  */
 static bool
-ia_get_intrinsics_from_file ( char *filename, Mat *camMat, Mat *disMat)
+ia_get_intrinsics_from_file ( const char *filename, Mat *camMat, Mat *disMat)
 {
   char *line = NULL;
   FILE *fp;
   size_t len;
-  ssize_t read;
+  float t_dist[5];
+  float t_cam[3][3];
   bool dist_found = false, cammat_found = false;
-  int dist[5], cammat[4];
 
   /* we try to access the file*/
   fp = fopen(filename, "r");
@@ -121,36 +133,39 @@ ia_get_intrinsics_from_file ( char *filename, Mat *camMat, Mat *disMat)
   }
 
   /* we parse the file */
-  while ( (read = getline(&line, &len, fp)) != -1 )
+  while ( getline(&line, &len, fp) != -1 )
   {
     /* We parse the 5 distorition values */
     if ( !dist_found
          && (sscanf( line, "distortion %f %f %f %f %f",
-                     &(*disMat).at<float>(0,0), &(*disMat).at<float>(0,1),
-                     &(*disMat).at<float>(0,2), &(*disMat).at<float>(0,3),
-                     &(*disMat).at<float>(0,4) )
+                     &t_dist[0], &t_dist[1], &t_dist[2], &t_dist[3], &t_dist[4] )
              == 5) )
       dist_found = true;
 
     /* We parse the 9 cameramatrix values */
     if ( !cammat_found
          && (sscanf( line, "cameramatrix %f %f %f %f %f %f %f %f %f",
-                     &(*camMat).at<float>(0,0), &(*camMat).at<float>(0,1),
-                     &(*camMat).at<float>(0,2), &(*camMat).at<float>(1,0),
-                     &(*camMat).at<float>(1,1), &(*camMat).at<float>(1,2),
-                     &(*camMat).at<float>(2,0), &(*camMat).at<float>(2,1),
-                     &(*camMat).at<float>(2,2) )
+                     &t_cam[0][0], &t_cam[0][1], &t_cam[0][2],
+                     &t_cam[1][0], &t_cam[1][1], &t_cam[1][2],
+                     &t_cam[2][0], &t_cam[2][1], &t_cam[2][2] )
              == 9) )
       cammat_found = true;
   }
   fclose(fp);
 
-  /* we make sure we actually read something */
+  /* we make sure we actually read everything */
   if ( !dist_found || !cammat_found )
   {
     fprintf(stderr, "File contained bad format: %s\n", filename);
     return false;
   }
+
+  for ( int i = 0 ; i < 5 ; i++ )
+    (*disMat).at<float>(0,i) = t_dist[i];
+
+  for ( int i = 0 ; i < 3 ; i++ )
+    for ( int j = 0 ; j < 3 ; j++ )
+      (*camMat).at<float>(i,j) = t_cam[i][j];
 
   /* At this point we are confident that we have correctly read the values*/
   return true;
@@ -167,19 +182,18 @@ ia_init_input ( int argc, char **argv)
 
   struct ia_input *input;
   //Don't use distortion by default
-  int undistort=0, noincalc=0;
+  int undistort=0;
   int c;
   static struct option long_options[] =
     {
       /* These options set a flag. */
       {"undistort",     no_argument,          &undistort, 1},
-      {"noincalc",      no_argument,          &noincalc, 1},
       /* These options don't set a flag.
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
       {"ininput",       required_argument,    0, 'i'},
-      {"--ch",          required_argument,    0, 'a'},
-      {"--cw",          required_argument,    0, 'b'},
+      {"ch",            required_argument,    0, 'H'},
+      {"cw",            required_argument,    0, 'W'},
       {0, 0, 0, 0}
     };
 
@@ -218,12 +232,17 @@ ia_init_input ( int argc, char **argv)
           return NULL;
 
         case 'i':
-          /* wait until the end of the option parse to try to open */
-          if (optarg)
+          /* Notihing changes if ia_get_intrinsics_from_file returns false. */
+          if (optarg
+              && ia_get_intrinsics_from_file(optarg, &(input->camMat),
+                    &(input->disMat)) )
+          {
+            input->calInt = false;
             input->iif = optarg;
+          }
           break;
 
-        case 'a':
+        case 'H':
           if ( sscanf(optarg, "%d", &(input->bsize_height) ) != 1 )
           {
             fprintf(stderr, "Remember to give --ch an argument");
@@ -233,7 +252,7 @@ ia_init_input ( int argc, char **argv)
           }
           break;
 
-        case 'b':
+        case 'W':
           if ( sscanf(optarg, "%d", &(input->bsize_width) ) != 1 )
           {
             fprintf(stderr, "Remember to give --cw an argument");
@@ -248,7 +267,7 @@ ia_init_input ( int argc, char **argv)
         default:
           ia_usage(argv[0]);
           ia_free_input_struct(input);
-          break;
+          return NULL;
       }
   }
 
@@ -266,21 +285,9 @@ ia_init_input ( int argc, char **argv)
   else if ( optind < argc ) // We consider everything as an image name.
     input->images = &argv[optind];
 
-  /*
-   * Fill up the intrinsics for the camera
-   */
-  if ( !ia_get_intrinsics_from_file(input->iif, &(input->camMat), &(input->disMat)) )
-  {
-    ia_usage(argv[0]);
-    ia_free_input_struct(input);
-    return NULL;
-  }
-
   // Check the flags.
   if ( undistort )
     input->corDist = true;
-  if ( noincalc )
-    input->calInt = false;
 
   // Check to see if the relation between arguments is ok.
   /*

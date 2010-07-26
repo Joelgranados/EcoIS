@@ -4,12 +4,13 @@
 struct ia_input
 {
   char* iif; //The intrinsic input file.
+  bool calInt; //Whether to calculate intrinsic values or not.
+
   cv::Mat camMat; //The camera matrix.
   cv::Mat disMat; //The distortion matrix.
 
   bool corDist; //whether to correct distortion or not.
 
-  bool calInt; //Whether to calculate intrinsic values or not.
 
   char** images; // a list of image file names.
 

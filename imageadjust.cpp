@@ -39,8 +39,8 @@ ia_calculate_all ( char **images, Size boardSize, Mat& camMat, Mat& disMat,
     Mat t_image; //temp image holder
 
     /*
-     * We see if we can actually read the image,  we read the image in gray
-     * scale.
+     * We see if we can actually read the image,  the 0 means we read the image
+     * in gray scale.
      */
     t_image = imread(images[i], 0);
     if ( t_image.data == NULL )
@@ -65,10 +65,8 @@ ia_calculate_all ( char **images, Size boardSize, Mat& camMat, Mat& disMat,
     else if ( i == 0 ) //We use the initial image size as general size.
       generalSize = t_image.size();
 
-
-
     /*
-     * We try to find the chessboard points in the image.  We are calculating
+     * We try to find the chessboard points in the image and put them in
      * pointbuf.
      */
     if ( !findChessboardCorners(t_image, boardSize, pointbuf,
@@ -92,16 +90,26 @@ ia_calculate_all ( char **images, Size boardSize, Mat& camMat, Mat& disMat,
   }
 
   /*
+   * We need to had read at least 1 image to continue.
+   */
+  if ( images_found < 1 )
+  {
+    fprintf(stderr, "There are not enough recognized images to work with\n");
+    return false;
+  }
+
+  /*
    * Create the objectPoints vector.  It needs to be of the same size as the
    * imagePoints vector.  All the elements are the same because it is the same
    * object (the chessboard).
+   * The original algorithm contained a squareSize variable that was initialized
+   * to '1'.  We will not use this parameter for now.
    */
   // create one element of the objectPoints vector.
   vector<Point3f> corners;
-  int squareSize = 1; // Its going to live here for now.  Should be elsewhere.
   for ( int i = 0 ; i < boardSize.height ; i++ )
     for ( int j = 0; j < boardSize.width ; j++ )
-      corners.push_back( Point3f(float(j*squareSize),float(i*squareSize),0) );
+      corners.push_back( Point3f(float(j),float(i),0) );
 
   // replicate that element images_found times
   for ( int i = 0 ; i < images_found ; i++ )
