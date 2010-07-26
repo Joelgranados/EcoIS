@@ -27,8 +27,8 @@ ia_init_input_struct ( struct ia_input *input )
    * Chessboard default size will be 0,0.  If the user does not specify the
    * sizes, the intrinsics cannot be calculated.
    */
-  input->bsize_height = (unsigned int)0;
-  input->bsize_width = (unsigned int)0;
+  input->b_size.height = (unsigned int)0;
+  input->b_size.width = (unsigned int)0;
   return;
 }
 
@@ -243,7 +243,7 @@ ia_init_input ( int argc, char **argv)
           break;
 
         case 'H':
-          if ( sscanf(optarg, "%d", &(input->bsize_height) ) != 1 )
+          if ( sscanf(optarg, "%u", &(input->b_size.height) ) != 1 )
           {
             fprintf(stderr, "Remember to give --ch an argument");
             ia_usage(argv[0]);
@@ -253,7 +253,7 @@ ia_init_input ( int argc, char **argv)
           break;
 
         case 'W':
-          if ( sscanf(optarg, "%d", &(input->bsize_width) ) != 1 )
+          if ( sscanf(optarg, "%u", &(input->b_size.width) ) != 1 )
           {
             fprintf(stderr, "Remember to give --cw an argument");
             ia_usage(argv[0]);
@@ -295,7 +295,7 @@ ia_init_input ( int argc, char **argv)
    * relation between sides.  I'll leave it for later.
    */
   if ( input->calInt 
-       && ( input->bsize_height <= 0 || input->bsize_width <= 0 ) )
+       && ( input->b_size.height <= 0 || input->b_size.width <= 0 ) )
   {
     fprintf(stderr, "To calculate the camera intrinsics you need to provide"
         " positive chessboard height and width values.\n");

@@ -14,8 +14,7 @@ struct ia_input
 
   char** images; // a list of image file names.
 
-  unsigned int bsize_height;  // To calcuate camera intrinsics we need the
-  unsigned int bsize_width;   //chessboard height and width.
+  cv::Size b_size; //size of the board.
 };
 
 void ia_usage (char*);

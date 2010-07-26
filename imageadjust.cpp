@@ -141,12 +141,7 @@ main (int argc, char** argv )
 
   // We used the intrinsics from the file if the calculation is avoided
   if ( input->calInt )
-  {
-    Size boardSize;
-    boardSize.width = input->bsize_width;
-    boardSize.height = input->bsize_height;
-    ia_calculate_all ( input->images, boardSize, camMat, disMat, rvecs, tvecs );
-  }
+    ia_calculate_all ( input->images, input->b_size, camMat, disMat, rvecs, tvecs );
   else
   {
     camMat = input->camMat;
