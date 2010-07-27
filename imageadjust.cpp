@@ -4,7 +4,6 @@
 #include "imageadjust.h"
 #include "ia_input.h"
 
-
 using namespace cv;
 
 bool
@@ -158,8 +157,8 @@ ia_calculate_extrinsics ( char **images, const Mat& camMat, const Mat& disMat,
                           const Size boardSize, vector<Mat>& rvecs,
                           vector<Mat>& tvecs, bool useExtrinsicGuess = false )
 {
-  vector<vector<Point3f> > objectPoints; //points of the chessboards in the object.
-  vector<vector<Point2f> > imagePoints; //points of the chessboards in the image.
+  vector<vector<Point3f> > objectPoints; //chessboard points in the object.
+  vector<vector<Point2f> > imagePoints; //chessboard points in the image.
   Size generalSize;
 
   /* get the points and the generalSize for all the images */
@@ -176,14 +175,35 @@ ia_calculate_extrinsics ( char **images, const Mat& camMat, const Mat& disMat,
   while ( image_iter != imagePoints.end() )
   {
     Mat rvec, tvec;
-    solvePnP ( (Mat)objectPoints[0], (Mat)*image_iter, camMat, disMat, rvec, tvec,
-               useExtrinsicGuess );
+    solvePnP ( (Mat)objectPoints[0], (Mat)*image_iter, camMat, disMat,
+               rvec, tvec, useExtrinsicGuess );
     rvecs.push_back(rvec);
     tvecs.push_back(tvec);
     image_iter++;
   }
 
   return true;
+}
+
+/**
+ * @param matrix is  vector of matrices
+ * @param message is the message that should appear before printing the matrix.
+ *
+ */
+void
+ia_print_matrix_vector ( vector<Mat>* vec, char* message )
+{
+  fprintf ( stdout, "%s\n", message );
+
+  for ( vector<Mat>::iterator iter = vec->begin() ; iter != vec->end() ;
+      iter++ )
+  {
+    Size m_size = iter->size();
+    for ( int i = 0 ; i < m_size.height ; i++ )
+      for ( int j = 0 ; j < m_size.width ; j++ )
+        fprintf( stdout, "%f ", iter->at<float>(i,j) );
+    fprintf ( stdout, "\n" );
+  }
 }
 
 int
@@ -205,4 +225,10 @@ main (int argc, char** argv )
   else
     ia_calculate_extrinsics ( input->images, input->camMat, input->disMat,
                               input->b_size, rvecs, tvecs );
+
+  ia_print_matrix_vector ( &rvecs,
+      (char*)"These are the rvecs for the images" );
+  ia_print_matrix_vector ( &tvecs,
+      (char*)"These are the tvecs for the images" );
+
 }

@@ -294,7 +294,7 @@ ia_init_input ( int argc, char **argv)
    * Minimum chessboard check.  FIXME: we could do better by checking the
    * relation between sides.  I'll leave it for later.
    */
-  if ( input->calInt 
+  if ( input->calInt
        && ( input->b_size.height <= 0 || input->b_size.width <= 0 ) )
   {
     fprintf(stderr, "To calculate the camera intrinsics you need to provide"
