@@ -1,6 +1,7 @@
 #include <cv.h>
 #include <highgui.h>
 #include <stdio.h>
+#include <time.h>
 #include "imageadjust.h"
 #include "ia_input.h"
 
@@ -221,6 +222,8 @@ ia_calculate_and_capture ( Size boardSize )
   Mat rvec, tvec; //translation and rotation vectors.
   Size generalSize;
   string msg;
+  clock_t timestamp = 0;
+  int delay = 1000; //one second
   int num_int_images = 20; //number of intrinsic images needed
 
   //open a window...
@@ -276,9 +279,13 @@ ia_calculate_and_capture ( Size boardSize )
 
       case ACCUM: //accumulate info to calculate intrinsics.
         /*
-         * We make sure we keep the image points and count this image as 'found'
+         * We make sure we keep the image points.
          */
-        imagePoints.push_back(pointbuf);
+        if ( clock() - timestamp > delay*1e-3*CLOCKS_PER_SEC )
+        {
+          imagePoints.push_back(pointbuf);
+          timestamp = clock();
+        }
 
         /* Create and put message on image */
         msg = format ( "Cal Intrinsics: %d/%d.", imagePoints.size(), num_int_images );
