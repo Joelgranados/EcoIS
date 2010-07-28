@@ -210,11 +210,15 @@ ia_print_matrix_vector ( vector<Mat>* vec, char* message )
 void
 ia_calculate_and_capture ( Size boardSize )
 {
+
+  /* Reflects the process state of the function. start accumulating. */
+  enum proc_state { ACCUM, OUTPUT, CALC } p_state = ACCUM;
+
   VideoCapture capture;
   vector<vector<Point2f> > imagePoints;
   vector<vector<Point3f> > objectPoints;
   Mat camMat, disMat; //matrices that will hold the camera and distorition info
-  vector<Mat> rvecs, tvecs; //translation and rotation vectors.
+  Mat rvec, tvec; //translation and rotation vectors.
   Size generalSize;
   string msg;
   int num_int_images = 20; //number of intrinsic images needed
@@ -239,134 +243,78 @@ ia_calculate_and_capture ( Size boardSize )
 
     try
     {
+      /* transform to grayscale */
       cvtColor(view0, t_image, CV_BGR2GRAY);
-    }
-    catch (cv::Exception)
-    {
-      continue;
-    }
 
     /*
      * We try to find the chessboard points in the image and put them in
      * pointbuf.
      */
-    try
-    {
       if ( !findChessboardCorners(t_image, boardSize, pointbuf,
               CV_CALIB_CB_ADAPTIVE_THRESH) )
         continue; //We will get another change in the next image
-    }
-    catch (cv::Exception)
-    {
-      continue;
-    }
+    }catch (cv::Exception){continue;}
 
     /* improve the found corners' coordinate accuracy */
     cornerSubPix ( t_image, pointbuf, Size(11,11),
        Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
-    /*
-     * We make sure we keep the image points and count this image as 'found'
-     */
-    imagePoints.push_back(pointbuf);
+    switch ( p_state )
+    {
+      case OUTPUT:
+        /* calculate the rvec and tvec.  Note that we use the camMat and disMat*/
+        solvePnP ( (Mat)objectPoints[0], (Mat)pointbuf, camMat, disMat,
+                   rvec, tvec );
 
-    /* Create and put message on image */
-    msg = format ( "Cal Intrinsics: %d/%d.", imagePoints.size(), num_int_images );
-    int baseLine = 0;
-    Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
-    Point textOrigin(t_image.cols - 2*textSize.width - 10, t_image.rows - 2*baseLine - 10);
-    putText ( t_image, msg, textOrigin, 1, 1, Scalar(0,0,255) );
+        /* output rvec and tvec to stdout */
+        fprintf ( stdout, "--------------------------\n");
+        fprintf ( stdout, "These are the tvecs\n" );
+        ia_print_matrix ( tvec );
+        fprintf ( stdout, "These are the rvecs\n" );
+        ia_print_matrix ( rvec );
+      break;
+
+      case ACCUM: //accumulate info to calculate intrinsics.
+        /*
+         * We make sure we keep the image points and count this image as 'found'
+         */
+        imagePoints.push_back(pointbuf);
+
+        /* Create and put message on image */
+        msg = format ( "Cal Intrinsics: %d/%d.", imagePoints.size(), num_int_images );
+        int baseLine = 0;
+        Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
+        Point textOrigin(t_image.cols - 2*textSize.width - 10, t_image.rows - 2*baseLine - 10);
+        putText ( t_image, msg, textOrigin, 1, 1, Scalar(0,0,255) );
+
+        /* we change state when we have enough images */
+        if ( imagePoints.size() >= 20 )
+        {
+          /* We use the last image size as generalSize.*/
+          generalSize = t_image.size();
+
+          /* get the points for the object. 1->unitless squareSize */
+          ia_calc_object_chess_points (boardSize, 1, imagePoints.size(), &objectPoints);
+
+          /*
+           * Run the calibrateCamera function.  This will give us the distortion matrix
+           * the camera matrix the rotation vectors (per image) and the traslation
+           * vectors (per image).  No flags are used (the 0 at the end).
+           */
+          vector<Mat> rvecs, tvecs; // will not be used in other places.
+          calibrateCamera(objectPoints, imagePoints, generalSize, camMat, disMat,
+              rvecs, tvecs, 0);
+
+          p_state = OUTPUT;
+        }
+      break;
+    }
 
     /* Draw chessboard on image.*/
     drawChessboardCorners( t_image, boardSize, Mat(pointbuf), true );
 
     /* finally, show image :) */
     imshow("Image View", t_image);
-
-    if ( imagePoints.size() >= 20 )
-    {
-      /* We use the last image size as generalSize.*/
-      generalSize = t_image.size();
-      break;
-    }
-
-    waitKey(50);
-  }
-
-  /*
-   * At this point we must actually calculate the intrinsics.
-   */
-  /* get the points for the object. 1->unitless squareSize */
-  ia_calc_object_chess_points (boardSize, 1, imagePoints.size(), &objectPoints);
-
-  /*
-   * Run the calibrateCamera function.  This will give us the distortion matrix
-   * the camera matrix the rotation vectors (per image) and the traslation
-   * vectors (per image).  No flags are used (the 0 at the end).
-   */
-  calibrateCamera(objectPoints, imagePoints, generalSize, camMat, disMat,
-      rvecs, tvecs, 0);
-
-  /*
-   * We enter an infinite loop that will output both the translation and the
-   * rotation vectors in the image.
-   */
-
-  for ( int i = 0 ;; i++ )
-  {
-    Mat view, t_image;
-    vector<Point2f> imagePoint;
-
-    if ( !capture.isOpened() )
-      continue;
-
-    capture >> view;
-
-    try
-    {
-      cvtColor ( view, t_image, CV_BGR2GRAY );
-    }
-    catch (cv::Exception)
-    {
-      continue;
-    }
-
-    /*
-     * We try to find the chessboard points in the image and put them in
-     * pointbuf.
-     */
-    try
-    {
-      if ( !findChessboardCorners(t_image, boardSize, imagePoint,
-              CV_CALIB_CB_ADAPTIVE_THRESH) )
-        continue; //We will get another chance in the next image
-    }
-    catch (cv::Exception)
-    {
-      continue;
-    }
-
-     /* improve the found corners' coordinate accuracy */
-    cornerSubPix ( t_image, imagePoint, Size(11,11),
-       Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
-
-    /* Draw chessboard on image.*/
-    drawChessboardCorners( t_image, boardSize, Mat(imagePoint), true );
-
-    /* finally, show image :) */
-    imshow("Image View", t_image);
-
-    /* calculate the rvec and tvec.  Note that we use the camMat and disMat*/
-    Mat rvec, tvec;
-    solvePnP ( (Mat)objectPoints[0], (Mat)imagePoint, camMat, disMat,
-               rvec, tvec );
-
-    /* output rvec and tvec to stdout */
-    fprintf ( stdout, "--------------------------\n");
-    fprintf ( stdout, "These are the tvecs\n" );
-    ia_print_matrix ( tvec );
-    fprintf ( stdout, "These are the rvecs\n" );
-    ia_print_matrix ( rvec );
 
     /* we wait for user interaction */
     int key = waitKey(50);
