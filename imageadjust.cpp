@@ -255,7 +255,11 @@ ia_calculate_and_capture ( Size boardSize )
      */
       if ( !findChessboardCorners(t_image, boardSize, pointbuf,
               CV_CALIB_CB_ADAPTIVE_THRESH) )
+      {
+        imshow("Image View", t_image);
+        waitKey(50);
         continue; //We will get another change in the next image
+      }
     }catch (cv::Exception){continue;}
 
     /* improve the found corners' coordinate accuracy */
