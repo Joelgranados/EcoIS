@@ -11,7 +11,8 @@ struct ia_input
 
   bool corDist; //whether to correct distortion or not.
 
-
+  bool capture; //whether to capture or not.
+                //if capture is true then the images are unused.
   char** images; // a list of image file names.
 
   cv::Size b_size; //size of the board.

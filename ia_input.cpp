@@ -23,12 +23,16 @@ ia_init_input_struct ( struct ia_input *input )
   input->disMat = Mat::zeros(5, 1, CV_64F);
   input->corDist = false;
 
+  input->capture = false; //we don't use the camera by default.
+
   /*
    * Chessboard default size will be 0,0.  If the user does not specify the
    * sizes, the intrinsics cannot be calculated.
    */
   input->b_size.height = (unsigned int)0;
   input->b_size.width = (unsigned int)0;
+
+  input->images = NULL;
   return;
 }
 
@@ -74,7 +78,7 @@ ia_print_input_struct ( struct ia_input *input )
 
   // We print the image list.
   fprintf(stdout, "Image List: ");
-  for (int i = 0 ; input->images[i] != '\0' ; i++)
+  for (int i = 0 ; input->images != NULL && input->images[i] != '\0' ; i++)
     fprintf(stdout, "%s, ", input->images[i]);
   fprintf(stdout, "\n");
 }
@@ -87,7 +91,8 @@ ia_usage ( char *command )
           "-h | --help    Print this help message.\n"
           "-i | --ininput Intrinsics file name.  Defaults to intrinsics.cfg\n"
           "-W | --cw      Chessboard width in inner squares\n"
-          "-H | --ch      Chessboard height in inner squares\n\n"
+          "-H | --ch      Chessboard height in inner squares\n"
+          "-c | --capture Use camera capture instead of images.\n\n"
           "The intrinsics file should have two lines specifying the\n"
           "distortion values and the camera matrix values.  The distortion\n"
           "values are given by a line that begins with 'distortion ' followed\n"
@@ -191,6 +196,7 @@ ia_init_input ( int argc, char **argv)
       /* These options don't set a flag.
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
+      {"capture",       no_argument,          0, 'c'},
       {"ininput",       required_argument,    0, 'i'},
       {"ch",            required_argument,    0, 'H'},
       {"cw",            required_argument,    0, 'W'},
@@ -262,7 +268,13 @@ ia_init_input ( int argc, char **argv)
           }
           break;
 
-
+        case 'c':
+          /*
+           * We just toggle the input->capture flag.  The images get ignored
+           * later
+           */
+          input->capture = true;
+          break;
 
         default:
           ia_usage(argv[0]);
@@ -271,18 +283,20 @@ ia_init_input ( int argc, char **argv)
       }
   }
 
-  /*
-   * The rest of the arguments are to be considered image file names.  If there
-   * are none, we error out.
-   */
-  if ( optind >= argc )
+  /* We error out if there are no additional images and capture is false. */
+  if ( optind >= argc && !input->capture )
   {
-    // The option indicator is at the last argument and there are not images...
+    // The option indicator is at the last argument and there are no images...
     fprintf(stderr, "You must provide a list of images\n");
     ia_usage(argv[0]);
     return NULL;
   }
-  else if ( optind < argc ) // We consider everything as an image name.
+
+  /*
+   * Irespective of the state of input->capture we point the input->images to
+   * the rest of the arguments (if possible).
+   */
+  if ( optind < argc ) // We consider everything as an image name.
     input->images = &argv[optind];
 
   // Check the flags.

@@ -170,21 +170,28 @@ ia_calculate_extrinsics ( char **images, const Mat& camMat, const Mat& disMat,
     return false;
 
   /* calculates rvecs and tvecs for each imagePoint */
-  vector<vector<Point2f> >::iterator image_iter;
-  image_iter = imagePoints.begin();
-  while ( image_iter != imagePoints.end() )
+  for ( vector<vector<Point2f> >::iterator image_iter = imagePoints.begin() ;
+      image_iter != imagePoints.end() ; image_iter++ )
   {
     Mat rvec, tvec;
     solvePnP ( (Mat)objectPoints[0], (Mat)*image_iter, camMat, disMat,
                rvec, tvec, useExtrinsicGuess );
     rvecs.push_back(rvec);
     tvecs.push_back(tvec);
-    image_iter++;
   }
 
   return true;
 }
 
+void
+ia_print_matrix ( Mat mat )
+{
+  Size m_size = mat.size();
+  for ( int i = 0 ; i < m_size.height ; i++ )
+    for ( int j = 0 ; j < m_size.width ; j++ )
+      fprintf( stdout, "%f ", mat.at<float>(i,j) );
+  fprintf ( stdout, "\n" );
+}
 /**
  * @param matrix is  vector of matrices
  * @param message is the message that should appear before printing the matrix.
@@ -197,18 +204,179 @@ ia_print_matrix_vector ( vector<Mat>* vec, char* message )
 
   for ( vector<Mat>::iterator iter = vec->begin() ; iter != vec->end() ;
       iter++ )
+    ia_print_matrix ( *iter );
+}
+
+void
+ia_calculate_and_capture ( Size boardSize )
+{
+  VideoCapture capture;
+  vector<vector<Point2f> > imagePoints;
+  vector<vector<Point3f> > objectPoints;
+  Mat camMat, disMat; //matrices that will hold the camera and distorition info
+  vector<Mat> rvecs, tvecs; //translation and rotation vectors.
+  Size generalSize;
+  string msg;
+  int num_int_images = 20; //number of intrinsic images needed
+
+  //open a window...
+  namedWindow( "Image View", 1 );
+
+  // We start the capture.
+  // FIXME: make the user define the camera id.
+  capture.open(0);
+
+  for ( int i = 0 ;; i++ )
   {
-    Size m_size = iter->size();
-    for ( int i = 0 ; i < m_size.height ; i++ )
-      for ( int j = 0 ; j < m_size.width ; j++ )
-        fprintf( stdout, "%f ", iter->at<float>(i,j) );
-    fprintf ( stdout, "\n" );
+    Mat view0, t_image;
+    vector<Point2f> pointbuf;
+
+    // loop until capture is opened
+    if ( !capture.isOpened() )
+      continue;
+
+    capture >> view0;
+
+    try
+    {
+      cvtColor(view0, t_image, CV_BGR2GRAY);
+    }
+    catch (cv::Exception)
+    {
+      continue;
+    }
+
+    /*
+     * We try to find the chessboard points in the image and put them in
+     * pointbuf.
+     */
+    try
+    {
+      if ( !findChessboardCorners(t_image, boardSize, pointbuf,
+              CV_CALIB_CB_ADAPTIVE_THRESH) )
+        continue; //We will get another change in the next image
+    }
+    catch (cv::Exception)
+    {
+      continue;
+    }
+
+    /* improve the found corners' coordinate accuracy */
+    cornerSubPix ( t_image, pointbuf, Size(11,11),
+       Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+
+    /*
+     * We make sure we keep the image points and count this image as 'found'
+     */
+    imagePoints.push_back(pointbuf);
+
+    /* Create and put message on image */
+    msg = format ( "Cal Intrinsics: %d/%d.", imagePoints.size(), num_int_images );
+    int baseLine = 0;
+    Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
+    Point textOrigin(t_image.cols - 2*textSize.width - 10, t_image.rows - 2*baseLine - 10);
+    putText ( t_image, msg, textOrigin, 1, 1, Scalar(0,0,255) );
+
+    /* Draw chessboard on image.*/
+    drawChessboardCorners( t_image, boardSize, Mat(pointbuf), true );
+
+    /* finally, show image :) */
+    imshow("Image View", t_image);
+
+    if ( imagePoints.size() >= 20 )
+    {
+      /* We use the last image size as generalSize.*/
+      generalSize = t_image.size();
+      break;
+    }
+
+    waitKey(50);
+  }
+
+  /*
+   * At this point we must actually calculate the intrinsics.
+   */
+  /* get the points for the object. 1->unitless squareSize */
+  ia_calc_object_chess_points (boardSize, 1, imagePoints.size(), &objectPoints);
+
+  /*
+   * Run the calibrateCamera function.  This will give us the distortion matrix
+   * the camera matrix the rotation vectors (per image) and the traslation
+   * vectors (per image).  No flags are used (the 0 at the end).
+   */
+  calibrateCamera(objectPoints, imagePoints, generalSize, camMat, disMat,
+      rvecs, tvecs, 0);
+
+  /*
+   * We enter an infinite loop that will output both the translation and the
+   * rotation vectors in the image.
+   */
+
+  for ( int i = 0 ;; i++ )
+  {
+    Mat view, t_image;
+    vector<Point2f> imagePoint;
+
+    if ( !capture.isOpened() )
+      continue;
+
+    capture >> view;
+
+    try
+    {
+      cvtColor ( view, t_image, CV_BGR2GRAY );
+    }
+    catch (cv::Exception)
+    {
+      continue;
+    }
+
+    /*
+     * We try to find the chessboard points in the image and put them in
+     * pointbuf.
+     */
+    try
+    {
+      if ( !findChessboardCorners(t_image, boardSize, imagePoint,
+              CV_CALIB_CB_ADAPTIVE_THRESH) )
+        continue; //We will get another chance in the next image
+    }
+    catch (cv::Exception)
+    {
+      continue;
+    }
+
+     /* improve the found corners' coordinate accuracy */
+    cornerSubPix ( t_image, imagePoint, Size(11,11),
+       Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+
+    /* Draw chessboard on image.*/
+    drawChessboardCorners( t_image, boardSize, Mat(imagePoint), true );
+
+    /* finally, show image :) */
+    imshow("Image View", t_image);
+
+    /* calculate the rvec and tvec.  Note that we use the camMat and disMat*/
+    Mat rvec, tvec;
+    solvePnP ( (Mat)objectPoints[0], (Mat)imagePoint, camMat, disMat,
+               rvec, tvec );
+
+    /* output rvec and tvec to stdout */
+    fprintf ( stdout, "--------------------------\n");
+    fprintf ( stdout, "These are the tvecs\n" );
+    ia_print_matrix ( tvec );
+    fprintf ( stdout, "These are the rvecs\n" );
+    ia_print_matrix ( rvec );
+
+    /* we wait for user interaction */
+    int key = waitKey(50);
+    if( (key & 255) == 27 )
+        break;
   }
 }
 
 int
-main (int argc, char** argv )
-{
+main ( int argc, char** argv ) {
   struct ia_input *input;
   Mat camMat;
   Mat disMat;
@@ -218,11 +386,13 @@ main (int argc, char** argv )
   if ( (input = ia_init_input(argc, argv)) == NULL )
     exit(0); //an error message has already been printed
 
-  // We used the intrinsics from the file if the calculation is avoided
-  if ( input->calInt )
+  if ( input->capture )
+    ia_calculate_and_capture ( input->b_size );
+  else if ( input->calInt )
     ia_calculate_all ( input->images, input->b_size, camMat, disMat,
                        rvecs, tvecs );
-  else
+
+  else  // We used the intrinsics from the file if the calculation is avoided
     ia_calculate_extrinsics ( input->images, input->camMat, input->disMat,
                               input->b_size, rvecs, tvecs );
 
