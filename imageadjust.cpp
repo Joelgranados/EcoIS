@@ -90,8 +90,8 @@ ia_calc_object_chess_points ( const Size boardSize, const int squareSize,
  * translational vector
  */
 bool
-ia_calculate_all ( char **images, const Size boardSize, Mat& camMat,
-                   Mat& disMat, vector<Mat>& rvecs, vector<Mat>& tvecs)
+ia_calculate_all ( char **images, const Size boardSize, Mat *camMat,
+                   Mat *disMat, vector<Mat> *rvecs, vector<Mat> *tvecs)
 {
   vector<vector<Point3f> > objectPoints; //chessboards points in the object.
   vector<vector<Point2f> > imagePoints; //chessboards points in the image.
@@ -108,8 +108,8 @@ ia_calculate_all ( char **images, const Size boardSize, Mat& camMat,
     return false;
 
   /* calc camera matrix, distorition matrix rvector and tvector (per image)*/
-  calibrateCamera(objectPoints, imagePoints, generalSize, camMat, disMat,
-      rvecs, tvecs, 0);
+  calibrateCamera(objectPoints, imagePoints, generalSize, *camMat, *disMat,
+      *rvecs, *tvecs, 0);
 
   return true;
 }
@@ -119,13 +119,13 @@ ia_calculate_intrinsics ( char **images, const Size boardSize, Mat& camMat,
                           Mat& disMat)
 {
   vector<Mat> rvecs, tvecs;
-  return ia_calculate_all ( images, boardSize, camMat, disMat, rvecs, tvecs );
+  return ia_calculate_all ( images, boardSize, &camMat, &disMat, &rvecs, &tvecs );
 }
 
 bool
-ia_calculate_extrinsics ( char **images, const Mat& camMat, const Mat& disMat,
-                          const Size boardSize, vector<Mat>& rvecs,
-                          vector<Mat>& tvecs, bool useExtrinsicGuess = false )
+ia_calculate_extrinsics ( char **images, const Mat *camMat, const Mat *disMat,
+                          const Size boardSize, vector<Mat> *rvecs,
+                          vector<Mat> *tvecs, bool useExtrinsicGuess = false )
 {
   vector<vector<Point3f> > objectPoints; //chessboard points in the object.
   vector<vector<Point2f> > imagePoints; //chessboard points in the image.
@@ -144,10 +144,10 @@ ia_calculate_extrinsics ( char **images, const Mat& camMat, const Mat& disMat,
         image_iter != imagePoints.end() ; image_iter++ )
   {
     Mat rvec, tvec;
-    solvePnP ( (Mat)objectPoints[0], (Mat)*image_iter, camMat, disMat,
+    solvePnP ( (Mat)objectPoints[0], (Mat)*image_iter, *camMat, *disMat,
                rvec, tvec, useExtrinsicGuess );
-    rvecs.push_back(rvec);
-    tvecs.push_back(tvec);
+    rvecs->push_back(rvec);
+    tvecs->push_back(tvec);
   }
 
   return true;
@@ -325,11 +325,11 @@ main ( int argc, char** argv ) {
   if ( input->capture )
     ia_calculate_and_capture ( input->b_size );
   else if ( input->calInt )
-    ia_calculate_all ( input->images, input->b_size, camMat, disMat,
-                       rvecs, tvecs );
+    ia_calculate_all ( input->images, input->b_size, &camMat, &disMat,
+                       &rvecs, &tvecs );
 
   else  // We used the intrinsics from the file if the calculation is avoided
-    ia_calculate_extrinsics ( input->images, input->camMat, input->disMat,
-                              input->b_size, rvecs, tvecs );
+    ia_calculate_extrinsics ( input->images, &(input->camMat), &(input->disMat),
+                              input->b_size, &rvecs, &tvecs );
 
 }
