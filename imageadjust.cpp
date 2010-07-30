@@ -253,7 +253,8 @@ ia_calculate_and_capture ( Size boardSize )
                                   CV_CALIB_CB_ADAPTIVE_THRESH) )
       {
         imshow("Image View", t_image);
-        waitKey(50);
+        if( (waitKey(50) & 255) == 27 )
+          break;
         continue; //We will get another change in the next image
       }
     }catch (cv::Exception){continue;}
