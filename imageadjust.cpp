@@ -97,7 +97,7 @@ ia_calc_object_chess_points ( const Size boardSize, const int squareSize,
   vector<Point3f> corners;
   for ( int i = 0 ; i < boardSize.height ; i++ )
     for ( int j = 0; j < boardSize.width ; j++ )
-      corners.push_back( Point3f(float(j*squareSize),float(i*squareSize),0) );
+      corners.push_back( Point3f(double(j*squareSize),double(i*squareSize),0) );
 
   // replicate that element size times
   for ( int i = 0 ; i < numElems ; i++ )
@@ -186,7 +186,7 @@ ia_print_matrix ( const Mat mat, const char* end_char = "\n" )
   Size m_size = mat.size();
   for ( int i = 0 ; i < m_size.height ; i++ )
     for ( int j = 0 ; j < m_size.width ; j++ )
-      fprintf ( stdout, "%-15e ", mat.at<float>(i,j) );
+      fprintf ( stdout, "%-15e ", mat.at<double>(i,j) );
 
   if ( end_char == "\n" || end_char == "\r" )
     fprintf ( stdout, end_char );

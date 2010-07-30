@@ -19,7 +19,7 @@ ia_init_input_struct ( struct ia_input *input )
   input->iif = NULL;
   input->calInt = true;
 
-  input->camMat = Mat::zeros(3, 3, CV_64F);
+  input->camMat = Mat::eye(3, 3, CV_64F);
   input->disMat = Mat::zeros(5, 1, CV_64F);
   input->corDist = false;
 
@@ -65,12 +65,12 @@ ia_print_input_struct ( struct ia_input *input )
       //file name
       input->iif,
       //camera distortion
-      dm.at<float>(0,1), dm.at<float>(0,1), dm.at<float>(0,2),
-        dm.at<float>(0,3), dm.at<float>(0,4),
+      dm.at<double>(0,1), dm.at<double>(0,1), dm.at<double>(0,2),
+        dm.at<double>(0,3), dm.at<double>(0,4),
       //camera matrix
-      cm.at<float>(0,0),cm.at<float>(0,1),cm.at<float>(0,2),
-      cm.at<float>(1,0),cm.at<float>(1,1),cm.at<float>(1,2),
-      cm.at<float>(2,0),cm.at<float>(2,1),cm.at<float>(2,2),
+      cm.at<double>(0,0),cm.at<double>(0,1),cm.at<double>(0,3),
+      cm.at<double>(1,0),cm.at<double>(1,1),cm.at<double>(1,2),
+      cm.at<double>(2,0),cm.at<double>(2,1),cm.at<double>(2,2),
       //Undistort flag
       input->corDist,
       //Calculate intrinsics flag
@@ -125,8 +125,8 @@ ia_get_intrinsics_from_file ( const char *filename, Mat *camMat, Mat *disMat)
   char *line = NULL;
   FILE *fp;
   size_t len;
-  float t_dist[5];
-  float t_cam[3][3];
+  double t_dist[5];
+  double t_cam[3][3];
   bool dist_found = false, cammat_found = false;
 
   /* we try to access the file*/
@@ -142,14 +142,14 @@ ia_get_intrinsics_from_file ( const char *filename, Mat *camMat, Mat *disMat)
   {
     /* We parse the 5 distorition values */
     if ( !dist_found
-         && (sscanf( line, "distortion %f %f %f %f %f",
+         && (sscanf( line, "distortion %1f %1f %1f %1f %1f",
                      &t_dist[0], &t_dist[1], &t_dist[2], &t_dist[3], &t_dist[4] )
              == 5) )
       dist_found = true;
 
     /* We parse the 9 cameramatrix values */
     if ( !cammat_found
-         && (sscanf( line, "cameramatrix %f %f %f %f %f %f %f %f %f",
+         && (sscanf( line, "cameramatrix %1f %1f %1f %1f %1f %1f %1f %f %1f",
                      &t_cam[0][0], &t_cam[0][1], &t_cam[0][2],
                      &t_cam[1][0], &t_cam[1][1], &t_cam[1][2],
                      &t_cam[2][0], &t_cam[2][1], &t_cam[2][2] )
@@ -166,11 +166,11 @@ ia_get_intrinsics_from_file ( const char *filename, Mat *camMat, Mat *disMat)
   }
 
   for ( int i = 0 ; i < 5 ; i++ )
-    (*disMat).at<float>(0,i) = t_dist[i];
+    (*disMat).at<double>(0,i) = t_dist[i];
 
   for ( int i = 0 ; i < 3 ; i++ )
     for ( int j = 0 ; j < 3 ; j++ )
-      (*camMat).at<float>(i,j) = t_cam[i][j];
+      (*camMat).at<double>(i,j) = t_cam[i][j];
 
   /* At this point we are confident that we have correctly read the values*/
   return true;
