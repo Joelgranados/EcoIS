@@ -78,7 +78,8 @@ ia_print_input_struct ( struct ia_input *input )
       "                 %f, %f, %f;\n"
       "                 %f, %f, %f]\n"
       "Undistort flat: %d\n"
-      "Calculate Intrinsics: %d\n",
+      "Calculate Intrinsics: %d\n"
+      "BoardSize (w,h): (%u, %u)\n",
 
       //file name
       input->iif,
@@ -92,7 +93,9 @@ ia_print_input_struct ( struct ia_input *input )
       //Undistort flag
       input->corDist,
       //Calculate intrinsics flag
-      input->calInt);
+      input->calInt,
+      //chessboard sizes.
+      input->b_size.width, input->b_size.height);
 
   // We print the image list.
   fprintf(stdout, "Image List: ");
