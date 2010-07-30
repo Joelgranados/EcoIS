@@ -24,8 +24,7 @@
 int
 main ( int argc, char** argv ) {
   struct ia_input *input;
-  Mat camMat;
-  Mat disMat;
+  Mat camMat, disMat;
   vector<Mat> rvecs, tvecs;
 
   /* parse intput */
@@ -34,6 +33,7 @@ main ( int argc, char** argv ) {
 
   if ( input->capture )
     ia_calculate_and_capture ( input->b_size );
+
   else if ( input->calInt )
     ia_calculate_all ( input->images, input->b_size, &camMat, &disMat,
                        &rvecs, &tvecs );
