@@ -20,7 +20,6 @@
 #include <highgui.h>
 #include <stdio.h>
 #include <time.h>
-#include "imageadjust.h"
 
 using namespace cv;
 
