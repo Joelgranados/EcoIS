@@ -312,6 +312,13 @@ ia_calculate_and_capture ( Size boardSize )
           calibrateCamera( objectPoints, imagePoints, generalSize,
                            camMat, disMat, rvecs, tvecs, 0 );
 
+          /* print the calibration info */
+          fprintf ( stdout, "cammat : (  ");
+          ia_print_matrix ( camMat, (char*)"\0" );
+          fprintf ( stdout, "\n" );
+          fprintf ( stdout, "dismat : (  ");
+          ia_print_matrix ( disMat, (char*)"\0" );
+          fprintf ( stdout, ")\n" );
           p_state = OUTPUT;
         }
       break;
