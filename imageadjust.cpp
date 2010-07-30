@@ -106,8 +106,6 @@ ia_calc_object_chess_points ( const Size boardSize, const int squareSize,
 }
 
 /**
- * Calculate all the intrinsics for the image list.
- *
  * @param images A pointer to the image file names.
  * @param boardSize Contain the height and width of the object board.
  * @param camMat Holds the Camera matrix
@@ -185,27 +183,30 @@ ia_calculate_extrinsics ( char **images, const Mat& camMat, const Mat& disMat,
 }
 
 void
-ia_print_matrix ( Mat mat )
+ia_print_matrix ( const Mat mat, const char* end_char = "\n" )
 {
   Size m_size = mat.size();
   for ( int i = 0 ; i < m_size.height ; i++ )
     for ( int j = 0 ; j < m_size.width ; j++ )
-      fprintf( stdout, "%f ", mat.at<float>(i,j) );
-  fprintf ( stdout, "\n" );
+      fprintf ( stdout, "%-15e ", mat.at<float>(i,j) );
+
+  if ( end_char == "\n" || end_char == "\r" )
+    fprintf ( stdout, end_char );
+
+  fflush( stdout );
 }
-/**
- * @param matrix is  vector of matrices
- * @param message is the message that should appear before printing the matrix.
- *
- */
+
 void
-ia_print_matrix_vector ( vector<Mat>* vec, char* message )
+ia_print_matrix_vector ( vector<Mat>* vec, const char* message )
 {
   fprintf ( stdout, "%s\n", message );
 
   for ( vector<Mat>::iterator iter = vec->begin() ; iter != vec->end() ;
       iter++ )
     ia_print_matrix ( *iter );
+
+  fprintf ( stdout, "\n" );
+  fflush ( stdout );
 }
 
 void
@@ -223,7 +224,7 @@ ia_calculate_and_capture ( Size boardSize )
   Size generalSize;
   string msg;
   clock_t timestamp = 0;
-  int delay = 1000; //one second
+  int delay = 250; //one second
   int num_int_images = 20; //number of intrinsic images needed
 
   //open a window...
@@ -274,11 +275,11 @@ ia_calculate_and_capture ( Size boardSize )
                    rvec, tvec );
 
         /* output rvec and tvec to stdout */
-        fprintf ( stdout, "--------------------------\n");
-        fprintf ( stdout, "These are the tvecs\n" );
-        ia_print_matrix ( tvec );
-        fprintf ( stdout, "These are the rvecs\n" );
-        ia_print_matrix ( rvec );
+        fprintf ( stdout, "tvecs: (  " );
+        ia_print_matrix ( tvec, (char*)"\0" );
+        fprintf ( stdout, ") | rvecs: (  " );
+        ia_print_matrix ( rvec, (char*)"\0" );
+        fprintf ( stdout, ")\n" );
       break;
 
       case ACCUM: //accumulate info to calculate intrinsics.
@@ -299,7 +300,7 @@ ia_calculate_and_capture ( Size boardSize )
         putText ( t_image, msg, textOrigin, 1, 1, Scalar(0,0,255) );
 
         /* we change state when we have enough images */
-        if ( imagePoints.size() >= 20 )
+        if ( imagePoints.size() >= num_int_images )
         {
           /* We use the last image size as generalSize.*/
           generalSize = t_image.size();
@@ -354,10 +355,5 @@ main ( int argc, char** argv ) {
   else  // We used the intrinsics from the file if the calculation is avoided
     ia_calculate_extrinsics ( input->images, input->camMat, input->disMat,
                               input->b_size, rvecs, tvecs );
-
-  ia_print_matrix_vector ( &rvecs,
-      (char*)"These are the rvecs for the images" );
-  ia_print_matrix_vector ( &tvecs,
-      (char*)"These are the tvecs for the images" );
 
 }
