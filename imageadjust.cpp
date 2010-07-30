@@ -49,7 +49,7 @@ ia_calc_image_chess_points ( char **images, const Size boardSize,
      * pointbuf.
      */
     if ( !findChessboardCorners(t_image, boardSize, pointbuf,
-            CV_CALIB_CB_ADAPTIVE_THRESH) )
+                                CV_CALIB_CB_ADAPTIVE_THRESH) )
     {
       //findChessboardCorners will return 0 if the corners where not found or
       //they could not be organized.
@@ -59,7 +59,8 @@ ia_calc_image_chess_points ( char **images, const Size boardSize,
 
     // improve the found corners' coordinate accuracy
     cornerSubPix( t_image, pointbuf, Size(11,11),
-       Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
+                  Size(-1,-1),
+                  TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
 
     /*
      * We make sure we keep the image points and count this image as 'found'
@@ -119,24 +120,21 @@ bool
 ia_calculate_all ( char **images, const Size boardSize, Mat& camMat,
                    Mat& disMat, vector<Mat>& rvecs, vector<Mat>& tvecs)
 {
-  vector<vector<Point3f> > objectPoints; //points of the chessboards in the object.
-  vector<vector<Point2f> > imagePoints; //points of the chessboards in the image.
+  vector<vector<Point3f> > objectPoints; //chessboards points in the object.
+  vector<vector<Point2f> > imagePoints; //chessboards points in the image.
   Size generalSize;
 
   /* get the points and the generalSize for all the images */
-  if ( !ia_calc_image_chess_points(images, boardSize, &imagePoints, &generalSize) )
+  if ( !ia_calc_image_chess_points( images, boardSize, &imagePoints,
+                                    &generalSize) )
     return false;
 
   /* get the points for the object. 1->unitless squareSize */
-  if ( !ia_calc_object_chess_points (boardSize, 1, imagePoints.size(),
-                                     &objectPoints) )
+  if ( !ia_calc_object_chess_points ( boardSize, 1, imagePoints.size(),
+                                      &objectPoints) )
     return false;
 
-  /*
-   * Run the calibrateCamera function.  This will give us the distortion matrix
-   * the camera matrix the rotation vectors (per image) and the traslation
-   * vectors (per image).  No flags are used (the 0 at the end).
-   */
+  /* calc camera matrix, distorition matrix rvector and tvector (per image)*/
   calibrateCamera(objectPoints, imagePoints, generalSize, camMat, disMat,
       rvecs, tvecs, 0);
 
@@ -170,7 +168,7 @@ ia_calculate_extrinsics ( char **images, const Mat& camMat, const Mat& disMat,
 
   /* calculates rvecs and tvecs for each imagePoint */
   for ( vector<vector<Point2f> >::iterator image_iter = imagePoints.begin() ;
-      image_iter != imagePoints.end() ; image_iter++ )
+        image_iter != imagePoints.end() ; image_iter++ )
   {
     Mat rvec, tvec;
     solvePnP ( (Mat)objectPoints[0], (Mat)*image_iter, camMat, disMat,
@@ -219,7 +217,7 @@ ia_calculate_and_capture ( Size boardSize )
   VideoCapture capture;
   vector<vector<Point2f> > imagePoints;
   vector<vector<Point3f> > objectPoints;
-  Mat camMat, disMat; //matrices that will hold the camera and distorition info
+  Mat camMat, disMat; // camera matrix, distorition matrix.
   Mat rvec, tvec; //translation and rotation vectors.
   Size generalSize;
   string msg;
@@ -250,12 +248,9 @@ ia_calculate_and_capture ( Size boardSize )
       /* transform to grayscale */
       cvtColor(view0, t_image, CV_BGR2GRAY);
 
-    /*
-     * We try to find the chessboard points in the image and put them in
-     * pointbuf.
-     */
+    /* find the chessboard points in the image and put them in pointbuf.*/
       if ( !findChessboardCorners(t_image, boardSize, pointbuf,
-              CV_CALIB_CB_ADAPTIVE_THRESH) )
+                                  CV_CALIB_CB_ADAPTIVE_THRESH) )
       {
         imshow("Image View", t_image);
         waitKey(50);
@@ -265,12 +260,13 @@ ia_calculate_and_capture ( Size boardSize )
 
     /* improve the found corners' coordinate accuracy */
     cornerSubPix ( t_image, pointbuf, Size(11,11),
-       Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+                   Size(-1,-1),
+                   TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
     switch ( p_state )
     {
       case OUTPUT:
-        /* calculate the rvec and tvec.  Note that we use the camMat and disMat*/
+        /* calc the rvec and tvec.  Note that we use the camMat and disMat*/
         solvePnP ( (Mat)objectPoints[0], (Mat)pointbuf, camMat, disMat,
                    rvec, tvec );
 
@@ -293,10 +289,12 @@ ia_calculate_and_capture ( Size boardSize )
         }
 
         /* Create and put message on image */
-        msg = format ( "Cal Intrinsics: %d/%d.", imagePoints.size(), num_int_images );
+        msg = format ( "Cal Intrinsics: %d/%d.", imagePoints.size(),
+            num_int_images );
         int baseLine = 0;
         Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
-        Point textOrigin(t_image.cols - 2*textSize.width - 10, t_image.rows - 2*baseLine - 10);
+        Point textOrigin(t_image.cols - 2*textSize.width - 10,
+            t_image.rows - 2*baseLine - 10);
         putText ( t_image, msg, textOrigin, 1, 1, Scalar(0,0,255) );
 
         /* we change state when we have enough images */
@@ -306,16 +304,13 @@ ia_calculate_and_capture ( Size boardSize )
           generalSize = t_image.size();
 
           /* get the points for the object. 1->unitless squareSize */
-          ia_calc_object_chess_points (boardSize, 1, imagePoints.size(), &objectPoints);
+          ia_calc_object_chess_points (boardSize, 1, imagePoints.size(),
+              &objectPoints);
 
-          /*
-           * Run the calibrateCamera function.  This will give us the distortion matrix
-           * the camera matrix the rotation vectors (per image) and the traslation
-           * vectors (per image).  No flags are used (the 0 at the end).
-           */
+          /* calc camera matrix, dist matrix, rvector, tvector, no flags */
           vector<Mat> rvecs, tvecs; // will not be used in other places.
-          calibrateCamera(objectPoints, imagePoints, generalSize, camMat, disMat,
-              rvecs, tvecs, 0);
+          calibrateCamera( objectPoints, imagePoints, generalSize,
+                           camMat, disMat, rvecs, tvecs, 0 );
 
           p_state = OUTPUT;
         }
