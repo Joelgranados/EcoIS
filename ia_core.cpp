@@ -200,7 +200,8 @@ ia_print_matrix_vector ( vector<Mat>* vec, const char* message )
 }
 
 void
-ia_calculate_and_capture ( const Size boardSize, const float squareSize = 1 )
+ia_calculate_and_capture ( const Size boardSize, const int delay,
+                           const float squareSize = 1 )
 {
 
   /* Reflects the process state of the function. start accumulating. */
@@ -214,7 +215,6 @@ ia_calculate_and_capture ( const Size boardSize, const float squareSize = 1 )
   Size generalSize;
   string msg;
   clock_t timestamp = 0;
-  int delay = 250; //one second
   int num_int_images = 20; //number of intrinsic images needed
 
   //open a window...
@@ -262,13 +262,15 @@ ia_calculate_and_capture ( const Size boardSize, const float squareSize = 1 )
         /* calc the rvec and tvec.  Note that we use the camMat and disMat*/
         solvePnP ( (Mat)objectPoints[0], (Mat)pointbuf, camMat, disMat,
                    rvec, tvec );
-
-        /* output rvec and tvec to stdout */
-        fprintf ( stdout, "tvecs: (  " );
-        ia_print_matrix ( tvec, (char*)"\0" );
-        fprintf ( stdout, ") | rvecs: (  " );
-        ia_print_matrix ( rvec, (char*)"\0" );
-        fprintf ( stdout, ")\n" );
+        if ( clock() - timestamp > delay*1e-3*CLOCKS_PER_SEC )
+        {
+          /* output rvec and tvec to stdout */
+          fprintf ( stdout, "tvecs: (  " );
+          ia_print_matrix ( tvec, (char*)"\0" );
+          fprintf ( stdout, ") | rvecs: (  " );
+          ia_print_matrix ( rvec, (char*)"\0" );
+          fprintf ( stdout, ")\n" );
+        }
       break;
 
       case ACCUM: //accumulate info to calculate intrinsics.

@@ -51,6 +51,8 @@ ia_init_input_struct ( struct ia_input *input )
   input->b_size.width = (unsigned int)0;
 
   input->squareSize = 1;
+  input->delay = 250;
+
   input->images = NULL;
   return;
 }
@@ -81,7 +83,8 @@ ia_print_input_struct ( struct ia_input *input )
       "Undistort flat: %d\n"
       "Calculate Intrinsics: %d\n"
       "BoardSize (w,h): (%u, %u)\n"
-      "SquareSize: %f\n",
+      "SquareSize: %f\n"
+      "Delay: %d\n",
 
       //file name
       input->iif,
@@ -99,7 +102,8 @@ ia_print_input_struct ( struct ia_input *input )
       //chessboard sizes.
       input->b_size.width, input->b_size.height,
       //square size
-      input->squareSize);
+      input->squareSize,
+      input->delay);
 
   // We print the image list.
   fprintf(stdout, "Image List: ");
@@ -121,6 +125,8 @@ ia_usage ( char *command )
           "               The size of the chessboard square.  1 by default\n"
           "               The resulting values will be given with respect to\n"
           "               this number.\n"
+          "-d | --delay   The delay time in miliseconds between events in the\n"
+          "               capture state.\n"
           "-c | --capture Use camera capture instead of images.\n\n"
           "The intrinsics file should have two lines specifying the\n"
           "distortion values and the camera matrix values.  The distortion\n"
@@ -230,6 +236,7 @@ ia_init_input ( int argc, char **argv)
       {"ch",            required_argument,    0, 'H'},
       {"cw",            required_argument,    0, 'W'},
       {"squaresize",    required_argument,    0, 's'},
+      {"delay",         required_argument,    0, 'd'},
       {0, 0, 0, 0}
     };
 
@@ -240,7 +247,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long (argc, argv, "hci:a:b:s:", long_options, &option_index);
+    c = getopt_long (argc, argv, "hci:a:b:s:d:", long_options, &option_index);
 
     /* Detect the end of the options. */
     if (c == -1)
@@ -314,6 +321,15 @@ ia_init_input ( int argc, char **argv)
             input->squareSize = (float)1.0;
           }
           break;
+
+        case 'd':
+          if ( sscanf(optarg, "%d", &(input->delay) ) != 1 )
+          {
+            fprintf( stderr, "Could not use specified delay: %s"
+                             "Using default: 250.\n", optarg );
+            input->delay = 250;
+          }
+        break;
 
         default:
           ia_usage(argv[0]);

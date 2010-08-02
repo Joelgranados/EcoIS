@@ -36,4 +36,4 @@ bool ia_calculate_intrinsics ( char**, const Size, Mat&, Mat&,
 bool ia_calculate_extrinsics ( char**, const Mat*, const Mat*, const Size,
                                vector<Mat>*, vector<Mat>*, const float = 1 );
 
-void ia_calculate_and_capture ( const Size, const float = 1 );
+void ia_calculate_and_capture ( const Size, const int,  const float = 1 );

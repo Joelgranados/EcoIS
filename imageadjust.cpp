@@ -32,7 +32,8 @@ main ( int argc, char** argv ) {
     exit(0); //an error message has already been printed
 
   if ( input->capture )
-    ia_calculate_and_capture ( input->b_size, input->squareSize );
+    ia_calculate_and_capture ( input->b_size, input->delay,
+                               input->squareSize );
 
   else if ( input->calInt )
     ia_calculate_all ( input->images, input->b_size, &camMat, &disMat,
