@@ -33,7 +33,9 @@ struct ia_input
                 //if capture is true then the images are unused.
   char** images; // a list of image file names.
 
-  cv::Size b_size; //size of the board.
+  cv::Size b_size; //chessboard size. height x width
+
+  float squareSize; //Chessboard square size
 };
 
 void ia_usage (char*);

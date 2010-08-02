@@ -50,6 +50,7 @@ ia_init_input_struct ( struct ia_input *input )
   input->b_size.height = (unsigned int)0;
   input->b_size.width = (unsigned int)0;
 
+  input->squareSize = 1;
   input->images = NULL;
   return;
 }
@@ -79,7 +80,8 @@ ia_print_input_struct ( struct ia_input *input )
       "                 %f, %f, %f]\n"
       "Undistort flat: %d\n"
       "Calculate Intrinsics: %d\n"
-      "BoardSize (w,h): (%u, %u)\n",
+      "BoardSize (w,h): (%u, %u)\n"
+      "SquareSize: %f\n",
 
       //file name
       input->iif,
@@ -95,7 +97,9 @@ ia_print_input_struct ( struct ia_input *input )
       //Calculate intrinsics flag
       input->calInt,
       //chessboard sizes.
-      input->b_size.width, input->b_size.height);
+      input->b_size.width, input->b_size.height,
+      //square size
+      input->squareSize);
 
   // We print the image list.
   fprintf(stdout, "Image List: ");
@@ -113,6 +117,10 @@ ia_usage ( char *command )
           "-i | --ininput Intrinsics file name.  Defaults to intrinsics.cfg\n"
           "-W | --cw      Chessboard width in inner squares\n"
           "-H | --ch      Chessboard height in inner squares\n"
+          "-s | --squaresize\n"
+          "               The size of the chessboard square.  1 by default\n"
+          "               The resulting values will be given with respect to\n"
+          "               this number.\n"
           "-c | --capture Use camera capture instead of images.\n\n"
           "The intrinsics file should have two lines specifying the\n"
           "distortion values and the camera matrix values.  The distortion\n"
@@ -221,6 +229,7 @@ ia_init_input ( int argc, char **argv)
       {"ininput",       required_argument,    0, 'i'},
       {"ch",            required_argument,    0, 'H'},
       {"cw",            required_argument,    0, 'W'},
+      {"squaresize",    required_argument,    0, 's'},
       {0, 0, 0, 0}
     };
 
@@ -231,7 +240,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long (argc, argv, "hci:a:b:", long_options, &option_index);
+    c = getopt_long (argc, argv, "hci:a:b:s:", long_options, &option_index);
 
     /* Detect the end of the options. */
     if (c == -1)
@@ -295,6 +304,15 @@ ia_init_input ( int argc, char **argv)
            * later
            */
           input->capture = true;
+          break;
+
+        case 's':
+          if ( sscanf(optarg, "%f", &(input->squareSize) ) != 1 )
+          {
+            fprintf( stderr, "Could not use specified squareSize: %s"
+                             "Using default: 1.\n", optarg );
+            input->squareSize = (float)1.0;
+          }
           break;
 
         default:

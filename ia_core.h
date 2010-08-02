@@ -28,11 +28,12 @@ bool ia_calc_object_chess_points ( const Size, const int, const int,
                                    vector<vector<Point3f> >* );
 
 bool ia_calculate_all ( char**, const Size, Mat*, Mat*,
-                        vector<Mat>*, vector<Mat>*);
+                        vector<Mat>*, vector<Mat>*, const float = 1);
 
-bool ia_calculate_intrinsics ( char**, const Size, Mat&, Mat& );
+bool ia_calculate_intrinsics ( char**, const Size, Mat&, Mat&,
+                               const float = 1 );
 
 bool ia_calculate_extrinsics ( char**, const Mat*, const Mat*, const Size,
-                               vector<Mat>*, vector<Mat>*, bool = false );
+                               vector<Mat>*, vector<Mat>*, const float = 1 );
 
-void ia_calculate_and_capture ( Size );
+void ia_calculate_and_capture ( const Size, const float = 1 );

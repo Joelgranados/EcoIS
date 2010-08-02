@@ -106,8 +106,10 @@ ia_calc_object_chess_points ( const Size boardSize, const int squareSize,
  * translational vector
  */
 bool
-ia_calculate_all ( char **images, const Size boardSize, Mat *camMat,
-                   Mat *disMat, vector<Mat> *rvecs, vector<Mat> *tvecs)
+ia_calculate_all ( char **images, const Size boardSize,
+                   Mat *camMat, Mat *disMat,
+                   vector<Mat> *rvecs, vector<Mat> *tvecs,
+                   const float squareSize = 1 )
 {
   vector<vector<Point3f> > objectPoints; //chessboards points in the object.
   vector<vector<Point2f> > imagePoints; //chessboards points in the image.
@@ -118,9 +120,9 @@ ia_calculate_all ( char **images, const Size boardSize, Mat *camMat,
                                     &generalSize) )
     return false;
 
-  /* get the points for the object. 1->unitless squareSize */
-  if ( !ia_calc_object_chess_points ( boardSize, 1, imagePoints.size(),
-                                      &objectPoints) )
+  /* get the points for the object. */
+  if ( !ia_calc_object_chess_points ( boardSize, squareSize,
+                                      imagePoints.size(), &objectPoints) )
     return false;
 
   /* calc camera matrix, distorition matrix rvector and tvector (per image)*/
@@ -131,17 +133,18 @@ ia_calculate_all ( char **images, const Size boardSize, Mat *camMat,
 }
 
 bool
-ia_calculate_intrinsics ( char **images, const Size boardSize, Mat& camMat,
-                          Mat& disMat)
+ia_calculate_intrinsics ( char **images, const Size boardSize,
+                          Mat& camMat, Mat& disMat, const float squareSize )
 {
   vector<Mat> rvecs, tvecs;
-  return ia_calculate_all ( images, boardSize, &camMat, &disMat, &rvecs, &tvecs );
+  return ia_calculate_all ( images, boardSize, &camMat, &disMat,
+                            &rvecs, &tvecs, squareSize );
 }
 
 bool
 ia_calculate_extrinsics ( char **images, const Mat *camMat, const Mat *disMat,
                           const Size boardSize, vector<Mat> *rvecs,
-                          vector<Mat> *tvecs, bool useExtrinsicGuess = false )
+                          vector<Mat> *tvecs, const float squareSize = 1 )
 {
   vector<vector<Point3f> > objectPoints; //chessboard points in the object.
   vector<vector<Point2f> > imagePoints; //chessboard points in the image.
@@ -151,8 +154,8 @@ ia_calculate_extrinsics ( char **images, const Mat *camMat, const Mat *disMat,
   if ( !ia_calc_image_chess_points(images, boardSize, &imagePoints, &generalSize) )
     return false;
 
-  /* get one set of points for the images. 1->unitless squareSize */
-  if ( !ia_calc_object_chess_points (boardSize, 1, 1, &objectPoints) )
+  /* get one set of points for the images. */
+  if ( !ia_calc_object_chess_points (boardSize, squareSize, 1, &objectPoints) )
     return false;
 
   /* calculates rvecs and tvecs for each imagePoint */
@@ -161,7 +164,7 @@ ia_calculate_extrinsics ( char **images, const Mat *camMat, const Mat *disMat,
   {
     Mat rvec, tvec;
     solvePnP ( (Mat)objectPoints[0], (Mat)*image_iter, *camMat, *disMat,
-               rvec, tvec, useExtrinsicGuess );
+               rvec, tvec, false ); //false -> don't use extrinsic guess.
     rvecs->push_back(rvec);
     tvecs->push_back(tvec);
   }
@@ -197,7 +200,7 @@ ia_print_matrix_vector ( vector<Mat>* vec, const char* message )
 }
 
 void
-ia_calculate_and_capture ( Size boardSize )
+ia_calculate_and_capture ( const Size boardSize, const float squareSize = 1 )
 {
 
   /* Reflects the process state of the function. start accumulating. */
@@ -293,9 +296,9 @@ ia_calculate_and_capture ( Size boardSize )
           /* We use the last image size as generalSize.*/
           generalSize = t_image.size();
 
-          /* get the points for the object. 1->unitless squareSize */
-          ia_calc_object_chess_points (boardSize, 1, imagePoints.size(),
-              &objectPoints);
+          /* get the points for the object. */
+          ia_calc_object_chess_points ( boardSize, squareSize,
+                                        imagePoints.size(), &objectPoints);
 
           /* calc camera matrix, dist matrix, rvector, tvector, no flags */
           vector<Mat> rvecs, tvecs; // will not be used in other places.
