@@ -199,6 +199,13 @@ ia_print_matrix_vector ( vector<Mat>* vec, const char* message )
   fflush ( stdout );
 }
 
+double
+ia_rad2deg (const double Angle)
+{
+  static double ratio = 180.0 / 3.141592653589793238;
+  return Angle * ratio;
+}
+
 void
 ia_calculate_and_capture ( const Size boardSize, const int delay,
                            const char* vid_file, const int camera_id = 0,
@@ -219,7 +226,10 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   int num_int_images = 20; //number of intrinsic images needed
 
   //open a window...
-  namedWindow( "Image View", 1 );
+  namedWindow ( "Image View", 1 );
+
+  //open the rotation window
+  namedWindow ( "Rotated", 1 );
 
   // We start the capture.  And bail out if we cant
   if ( vid_file != NULL
@@ -239,6 +249,10 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   {
     Mat frame_buffer, t_image;
     vector<Point2f> pointbuf;
+
+    double angle;
+    Point center;
+    Mat trans_mat, r_image;
 
     if ( !capture.grab() ) break;
     capture.retrieve ( frame_buffer );
@@ -279,6 +293,22 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
           ia_print_matrix ( rvec, (char*)"\0" );
           fprintf ( stdout, ")\n" );
         }
+
+        // Rotation in z axis is in the last cell.
+        angle = ia_rad2deg ( rvec.at<double>(0,2) );
+
+        // Calculate the center of the image.
+        center.x = t_image.size().width/2;
+        center.y = t_image.size().height/2;
+
+        // Calculate the rotation transformation matrix.
+        trans_mat = getRotationMatrix2D ( center, angle, 1 );
+
+        //actually perform the rotation and put it in r_image
+        warpAffine ( t_image, r_image, trans_mat, t_image.size() );
+
+        // Finally try to show the image.
+        imshow ( "Rotated", r_image );
       break;
 
       case ACCUM: //accumulate info to calculate intrinsics.
