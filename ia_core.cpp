@@ -201,7 +201,8 @@ ia_print_matrix_vector ( vector<Mat>* vec, const char* message )
 
 void
 ia_calculate_and_capture ( const Size boardSize, const int delay,
-                           const char* vid_file, const float squareSize = 1 )
+                           const char* vid_file, const int camera_id = 0,
+                           const float squareSize = 1 )
 {
 
   /* Reflects the process state of the function. start accumulating. */
@@ -228,7 +229,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 
   if ( vid_file == NULL
        && !capture.isOpened()
-       && !capture.open(0) )
+       && !capture.open(camera_id) )
     fprintf ( stderr, "Could not open camera input\n" );
 
   if ( !capture.isOpened() )

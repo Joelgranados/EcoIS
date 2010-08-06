@@ -31,7 +31,7 @@ struct ia_input
 
   bool capture; //whether to capture or not.
                 //if capture is true then the images are unused.
-
+  int camera_id;
   char* vid_file; //Video file to use instead of the camera.
   char** images; // a list of image file names.
 

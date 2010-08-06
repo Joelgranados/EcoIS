@@ -42,6 +42,7 @@ ia_init_input_struct ( struct ia_input *input )
   input->corDist = false;
 
   input->capture = false; //we don't use the camera by default.
+  input->camera_id = 0;
   input->vid_file = NULL;
 
   /*
@@ -86,7 +87,8 @@ ia_print_input_struct ( struct ia_input *input )
       "BoardSize (w,h): (%u, %u)\n"
       "SquareSize: %f\n"
       "Delay: %d\n"
-      "Video File: %s\n",
+      "Video File: %s\n"
+      "Camera id: %d\n",
 
       //file name
       input->iif,
@@ -106,7 +108,8 @@ ia_print_input_struct ( struct ia_input *input )
       //square size
       input->squareSize,
       input->delay,
-      input->vid_file);
+      input->vid_file,
+      input->camera_id);
 
   // We print the image list.
   fprintf(stdout, "Image List: ");
@@ -131,6 +134,7 @@ ia_usage ( char *command )
           "-d | --delay   The delay time in miliseconds between events in the\n"
           "               capture state.\n"
           "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
+          "-C | --camera  The camera id.\n"
           "-c | --capture Use camera capture instead of images.\n\n"
           "The intrinsics file should have two lines specifying the\n"
           "distortion values and the camera matrix values.  The distortion\n"
@@ -236,6 +240,7 @@ ia_init_input ( int argc, char **argv)
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
       {"capture",       no_argument,          0, 'c'},
+      {"camera",        required_argument,    0, 'C'},
       {"video",         required_argument,    0, 'v'},
       {"ininput",       required_argument,    0, 'i'},
       {"ch",            required_argument,    0, 'H'},
@@ -252,7 +257,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long (argc, argv, "hci:a:b:s:d:v:", long_options, &option_index);
+    c = getopt_long (argc, argv, "hci:a:b:s:d:v:C:", long_options, &option_index);
 
     /* Detect the end of the options. */
     if (c == -1)
@@ -291,7 +296,7 @@ ia_init_input ( int argc, char **argv)
           break;
 
         case 'H':
-          if ( sscanf(optarg, "%u", &(input->b_size.height) ) != 1 )
+          if ( sscanf(optarg, "%u", &(input->b_size.height)) != 1 )
           {
             fprintf(stderr, "Remember to give --ch an argument");
             ia_usage(argv[0]);
@@ -301,7 +306,7 @@ ia_init_input ( int argc, char **argv)
           break;
 
         case 'W':
-          if ( sscanf(optarg, "%u", &(input->b_size.width) ) != 1 )
+          if ( sscanf(optarg, "%u", &(input->b_size.width)) != 1 )
           {
             fprintf(stderr, "Remember to give --cw an argument");
             ia_usage(argv[0]);
@@ -311,18 +316,11 @@ ia_init_input ( int argc, char **argv)
           break;
 
         case 'c':
-          /*
-           * We just toggle the input->capture flag.  The images get ignored
-           * later
-           */
-          if ( input->vid_file == NULL )
-            input->capture = true;
-          else
-            fprintf ( stderr, "You have alredy specified file capture" );
+          input->capture = true;
           break;
 
         case 's':
-          if ( sscanf(optarg, "%f", &(input->squareSize) ) != 1 )
+          if ( sscanf(optarg, "%f", &(input->squareSize)) != 1 )
           {
             fprintf( stderr, "Could not use specified squareSize: %s"
                              "Using default: 1.\n", optarg );
@@ -331,7 +329,7 @@ ia_init_input ( int argc, char **argv)
           break;
 
         case 'd':
-          if ( sscanf(optarg, "%d", &(input->delay) ) != 1 )
+          if ( sscanf(optarg, "%d", &(input->delay)) != 1 )
           {
             fprintf( stderr, "Could not use specified delay: %s"
                              "Using default: 250.\n", optarg );
@@ -340,11 +338,18 @@ ia_init_input ( int argc, char **argv)
           break;
 
         case 'v':
-          if ( !input->capture )
-            input->vid_file = (char*)optarg;
-          else
-            fprintf ( stderr, "You have already specified camera capture" );
+          input->vid_file = (char*)optarg;
+          input->capture = true;
 
+          break;
+
+        case 'C':
+          if ( sscanf(optarg, "%d", &(input->camera_id)) != 1 )
+          {
+            fprintf ( stderr, "Bad value for camera id.  Using 0" );
+            input->camera_id = 0;
+          }
+          input->capture = true;
           break;
 
         default:
@@ -355,7 +360,7 @@ ia_init_input ( int argc, char **argv)
   }
 
   /* We error out if there are no additional images and capture is false. */
-  if ( optind >= argc && !input->capture && input->vid_file == NULL )
+  if ( optind >= argc && !input->capture )
   {
     // The option indicator is at the last argument and there are no images...
     fprintf(stderr, "You must provide a list of images\n");

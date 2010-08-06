@@ -31,9 +31,9 @@ main ( int argc, char** argv ) {
   if ( (input = ia_init_input(argc, argv)) == NULL )
     exit(0); //an error message has already been printed
 
-  if ( input->capture || input->vid_file != NULL)
+  if ( input->capture )
     ia_calculate_and_capture ( input->b_size, input->delay, input->vid_file,
-                               input->squareSize );
+                               input->camera_id, input->squareSize );
 
   else if ( input->calInt )
     ia_calculate_all ( input->images, input->b_size, &camMat, &disMat,
