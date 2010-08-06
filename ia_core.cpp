@@ -201,7 +201,7 @@ ia_print_matrix_vector ( vector<Mat>* vec, const char* message )
 
 void
 ia_calculate_and_capture ( const Size boardSize, const int delay,
-                           const float squareSize = 1 )
+                           const char* vid_file, const float squareSize = 1 )
 {
 
   /* Reflects the process state of the function. start accumulating. */
@@ -220,25 +220,32 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   //open a window...
   namedWindow( "Image View", 1 );
 
-  // We start the capture.
-  // FIXME: make the user define the camera id.
-  capture.open(0);
+  // We start the capture.  And bail out if we cant
+  if ( vid_file != NULL
+       && !capture.isOpened()
+       && !capture.open( (string)vid_file ) )
+    fprintf ( stderr, "File %s could not be played\n", vid_file );
+
+  if ( vid_file == NULL
+       && !capture.isOpened()
+       && !capture.open(0) )
+    fprintf ( stderr, "Could not open camera input\n" );
+
+  if ( !capture.isOpened() )
+    return;
 
   for ( int i = 0 ;; i++ )
   {
-    Mat view0, t_image;
+    Mat frame_buffer, t_image;
     vector<Point2f> pointbuf;
 
-    // loop until capture is opened
-    if ( !capture.isOpened() )
-      continue;
-
-    capture >> view0;
+    if ( !capture.grab() ) break;
+    capture.retrieve ( frame_buffer );
 
     try
     {
       /* transform to grayscale */
-      cvtColor(view0, t_image, CV_BGR2GRAY);
+      cvtColor(frame_buffer, t_image, CV_BGR2GRAY);
 
     /* find the chessboard points in the image and put them in pointbuf.*/
       if ( !findChessboardCorners(t_image, boardSize, pointbuf,

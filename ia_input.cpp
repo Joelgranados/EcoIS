@@ -42,6 +42,7 @@ ia_init_input_struct ( struct ia_input *input )
   input->corDist = false;
 
   input->capture = false; //we don't use the camera by default.
+  input->vid_file = NULL;
 
   /*
    * Chessboard default size will be 0,0.  If the user does not specify the
@@ -84,7 +85,8 @@ ia_print_input_struct ( struct ia_input *input )
       "Calculate Intrinsics: %d\n"
       "BoardSize (w,h): (%u, %u)\n"
       "SquareSize: %f\n"
-      "Delay: %d\n",
+      "Delay: %d\n"
+      "Video File: %s\n",
 
       //file name
       input->iif,
@@ -103,7 +105,8 @@ ia_print_input_struct ( struct ia_input *input )
       input->b_size.width, input->b_size.height,
       //square size
       input->squareSize,
-      input->delay);
+      input->delay,
+      input->vid_file);
 
   // We print the image list.
   fprintf(stdout, "Image List: ");
@@ -127,6 +130,7 @@ ia_usage ( char *command )
           "               this number.\n"
           "-d | --delay   The delay time in miliseconds between events in the\n"
           "               capture state.\n"
+          "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
           "-c | --capture Use camera capture instead of images.\n\n"
           "The intrinsics file should have two lines specifying the\n"
           "distortion values and the camera matrix values.  The distortion\n"
@@ -232,6 +236,7 @@ ia_init_input ( int argc, char **argv)
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
       {"capture",       no_argument,          0, 'c'},
+      {"video",         required_argument,    0, 'v'},
       {"ininput",       required_argument,    0, 'i'},
       {"ch",            required_argument,    0, 'H'},
       {"cw",            required_argument,    0, 'W'},
@@ -247,7 +252,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long (argc, argv, "hci:a:b:s:d:", long_options, &option_index);
+    c = getopt_long (argc, argv, "hci:a:b:s:d:v:", long_options, &option_index);
 
     /* Detect the end of the options. */
     if (c == -1)
@@ -310,7 +315,10 @@ ia_init_input ( int argc, char **argv)
            * We just toggle the input->capture flag.  The images get ignored
            * later
            */
-          input->capture = true;
+          if ( input->vid_file == NULL )
+            input->capture = true;
+          else
+            fprintf ( stderr, "You have alredy specified file capture" );
           break;
 
         case 's':
@@ -329,7 +337,15 @@ ia_init_input ( int argc, char **argv)
                              "Using default: 250.\n", optarg );
             input->delay = 250;
           }
-        break;
+          break;
+
+        case 'v':
+          if ( !input->capture )
+            input->vid_file = (char*)optarg;
+          else
+            fprintf ( stderr, "You have already specified camera capture" );
+
+          break;
 
         default:
           ia_usage(argv[0]);
@@ -339,7 +355,7 @@ ia_init_input ( int argc, char **argv)
   }
 
   /* We error out if there are no additional images and capture is false. */
-  if ( optind >= argc && !input->capture )
+  if ( optind >= argc && !input->capture && input->vid_file == NULL )
   {
     // The option indicator is at the last argument and there are no images...
     fprintf(stderr, "You must provide a list of images\n");

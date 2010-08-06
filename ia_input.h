@@ -31,6 +31,8 @@ struct ia_input
 
   bool capture; //whether to capture or not.
                 //if capture is true then the images are unused.
+
+  char* vid_file; //Video file to use instead of the camera.
   char** images; // a list of image file names.
 
   cv::Size b_size; //chessboard size. height x width
