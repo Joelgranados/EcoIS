@@ -1,2 +1,0 @@
-* When the video file is not supported the command goes crazy trying to play it,
-  waiting for the capture to open.
