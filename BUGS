@@ -1,0 +1,3 @@
+* ia_calculate_and_capture needs cleaning up.  Things we should do:
+    1. Find a better way to log stuff to the stdout.
+    2. Think of a better way of doing the rotation and translation adjustments.
