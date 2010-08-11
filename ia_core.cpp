@@ -225,6 +225,9 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   clock_t timestamp = 0;
   int num_int_images = 20; //number of intrinsic images needed
 
+  //FIXME: this is just a test value.
+  float max_distance = 30;
+
   //open a window...
   namedWindow ( "Image View", 1 );
 
@@ -252,7 +255,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 
     double angle;
     Point center;
-    Mat trans_mat, r_image;
+    Mat trans_mat, r_image, rs_image;
 
     if ( !capture.grab() ) break;
     capture.retrieve ( frame_buffer );
@@ -278,6 +281,8 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
                    Size(-1,-1),
                    TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
+    double ratio;
+    Size currSize;
     switch ( p_state )
     {
       case OUTPUT:
@@ -307,8 +312,19 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         //actually perform the rotation and put it in r_image
         warpAffine ( t_image, r_image, trans_mat, t_image.size() );
 
+        // calculate the scaling size
+        if ( tvec.at<double>(0,2) < max_distance )
+        {
+          currSize.width = 0;
+          currSize.height = 0;
+          ratio = tvec.at<double>(0,2) / max_distance;
+          resize ( r_image, rs_image, currSize, ratio, ratio );
+        }
+        else
+          r_image.copyTo(rs_image);
+
         // Finally try to show the image.
-        imshow ( "Rotated", r_image );
+        imshow ( "Rotated", rs_image );
       break;
 
       case ACCUM: //accumulate info to calculate intrinsics.
