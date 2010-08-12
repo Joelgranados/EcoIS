@@ -287,16 +287,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         /* calc the rvec and tvec.  Note that we use the camMat and disMat*/
         solvePnP ( (Mat)objectPoints[0], (Mat)pointbuf, camMat, disMat,
                    rvec, tvec );
-        if ( clock() - timestamp > delay*1e-3*CLOCKS_PER_SEC )
-        {
-          /* output rvec and tvec to stdout */
-          fprintf ( stdout, "tvecs: (  " );
-          ia_print_matrix ( tvec, (char*)"\0" );
-          fprintf ( stdout, ") | rvecs: (  " );
-          ia_print_matrix ( rvec, (char*)"\0" );
-          fprintf ( stdout, ")\n" );
-        }
-
         // Rotation in z axis is in the last cell.
         angle = ia_rad2deg ( rvec.at<double>(0,2) );
 
@@ -358,14 +348,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
           vector<Mat> rvecs, tvecs; // will not be used in other places.
           calibrateCamera( objectPoints, imagePoints, generalSize,
                            camMat, disMat, rvecs, tvecs, 0 );
-
-          /* print the calibration info */
-          fprintf ( stdout, "cammat : (  ");
-          ia_print_matrix ( camMat, (char*)"\0" );
-          fprintf ( stdout, "\n" );
-          fprintf ( stdout, "dismat : (  ");
-          ia_print_matrix ( disMat, (char*)"\0" );
-          fprintf ( stdout, ")\n" );
           p_state = OUTPUT;
         }
       break;
