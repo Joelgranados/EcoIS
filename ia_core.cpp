@@ -213,7 +213,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 {
 
   /* Reflects the process state of the function. start accumulating. */
-  enum proc_state { ACCUM, OUTPUT, CALC } p_state = ACCUM;
+  enum proc_state { ACCUM, OUTPUT} p_state = ACCUM;
 
   VideoCapture capture;
   vector<vector<Point2f> > imagePoints;
