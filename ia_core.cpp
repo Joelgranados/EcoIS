@@ -258,10 +258,10 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 
   for ( int i = 0 ;; i++ )
   {
-    Mat frame_buffer, t_image;
+    Mat frame_buffer, trans_mat; // temporary vars
+    Mat t_image, r_image, rs_image; //image vars
     vector<Point2f> pointbuf;
 
-    Mat trans_mat, r_image, rs_image;
 
     if ( !capture.grab() ) break;
     capture.retrieve ( frame_buffer );
@@ -271,7 +271,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
       /* transform to grayscale */
       cvtColor(frame_buffer, t_image, CV_BGR2GRAY);
 
-    /* find the chessboard points in the image and put them in pointbuf.*/
+      /* find the chessboard points in the image and put them in pointbuf.*/
       if ( !findChessboardCorners(t_image, boardSize, pointbuf,
                                   CV_CALIB_CB_ADAPTIVE_THRESH) )
       {
@@ -283,8 +283,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
     }catch (cv::Exception){continue;}
 
     /* improve the found corners' coordinate accuracy */
-    cornerSubPix ( t_image, pointbuf, Size(11,11),
-                   Size(-1,-1),
+    cornerSubPix ( t_image, pointbuf, Size(11,11), Size(-1,-1),
                    TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
     double ratio;
