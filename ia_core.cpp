@@ -231,8 +231,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   vector<vector<Point3f> > objectPoints;
   Mat camMat, disMat; // camera matrix, distorition matrix.
   Mat rvec, tvec; //translation and rotation vectors.
-  Size generalSize;
-  string msg;
   clock_t timestamp = 0;
   int num_int_images = 20; //number of intrinsic images needed
   char image_message[30]; //output text to the image
@@ -345,16 +343,16 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         /* we change state when we have enough images */
         if ( imagePoints.size() >= num_int_images )
         {
-          /* We use the last image size as generalSize.*/
-          generalSize = t_image.size();
-
           /* get the points for the object. */
           ia_calc_object_chess_points ( boardSize, squareSize,
                                         imagePoints.size(), &objectPoints);
 
-          /* calc camera matrix, dist matrix, rvector, tvector, no flags */
+          /*
+           * calc camera matrix, dist matrix, rvector, tvector, no flags.
+           * imagesize = t_image.size() current image.
+           * */
           vector<Mat> rvecs, tvecs; // will not be used in other places.
-          calibrateCamera( objectPoints, imagePoints, generalSize,
+          calibrateCamera( objectPoints, imagePoints, t_image.size(),
                            camMat, disMat, rvecs, tvecs, 0 );
           p_state = OUTPUT;
         }
