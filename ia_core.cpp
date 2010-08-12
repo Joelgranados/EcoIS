@@ -228,11 +228,9 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   //FIXME: this is just a test value.
   float max_distance = 30;
 
-  //open a window...
-  namedWindow ( "Image View", 1 );
-
-  //open the rotation window
-  namedWindow ( "Rotated", 1 );
+  // Open two windows for comparison.
+  namedWindow ( "Original", 1 );
+  namedWindow ( "Adjusted", 1 );
 
   // We start the capture.  And bail out if we cant
   if ( vid_file != NULL
@@ -269,7 +267,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
       if ( !findChessboardCorners(t_image, boardSize, pointbuf,
                                   CV_CALIB_CB_ADAPTIVE_THRESH) )
       {
-        imshow("Image View", t_image);
+        imshow("Original", t_image);
         if( (waitKey(50) & 255) == 27 )
           break;
         continue; //We will get another change in the next image
@@ -324,7 +322,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
           r_image.copyTo(rs_image);
 
         // Finally try to show the image.
-        imshow ( "Rotated", rs_image );
+        imshow ( "Adjusted", rs_image );
       break;
 
       case ACCUM: //accumulate info to calculate intrinsics.
@@ -377,7 +375,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
     drawChessboardCorners( t_image, boardSize, Mat(pointbuf), true );
 
     /* finally, show image :) */
-    imshow("Image View", t_image);
+    imshow("Original", t_image);
 
     /* we wait for user interaction */
     int key = waitKey(50);
