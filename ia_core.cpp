@@ -290,7 +290,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
                    TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
     double ratio;
-    Size currSize;
     switch ( p_state )
     {
       case OUTPUT:
@@ -313,10 +312,8 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         // calculate the scaling size
         if ( tvec.at<double>(0,2) < max_distance )
         {
-          currSize.width = 0;
-          currSize.height = 0;
           ratio = tvec.at<double>(0,2) / max_distance;
-          resize ( r_image, rs_image, currSize, ratio, ratio );
+          resize ( r_image, rs_image, Size(0,0), ratio, ratio );
         }
         else
           r_image.copyTo(rs_image);
