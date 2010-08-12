@@ -261,8 +261,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
     Mat frame_buffer, t_image;
     vector<Point2f> pointbuf;
 
-    double angle;
-    Point center;
     Mat trans_mat, r_image, rs_image;
 
     if ( !capture.grab() ) break;
@@ -296,20 +294,17 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         /* calc the rvec and tvec.  Note that we use the camMat and disMat*/
         solvePnP ( (Mat)objectPoints[0], (Mat)pointbuf, camMat, disMat,
                    rvec, tvec );
-        // Rotation in z axis is in the last cell.
-        angle = ia_rad2deg ( rvec.at<double>(0,2) );
 
-        // Calculate the center of the image.
-        center.x = t_image.size().width/2;
-        center.y = t_image.size().height/2;
-
-        // Calculate the rotation transformation matrix.
-        trans_mat = getRotationMatrix2D ( center, angle, 1 );
+        /* Calc rotation transformation matrix. Firs arg is center */
+        trans_mat = getRotationMatrix2D ( Point(t_image.size().width/2,
+                                                t_image.size().height/2),
+                                          ia_rad2deg(rvec.at<double>(0,2)),
+                                          1 );
 
         //actually perform the rotation and put it in r_image
         warpAffine ( t_image, r_image, trans_mat, t_image.size() );
 
-        // calculate the scaling size
+        // calculate the scaling size. tvec(0.2)/max_distance = ratio
         if ( tvec.at<double>(0,2) < max_distance )
         {
           ratio = tvec.at<double>(0,2) / max_distance;
