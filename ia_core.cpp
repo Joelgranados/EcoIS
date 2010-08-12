@@ -199,6 +199,17 @@ ia_print_matrix_vector ( vector<Mat>* vec, const char* message )
   fflush ( stdout );
 }
 
+void ia_put_text_on_image ( const char* message, Mat& image )
+{
+  string msg;
+  int baseLine = 0;
+
+  msg = format ( message );
+  Point orig(20,20);
+
+  putText ( image, msg, orig, 1, 1, Scalar(0,0,255) );
+}
+
 double
 ia_rad2deg (const double Angle)
 {
@@ -224,6 +235,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   string msg;
   clock_t timestamp = 0;
   int num_int_images = 20; //number of intrinsic images needed
+  char image_message[30]; //output text to the image
 
   //FIXME: this is just a test value.
   float max_distance = 30;
@@ -326,13 +338,9 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         }
 
         /* Create and put message on image */
-        msg = format ( "Cal Intrinsics: %d/%d.", imagePoints.size(),
+        sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
             num_int_images );
-        int baseLine = 0;
-        Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
-        Point textOrigin(t_image.cols - 2*textSize.width - 10,
-            t_image.rows - 2*baseLine - 10);
-        putText ( t_image, msg, textOrigin, 1, 1, Scalar(0,0,255) );
+        ia_put_text_on_image ( image_message, t_image );
 
         /* we change state when we have enough images */
         if ( imagePoints.size() >= num_int_images )
