@@ -227,10 +227,12 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   VideoCapture capture;
   vector<vector<Point2f> > imagePoints;
   vector<vector<Point3f> > objectPoints;
+  vector<Point2f> pointbuf;
   Mat camMat, disMat; // camera matrix, distorition matrix.
   Mat rvec, tvec; //translation and rotation vectors.
   Mat o_img = Mat::zeros(1,1,CV_64F); // original capture
   Mat a_img = Mat::zeros(1,1,CV_64F); // adjusted capture
+  Mat frame_buffer, trans_mat; // temporary vars
   clock_t timestamp = 0;
   int num_ino_imgs = 20; //number of intrinsic images needed
   char image_message[30]; //output text to the image
@@ -256,9 +258,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 
   for ( int i = 0 ;; i++ )
   {
-    Mat frame_buffer, trans_mat; // temporary vars
-    vector<Point2f> pointbuf;
-
     if ( !capture.grab() ) break;
     capture.retrieve ( frame_buffer );
 
