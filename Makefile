@@ -26,3 +26,10 @@ ctag:
 
 clean:
 	rm -rf imageadjust imageadjust.tar.gz
+
+# Make sure you change the cw and ch to your environemtn.
+test:
+	@if [ -f test.avi ] ; then \
+		./imageadjust --cw 5 --ch 8 --video test.avi; \
+	fi
+
