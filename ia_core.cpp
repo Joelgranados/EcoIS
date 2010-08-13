@@ -238,7 +238,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   char image_message[30]; //output text to the image
 
   //FIXME: this is just a test value.
-  float max_distance = 30;
+  float m_d = 30;
 
   /* We start the capture.  And bail out if we can't */
   if ( vid_file != NULL
@@ -285,7 +285,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
     cornerSubPix ( t_image, pointbuf, Size(11,11), Size(-1,-1),
                    TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
-    double ratio;
     switch ( p_state )
     {
       case OUTPUT:
@@ -302,12 +301,10 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         //actually perform the rotation and put it in r_image
         warpAffine ( t_image, r_image, trans_mat, t_image.size() );
 
-        // calculate the scaling size. tvec(0.2)/max_distance = ratio
-        if ( tvec.at<double>(0,2) < max_distance )
-        {
-          ratio = tvec.at<double>(0,2) / max_distance;
-          resize ( r_image, rs_image, Size(0,0), ratio, ratio );
-        }
+        // calculate the scaling size. tvec(0.2)/m_d = ratio
+        if ( tvec.at<double>(0,2) < m_d )
+          resize ( r_image, rs_image, Size(0,0),
+                   tvec.at<double>(0,2)/m_d,tvec.at<double>(0,2)/m_d );
         else
           r_image.copyTo(rs_image);
       break;
