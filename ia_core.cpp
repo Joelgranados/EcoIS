@@ -229,10 +229,10 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   vector<vector<Point3f> > objectPoints;
   Mat camMat, disMat; // camera matrix, distorition matrix.
   Mat rvec, tvec; //translation and rotation vectors.
-  Mat t_image = Mat::zeros(1,1,CV_64F); // original capture
-  Mat r_image = Mat::zeros(1,1,CV_64F); // adjusted capture
+  Mat o_img = Mat::zeros(1,1,CV_64F); // original capture
+  Mat a_img = Mat::zeros(1,1,CV_64F); // adjusted capture
   clock_t timestamp = 0;
-  int num_int_images = 20; //number of intrinsic images needed
+  int num_ino_imgs = 20; //number of intrinsic images needed
   char image_message[30]; //output text to the image
 
   //FIXME: this is just a test value.
@@ -262,28 +262,28 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
     if ( !capture.grab() ) break;
     capture.retrieve ( frame_buffer );
 
-    imshow("Original", t_image);
-    imshow("Adjusted", r_image);
+    imshow("Original", o_img);
+    imshow("Adjusted", a_img);
     if( (waitKey(50) & 255) == 27 )
       break;
 
     try
     {
       /* transform to grayscale */
-      cvtColor(frame_buffer, t_image, CV_BGR2GRAY);
+      cvtColor(frame_buffer, o_img, CV_BGR2GRAY);
 
       /* find the chessboard points in the image and put them in pointbuf.*/
-      if ( !findChessboardCorners(t_image, boardSize, pointbuf,
+      if ( !findChessboardCorners(o_img, boardSize, pointbuf,
                                   CV_CALIB_CB_ADAPTIVE_THRESH) )
         continue; //We will get another chance in the next image
     }catch (cv::Exception){continue;}
 
     /* improve the found corners' coordinate accuracy */
-    cornerSubPix ( t_image, pointbuf, Size(11,11), Size(-1,-1),
+    cornerSubPix ( o_img, pointbuf, Size(11,11), Size(-1,-1),
                    TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
     /* Draw chessboard on image.*/
-    drawChessboardCorners( t_image, boardSize, Mat(pointbuf), true );
+    drawChessboardCorners( o_img, boardSize, Mat(pointbuf), true );
 
     if ( p_state == OUTPUT )
     {
@@ -292,20 +292,20 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
                  rvec, tvec );
 
       /* Calc rotation transformation matrix. First arg is center */
-      trans_mat = getRotationMatrix2D ( Point(t_image.size().width/2,
-                                              t_image.size().height/2),
+      trans_mat = getRotationMatrix2D ( Point(o_img.size().width/2,
+                                              o_img.size().height/2),
                                         ia_rad2deg(rvec.at<double>(0,2)),
                                         1 );
 
-      /* Perform the rotation and put it in r_image */
-      warpAffine ( t_image, frame_buffer, trans_mat, t_image.size() );
+      /* Perform the rotation and put it in a_img */
+      warpAffine ( o_img, frame_buffer, trans_mat, o_img.size() );
 
       /* calculate the scaling size. tvec(0.2)/m_d = ratio */
       if ( tvec.at<double>(0,2) < m_d )
-        resize ( frame_buffer, r_image, Size(0,0),
+        resize ( frame_buffer, a_img, Size(0,0),
                  tvec.at<double>(0,2)/m_d, tvec.at<double>(0,2)/m_d );
       else
-        frame_buffer.copyTo(r_image);
+        frame_buffer.copyTo(a_img);
     }
     else if ( p_state == ACCUM )
     {
@@ -318,11 +318,11 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 
       /* Create and put message on image */
       sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
-          num_int_images );
-      ia_put_text_on_image ( image_message, t_image );
+          num_ino_imgs );
+      ia_put_text_on_image ( image_message, o_img );
 
       /* we change state when we have enough images */
-      if ( imagePoints.size() >= num_int_images )
+      if ( imagePoints.size() >= num_ino_imgs )
       {
         /* get the points for the object. */
         ia_calc_object_chess_points ( boardSize, squareSize,
@@ -330,10 +330,10 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 
         /*
          * calc camera matrix, dist matrix, rvector, tvector, no flags.
-         * imagesize = t_image.size() current image.
+         * imagesize = o_img.size() current image.
          */
         vector<Mat> rvecs, tvecs; // will not be used in other places.
-        calibrateCamera( objectPoints, imagePoints, t_image.size(),
+        calibrateCamera( objectPoints, imagePoints, o_img.size(),
                          camMat, disMat, rvecs, tvecs, 0 );
         p_state = OUTPUT;
       }
