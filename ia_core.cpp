@@ -231,6 +231,8 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   vector<vector<Point3f> > objectPoints;
   Mat camMat, disMat; // camera matrix, distorition matrix.
   Mat rvec, tvec; //translation and rotation vectors.
+  Mat t_image = Mat::zeros(1,1,CV_64F); // original capture
+  Mat rs_image = Mat::zeros(1,1,CV_64F); // adjusted capture
   clock_t timestamp = 0;
   int num_int_images = 20; //number of intrinsic images needed
   char image_message[30]; //output text to the image
@@ -257,12 +259,14 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   for ( int i = 0 ;; i++ )
   {
     Mat frame_buffer, trans_mat; // temporary vars
-    Mat t_image, r_image, rs_image; //image vars
+    Mat r_image; //image vars
     vector<Point2f> pointbuf;
 
     if ( !capture.grab() ) break;
     capture.retrieve ( frame_buffer );
 
+    imshow("Original", t_image);
+    imshow("Adjusted", rs_image);
     if( (waitKey(50) & 255) == 27 )
       break;
 
@@ -274,10 +278,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
       /* find the chessboard points in the image and put them in pointbuf.*/
       if ( !findChessboardCorners(t_image, boardSize, pointbuf,
                                   CV_CALIB_CB_ADAPTIVE_THRESH) )
-      {
-        imshow("Original", t_image);
         continue; //We will get another change in the next image
-      }
     }catch (cv::Exception){continue;}
 
     /* improve the found corners' coordinate accuracy */
@@ -309,9 +310,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         }
         else
           r_image.copyTo(rs_image);
-
-        // Finally try to show the image.
-        imshow ( "Adjusted", rs_image );
       break;
 
       case ACCUM: //accumulate info to calculate intrinsics.
@@ -350,8 +348,5 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 
     /* Draw chessboard on image.*/
     drawChessboardCorners( t_image, boardSize, Mat(pointbuf), true );
-
-    /* finally, show image :) */
-    imshow("Original", t_image);
   }
 }
