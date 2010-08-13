@@ -238,23 +238,21 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   //FIXME: this is just a test value.
   float max_distance = 30;
 
-  // Open two windows for comparison.
-  namedWindow ( "Original", 1 );
-  namedWindow ( "Adjusted", 1 );
-
-  // We start the capture.  And bail out if we cant
+  /* We start the capture.  And bail out if we can't */
   if ( vid_file != NULL
        && !capture.isOpened()
        && !capture.open( (string)vid_file ) )
     fprintf ( stderr, "File %s could not be played\n", vid_file );
-
   if ( vid_file == NULL
        && !capture.isOpened()
        && !capture.open(camera_id) )
     fprintf ( stderr, "Could not open camera input\n" );
-
   if ( !capture.isOpened() )
     return;
+
+  // Open two windows for comparison.
+  namedWindow ( "Original", 1 );
+  namedWindow ( "Adjusted", 1 );
 
   for ( int i = 0 ;; i++ )
   {
@@ -262,9 +260,11 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
     Mat t_image, r_image, rs_image; //image vars
     vector<Point2f> pointbuf;
 
-
     if ( !capture.grab() ) break;
     capture.retrieve ( frame_buffer );
+
+    if( (waitKey(50) & 255) == 27 )
+      break;
 
     try
     {
@@ -276,8 +276,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
                                   CV_CALIB_CB_ADAPTIVE_THRESH) )
       {
         imshow("Original", t_image);
-        if( (waitKey(50) & 255) == 27 )
-          break;
         continue; //We will get another change in the next image
       }
     }catch (cv::Exception){continue;}
@@ -355,10 +353,5 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 
     /* finally, show image :) */
     imshow("Original", t_image);
-
-    /* we wait for user interaction */
-    int key = waitKey(50);
-    if( (key & 255) == 27 )
-        break;
   }
 }
