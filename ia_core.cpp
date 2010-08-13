@@ -220,7 +220,7 @@ ia_rad2deg (const double Angle)
 void
 ia_calculate_and_capture ( const Size boardSize, const int delay,
                            const char* vid_file, const int camera_id = 0,
-                           const float squareSize = 1 )
+                           const float r_dist = -1, const float squareSize = 1 )
 {
   /* Reflects the process state of the function. start accumulating. */
   enum proc_state { ACCUM, OUTPUT} p_state = ACCUM;
@@ -236,9 +236,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   clock_t timestamp = 0;
   int num_ino_imgs = 20; //number of intrinsic images needed
   char image_message[30]; //output text to the image
-
-  //FIXME: this is just a test value.
-  float m_d = 30;
 
   /* We start the capture.  And bail out if we can't */
   if ( vid_file != NULL
@@ -299,10 +296,10 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
       /* Perform the rotation and put it in a_img */
       warpAffine ( o_img, frame_buffer, trans_mat, o_img.size() );
 
-      /* calculate the scaling size. tvec(0.2)/m_d = ratio */
-      if ( tvec.at<double>(0,2) < m_d )
+      /* calculate the scaling size. tvec(0.2)/r_dist = ratio */
+      if ( 0 < r_dist && tvec.at<double>(0,2) < r_dist )
         resize ( frame_buffer, a_img, Size(0,0),
-                 tvec.at<double>(0,2)/m_d, tvec.at<double>(0,2)/m_d );
+                 tvec.at<double>(0,2)/r_dist, tvec.at<double>(0,2)/r_dist );
       else
         frame_buffer.copyTo(a_img);
     }

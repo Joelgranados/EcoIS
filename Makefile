@@ -30,6 +30,6 @@ clean:
 # Make sure you change the cw and ch to your environemtn.
 test:
 	@if [ -f test.avi ] ; then \
-		./imageadjust --cw 5 --ch 8 --video test.avi; \
+		./imageadjust --cw 5 --ch 8 --rdist 15 --video test.avi; \
 	fi
 

@@ -37,6 +37,7 @@ struct ia_input
 
   cv::Size b_size; //chessboard size. height x width
 
+  float r_dist; //distance from where to do the rescaling.
   float squareSize; //Chessboard square size
 
   int delay; //Delay between actions in the capture state.

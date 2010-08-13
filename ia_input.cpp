@@ -52,6 +52,7 @@ ia_init_input_struct ( struct ia_input *input )
   input->b_size.height = (unsigned int)0;
   input->b_size.width = (unsigned int)0;
 
+  input->r_dist = -1; //resize distance.  deafault is not to resize.
   input->squareSize = 1;
   input->delay = 250;
 
@@ -86,6 +87,7 @@ ia_print_input_struct ( struct ia_input *input )
       "Calculate Intrinsics: %d\n"
       "BoardSize (w,h): (%u, %u)\n"
       "SquareSize: %f\n"
+      "Distance resize: %f\n"
       "Delay: %d\n"
       "Video File: %s\n"
       "Camera id: %d\n",
@@ -107,6 +109,7 @@ ia_print_input_struct ( struct ia_input *input )
       input->b_size.width, input->b_size.height,
       //square size
       input->squareSize,
+      input->r_dist,
       input->delay,
       input->vid_file,
       input->camera_id);
@@ -131,6 +134,9 @@ ia_usage ( char *command )
           "               The size of the chessboard square.  1 by default\n"
           "               The resulting values will be given with respect to\n"
           "               this number.\n"
+          " -D | --rdist  The distance from where you want to resize.  If the\n"
+          "               image gets closer, it will be adjusted.  Nothing\n"
+          "               will be done if it goes farther.\n"
           "-d | --delay   The delay time in miliseconds between events in the\n"
           "               capture state.\n"
           "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
@@ -245,6 +251,7 @@ ia_init_input ( int argc, char **argv)
       {"ininput",       required_argument,    0, 'i'},
       {"ch",            required_argument,    0, 'H'},
       {"cw",            required_argument,    0, 'W'},
+      {"rdist",         required_argument,    0, 'D'},
       {"squaresize",    required_argument,    0, 's'},
       {"delay",         required_argument,    0, 'd'},
       {0, 0, 0, 0}
@@ -257,7 +264,8 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long (argc, argv, "hci:a:b:s:d:v:C:", long_options, &option_index);
+    c = getopt_long ( argc, argv, "hci:a:b:s:d:v:C:D:", long_options,
+                      &option_index );
 
     /* Detect the end of the options. */
     if (c == -1)
@@ -346,10 +354,19 @@ ia_init_input ( int argc, char **argv)
         case 'C':
           if ( sscanf(optarg, "%d", &(input->camera_id)) != 1 )
           {
-            fprintf ( stderr, "Bad value for camera id.  Using 0" );
+            fprintf ( stderr, "Bad value for camera id.  Using 0\n" );
             input->camera_id = 0;
           }
           input->capture = true;
+          break;
+
+        case 'D':
+          if ( sscanf(optarg, "%f", &(input->r_dist)) != 1 )
+          {
+            fprintf ( stderr, "Bad value for resize distance. "
+                              "Choosing not to reisze\n" );
+            input->r_dist = -1;
+          }
           break;
 
         default:
