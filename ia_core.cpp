@@ -222,17 +222,15 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
                            const char* vid_file, const int camera_id = 0,
                            const float squareSize = 1 )
 {
-
   /* Reflects the process state of the function. start accumulating. */
   enum proc_state { ACCUM, OUTPUT} p_state = ACCUM;
-
   VideoCapture capture;
   vector<vector<Point2f> > imagePoints;
   vector<vector<Point3f> > objectPoints;
   Mat camMat, disMat; // camera matrix, distorition matrix.
   Mat rvec, tvec; //translation and rotation vectors.
   Mat t_image = Mat::zeros(1,1,CV_64F); // original capture
-  Mat rs_image = Mat::zeros(1,1,CV_64F); // adjusted capture
+  Mat r_image = Mat::zeros(1,1,CV_64F); // adjusted capture
   clock_t timestamp = 0;
   int num_int_images = 20; //number of intrinsic images needed
   char image_message[30]; //output text to the image
@@ -259,14 +257,13 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   for ( int i = 0 ;; i++ )
   {
     Mat frame_buffer, trans_mat; // temporary vars
-    Mat r_image; //image vars
     vector<Point2f> pointbuf;
 
     if ( !capture.grab() ) break;
     capture.retrieve ( frame_buffer );
 
     imshow("Original", t_image);
-    imshow("Adjusted", rs_image);
+    imshow("Adjusted", r_image);
     if( (waitKey(50) & 255) == 27 )
       break;
 
@@ -301,14 +298,14 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
                                         1 );
 
       /* Perform the rotation and put it in r_image */
-      warpAffine ( t_image, r_image, trans_mat, t_image.size() );
+      warpAffine ( t_image, frame_buffer, trans_mat, t_image.size() );
 
       /* calculate the scaling size. tvec(0.2)/m_d = ratio */
       if ( tvec.at<double>(0,2) < m_d )
-        resize ( r_image, rs_image, Size(0,0),
+        resize ( frame_buffer, r_image, Size(0,0),
                  tvec.at<double>(0,2)/m_d, tvec.at<double>(0,2)/m_d );
       else
-        r_image.copyTo(rs_image);
+        frame_buffer.copyTo(r_image);
     }
     else if ( p_state == ACCUM )
     {
