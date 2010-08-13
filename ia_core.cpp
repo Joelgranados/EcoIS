@@ -285,6 +285,9 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
     cornerSubPix ( t_image, pointbuf, Size(11,11), Size(-1,-1),
                    TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
+    /* Draw chessboard on image.*/
+    drawChessboardCorners( t_image, boardSize, Mat(pointbuf), true );
+
     if ( p_state == OUTPUT )
     {
       /* calc the rvec and tvec.  Note that we use the camMat and disMat*/
@@ -338,8 +341,5 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         p_state = OUTPUT;
       }
     }
-
-    /* Draw chessboard on image.*/
-    drawChessboardCorners( t_image, boardSize, Mat(pointbuf), true );
   }
 }
