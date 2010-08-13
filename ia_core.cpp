@@ -285,62 +285,58 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
     cornerSubPix ( t_image, pointbuf, Size(11,11), Size(-1,-1),
                    TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
-    switch ( p_state )
+    if ( p_state == OUTPUT )
     {
-      case OUTPUT:
-        /* calc the rvec and tvec.  Note that we use the camMat and disMat*/
-        solvePnP ( (Mat)objectPoints[0], (Mat)pointbuf, camMat, disMat,
-                   rvec, tvec );
+      /* calc the rvec and tvec.  Note that we use the camMat and disMat*/
+      solvePnP ( (Mat)objectPoints[0], (Mat)pointbuf, camMat, disMat,
+                 rvec, tvec );
 
-        /* Calc rotation transformation matrix. Firs arg is center */
-        trans_mat = getRotationMatrix2D ( Point(t_image.size().width/2,
-                                                t_image.size().height/2),
-                                          ia_rad2deg(rvec.at<double>(0,2)),
-                                          1 );
+      /* Calc rotation transformation matrix. Firs arg is center */
+      trans_mat = getRotationMatrix2D ( Point(t_image.size().width/2,
+                                              t_image.size().height/2),
+                                        ia_rad2deg(rvec.at<double>(0,2)),
+                                        1 );
 
-        //actually perform the rotation and put it in r_image
-        warpAffine ( t_image, r_image, trans_mat, t_image.size() );
+      //actually perform the rotation and put it in r_image
+      warpAffine ( t_image, r_image, trans_mat, t_image.size() );
 
-        // calculate the scaling size. tvec(0.2)/m_d = ratio
-        if ( tvec.at<double>(0,2) < m_d )
-          resize ( r_image, rs_image, Size(0,0),
-                   tvec.at<double>(0,2)/m_d,tvec.at<double>(0,2)/m_d );
-        else
-          r_image.copyTo(rs_image);
-      break;
+      // calculate the scaling size. tvec(0.2)/m_d = ratio
+      if ( tvec.at<double>(0,2) < m_d )
+        resize ( r_image, rs_image, Size(0,0),
+                 tvec.at<double>(0,2)/m_d, tvec.at<double>(0,2)/m_d );
+      else
+        r_image.copyTo(rs_image);
+    }
+    else if ( p_state == ACCUM )
+    {
+      /* We make sure we keep the image points. */
+      if ( clock() - timestamp > delay*1e-3*CLOCKS_PER_SEC )
+      {
+        imagePoints.push_back(pointbuf);
+        timestamp = clock();
+      }
 
-      case ACCUM: //accumulate info to calculate intrinsics.
+      /* Create and put message on image */
+      sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
+          num_int_images );
+      ia_put_text_on_image ( image_message, t_image );
+
+      /* we change state when we have enough images */
+      if ( imagePoints.size() >= num_int_images )
+      {
+        /* get the points for the object. */
+        ia_calc_object_chess_points ( boardSize, squareSize,
+                                      imagePoints.size(), &objectPoints);
+
         /*
-         * We make sure we keep the image points.
-         */
-        if ( clock() - timestamp > delay*1e-3*CLOCKS_PER_SEC )
-        {
-          imagePoints.push_back(pointbuf);
-          timestamp = clock();
-        }
-
-        /* Create and put message on image */
-        sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
-            num_int_images );
-        ia_put_text_on_image ( image_message, t_image );
-
-        /* we change state when we have enough images */
-        if ( imagePoints.size() >= num_int_images )
-        {
-          /* get the points for the object. */
-          ia_calc_object_chess_points ( boardSize, squareSize,
-                                        imagePoints.size(), &objectPoints);
-
-          /*
-           * calc camera matrix, dist matrix, rvector, tvector, no flags.
-           * imagesize = t_image.size() current image.
-           * */
-          vector<Mat> rvecs, tvecs; // will not be used in other places.
-          calibrateCamera( objectPoints, imagePoints, t_image.size(),
-                           camMat, disMat, rvecs, tvecs, 0 );
-          p_state = OUTPUT;
-        }
-      break;
+         * calc camera matrix, dist matrix, rvector, tvector, no flags.
+         * imagesize = t_image.size() current image.
+         * */
+        vector<Mat> rvecs, tvecs; // will not be used in other places.
+        calibrateCamera( objectPoints, imagePoints, t_image.size(),
+                         camMat, disMat, rvecs, tvecs, 0 );
+        p_state = OUTPUT;
+      }
     }
 
     /* Draw chessboard on image.*/
