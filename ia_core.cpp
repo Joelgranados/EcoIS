@@ -252,7 +252,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   if ( !capture.isOpened() )
     return;
 
-  // Open two windows for comparison.
+  /* Open two windows for comparison. */
   namedWindow ( "Original", 1 );
   namedWindow ( "Adjusted", 1 );
 
@@ -278,7 +278,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
       /* find the chessboard points in the image and put them in pointbuf.*/
       if ( !findChessboardCorners(t_image, boardSize, pointbuf,
                                   CV_CALIB_CB_ADAPTIVE_THRESH) )
-        continue; //We will get another change in the next image
+        continue; //We will get another chance in the next image
     }catch (cv::Exception){continue;}
 
     /* improve the found corners' coordinate accuracy */
@@ -294,16 +294,16 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
       solvePnP ( (Mat)objectPoints[0], (Mat)pointbuf, camMat, disMat,
                  rvec, tvec );
 
-      /* Calc rotation transformation matrix. Firs arg is center */
+      /* Calc rotation transformation matrix. First arg is center */
       trans_mat = getRotationMatrix2D ( Point(t_image.size().width/2,
                                               t_image.size().height/2),
                                         ia_rad2deg(rvec.at<double>(0,2)),
                                         1 );
 
-      //actually perform the rotation and put it in r_image
+      /* Perform the rotation and put it in r_image */
       warpAffine ( t_image, r_image, trans_mat, t_image.size() );
 
-      // calculate the scaling size. tvec(0.2)/m_d = ratio
+      /* calculate the scaling size. tvec(0.2)/m_d = ratio */
       if ( tvec.at<double>(0,2) < m_d )
         resize ( r_image, rs_image, Size(0,0),
                  tvec.at<double>(0,2)/m_d, tvec.at<double>(0,2)/m_d );
@@ -334,7 +334,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         /*
          * calc camera matrix, dist matrix, rvector, tvector, no flags.
          * imagesize = t_image.size() current image.
-         * */
+         */
         vector<Mat> rvecs, tvecs; // will not be used in other places.
         calibrateCamera( objectPoints, imagePoints, t_image.size(),
                          camMat, disMat, rvecs, tvecs, 0 );
