@@ -57,6 +57,8 @@ ia_init_input_struct ( struct ia_input *input )
   input->delay = 250;
 
   input->images = NULL;
+
+  input->num_in_img = 20;
   return;
 }
 
@@ -90,7 +92,8 @@ ia_print_input_struct ( struct ia_input *input )
       "Distance resize: %f\n"
       "Delay: %d\n"
       "Video File: %s\n"
-      "Camera id: %d\n",
+      "Camera id: %d\n"
+      "Number of Images for Intrinsics: %d\n",
 
       //file name
       input->iif,
@@ -112,7 +115,8 @@ ia_print_input_struct ( struct ia_input *input )
       input->r_dist,
       input->delay,
       input->vid_file,
-      input->camera_id);
+      input->camera_id,
+      input->num_in_img);
 
   // We print the image list.
   fprintf(stdout, "Image List: ");
@@ -141,6 +145,7 @@ ia_usage ( char *command )
           "               capture state.\n"
           "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
           "-C | --camera  The camera id.\n"
+          "-I | --num_int The number of images to calculate intrinsic data\n"
           "-c | --capture Use camera capture instead of images.\n\n"
           "The intrinsics file should have two lines specifying the\n"
           "distortion values and the camera matrix values.  The distortion\n"
@@ -246,6 +251,7 @@ ia_init_input ( int argc, char **argv)
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
       {"capture",       no_argument,          0, 'c'},
+      {"num_int",       required_argument,    0, 'I'},
       {"camera",        required_argument,    0, 'C'},
       {"video",         required_argument,    0, 'v'},
       {"ininput",       required_argument,    0, 'i'},
@@ -264,7 +270,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "hci:a:b:s:d:v:C:D:", long_options,
+    c = getopt_long ( argc, argv, "hci:a:b:s:d:v:C:D:I:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -366,6 +372,15 @@ ia_init_input ( int argc, char **argv)
             fprintf ( stderr, "Bad value for resize distance. "
                               "Choosing not to reisze\n" );
             input->r_dist = -1;
+          }
+          break;
+
+        case 'I':
+          if ( sscanf(optarg, "%d", &(input->num_in_img)) != 1 )
+          {
+            fprintf ( stderr, "Could not use the specified value for "
+                              " the -I argument.  Using the devfault\n" );
+            input->num_in_img = 20;
           }
           break;
 

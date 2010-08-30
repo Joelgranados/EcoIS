@@ -220,7 +220,8 @@ ia_rad2deg (const double Angle)
 void
 ia_calculate_and_capture ( const Size boardSize, const int delay,
                            const char* vid_file, const int camera_id = 0,
-                           const float r_dist = -1, const float squareSize = 1 )
+                           const float r_dist = -1, const float squareSize = 1,
+                           const int num_in_imgs = 20)
 {
   /* Reflects the process state of the function. start accumulating. */
   enum proc_state { ACCUM, OUTPUT} p_state = ACCUM;
@@ -234,7 +235,6 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   Mat a_img = Mat::zeros(1,1,CV_64F); // adjusted capture
   Mat frame_buffer, trans_mat; // temporary vars
   clock_t timestamp = 0;
-  int num_ino_imgs = 20; //number of intrinsic images needed
   char image_message[30]; //output text to the image
 
   /* We start the capture.  And bail out if we can't */
@@ -314,11 +314,11 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 
       /* Create and put message on image */
       sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
-          num_ino_imgs );
+          num_in_imgs );
       ia_put_text_on_image ( image_message, o_img );
 
       /* we change state when we have enough images */
-      if ( imagePoints.size() >= num_ino_imgs )
+      if ( imagePoints.size() >= num_in_imgs )
       {
         /* get the points for the object. */
         ia_calc_object_chess_points ( boardSize, squareSize,

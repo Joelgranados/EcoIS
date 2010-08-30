@@ -34,7 +34,7 @@ main ( int argc, char** argv ) {
   if ( input->capture )
     ia_calculate_and_capture ( input->b_size, input->delay, input->vid_file,
                                input->camera_id, input->r_dist,
-                               input->squareSize );
+                               input->squareSize, input->num_in_img );
 
   else if ( input->calInt )
     ia_calculate_all ( input->images, input->b_size, &camMat, &disMat,

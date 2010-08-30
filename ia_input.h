@@ -41,6 +41,8 @@ struct ia_input
   float squareSize; //Chessboard square size
 
   int delay; //Delay between actions in the capture state.
+
+  int num_in_img; // Number of images to calculate intrinsics.
 };
 
 void ia_usage (char*);
