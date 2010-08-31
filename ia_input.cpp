@@ -59,6 +59,9 @@ ia_init_input_struct ( struct ia_input *input )
   input->images = NULL;
 
   input->num_in_img = 20;
+
+  /* default command objective will be to create a config file */
+  input->objective = NONE;
   return;
 }
 
@@ -147,7 +150,10 @@ ia_usage ( char *command )
           "-C | --camera  The camera id.\n"
           "-I | --num_int The number of images to calculate intrinsic data.\n"
           "               Defaults to 20.\n"
-          "-c | --capture Use camera capture instead of images.\n\n"
+          "-c | --capture Use camera capture instead of images.\n"
+          "OBJECTIVES\n"
+          "-k | --create_conf\n"
+          "               This will create a configuration file\n\n"
           , command);
 }
 
@@ -290,6 +296,7 @@ ia_init_input ( int argc, char **argv)
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
       {"capture",       no_argument,          0, 'c'},
+      {"create_conf",   no_argument,          0, 'k'},
       {"num_int",       required_argument,    0, 'I'},
       {"camera",        required_argument,    0, 'C'},
       {"video",         required_argument,    0, 'v'},
@@ -309,7 +316,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "hci:a:b:s:d:v:C:D:I:", long_options,
+    c = getopt_long ( argc, argv, "hcki:a:b:s:d:v:C:D:I:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -421,6 +428,10 @@ ia_init_input ( int argc, char **argv)
                               " the -I argument.  Using the devfault\n" );
             input->num_in_img = 20;
           }
+          break;
+
+        case 'k':
+          input->objective = CREATE_CONF;
           break;
 
         default:

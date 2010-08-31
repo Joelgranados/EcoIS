@@ -17,6 +17,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <cv.h>
+#include <string.h>
+
+/* command objective description */
+enum ia_obj { NONE, CREATE_CONF };
 
 //Structure holding all the user input and some initial calculations.
 struct ia_input
@@ -43,6 +47,9 @@ struct ia_input
   int delay; //Delay between actions in the capture state.
 
   int num_in_img; // Number of images to calculate intrinsics.
+
+  /* These will be the command objectives */
+  ia_obj objective;
 };
 
 void ia_usage (char*);

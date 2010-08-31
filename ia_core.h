@@ -39,3 +39,6 @@ bool ia_calculate_extrinsics ( char**, const Mat*, const Mat*, const Size,
 void ia_calculate_and_capture ( const Size, const int,  const char*,
                                 const int = 0, const float = -1,
                                 const float = 1, const int = 20 );
+
+void ia_create_conf ( const char**, const char*, const Size, const int,
+                      const float, const int, Mat*, Mat* );

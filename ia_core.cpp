@@ -16,6 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include "ia_input.h"
 #include <cv.h>
 #include <highgui.h>
 #include <stdio.h>
@@ -333,6 +334,127 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
                          camMat, disMat, rvecs, tvecs, 0 );
         p_state = OUTPUT;
       }
+    }
+  }
+}
+
+void
+ia_create_conf ( const char **images, const char *video_file,
+                 const Size boardSize, const int num_in_imgs,
+                 const float squareSize, const int delay,
+                 Mat *camMat, Mat *disMat )
+{
+  enum  { IMAGES, VIDEO, CAPTURE, NONE} input_type = NONE;
+  VideoCapture capture;
+  Mat frame_buffer;
+  Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
+  vector<Point2f> pointbuf;
+  vector<vector<Point2f> > imagePoints;
+  vector<vector<Point3f> > objectPoints;
+  clock_t timestamp = 0;
+  char image_message[30]; //output text to the image
+
+  /*lets show the process*/
+  namedWindow ( "Output", 1 );
+
+  /*setup the capture stuff*/
+  if ( images != '\0' )
+    input_type = IMAGES;
+  else if ( video_file != NULL &&
+            capture.open ( (string)video_file ) )
+    input_type = VIDEO;
+  else if ( capture.open ( 0 ) )
+    input_type = CAPTURE;
+  else
+  {
+    fprintf ( stderr, "Could not get images...\n" );
+    return;
+  }
+
+  for ( int i = 0 ; ; i++ )
+  {
+    /*get the next image*/
+    if ( input_type == CAPTURE || input_type == VIDEO )
+    {
+      if ( !capture.grab() ) break;
+      capture.retrieve ( frame_buffer );
+    }
+    else if ( input_type == IMAGES )
+    {
+      if ( images[i] != '\0' )
+        frame_buffer = imread ( images[i], 0 ); //gray scale
+      else
+        break;
+    }
+
+
+    try
+    {
+      /* show what we have */
+      imshow ( "Output", a_image );
+      if( (waitKey(50) & 255) == 27 )
+        break;
+
+      /* transform to grayscale */
+      cvtColor(frame_buffer, a_image, CV_BGR2GRAY);
+
+      /* find the chessboard points in the image and put them in pointbuf.*/
+      if ( !findChessboardCorners(a_image, boardSize, pointbuf,
+                                  CV_CALIB_CB_ADAPTIVE_THRESH) )
+        continue; //We will get another chance in the next image
+    }catch (cv::Exception)
+    {
+      /* Ugly hack.  Sometimes opencv does not like a_image */
+      a_image = Mat::zeros(1,1,CV_64F);
+      continue;
+    }
+
+    /* improve the found corners' coordinate accuracy */
+    cornerSubPix ( a_image, pointbuf, Size(11,11), Size(-1,-1),
+                   TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+
+    /* Draw chessboard on image.*/
+    drawChessboardCorners( a_image, boardSize, Mat(pointbuf), true );
+
+    /*
+     * We make sure we keep the image points.  We keep all the points when we have
+     * images.  We keep only some when in capture or video mode.
+     */
+    if ( input_type == IMAGES )
+      imagePoints.push_back(pointbuf);
+    else if ( clock() - timestamp > delay*1e-3*CLOCKS_PER_SEC )
+    {
+      imagePoints.push_back(pointbuf);
+      timestamp = clock();
+    }
+
+    /* Create and put message on image */
+    if ( num_in_imgs > 0 )
+    {
+      sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
+                num_in_imgs );
+      ia_put_text_on_image ( image_message, a_image );
+    }
+
+    /* we change state when we have enough images */
+    if ( imagePoints.size() >= num_in_imgs )
+    {
+      /* get the points for the object. */
+      ia_calc_object_chess_points ( boardSize, squareSize,
+                                    imagePoints.size(), &objectPoints);
+
+      /*
+       * calc camera matrix, dist matrix, rvector, tvector, no flags.
+       * imagesize = a_image.size() current image.
+       */
+      vector<Mat> rvecs, tvecs; // will not be used in other places.
+      calibrateCamera( objectPoints, imagePoints, a_image.size(),
+                       (*camMat), (*disMat), rvecs, tvecs, 0 );
+
+      /* finally create the configuration file */
+      ia_create_config ( disMat, camMat );
+
+      break;
     }
   }
 }

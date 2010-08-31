@@ -31,7 +31,12 @@ main ( int argc, char** argv ) {
   if ( (input = ia_init_input(argc, argv)) == NULL )
     exit(0); //an error message has already been printed
 
-  if ( input->capture )
+  if ( input->objective == CREATE_CONF )
+    ia_create_conf ( (const char**)input->images, input->vid_file,
+                     input->b_size, input->num_in_img, input->squareSize,
+                     input->delay, &camMat, &disMat );
+
+  else if ( input->capture )
     ia_calculate_and_capture ( input->b_size, input->delay, input->vid_file,
                                input->camera_id, input->r_dist,
                                input->squareSize, input->num_in_img );
