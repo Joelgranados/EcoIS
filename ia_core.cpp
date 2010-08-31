@@ -382,7 +382,7 @@ ia_create_conf ( const char **images, const char *video_file,
     else if ( input_type == IMAGES )
     {
       if ( images[i] != '\0' )
-        frame_buffer = imread ( images[i], 0 ); //gray scale
+        frame_buffer = imread ( images[i], 1 ); //gray scale
       else
         break;
     }
@@ -438,23 +438,23 @@ ia_create_conf ( const char **images, const char *video_file,
 
     /* we change state when we have enough images */
     if ( imagePoints.size() >= num_in_imgs )
-    {
-      /* get the points for the object. */
-      ia_calc_object_chess_points ( boardSize, squareSize,
-                                    imagePoints.size(), &objectPoints);
-
-      /*
-       * calc camera matrix, dist matrix, rvector, tvector, no flags.
-       * imagesize = a_image.size() current image.
-       */
-      vector<Mat> rvecs, tvecs; // will not be used in other places.
-      calibrateCamera( objectPoints, imagePoints, a_image.size(),
-                       (*camMat), (*disMat), rvecs, tvecs, 0 );
-
-      /* finally create the configuration file */
-      ia_create_config ( disMat, camMat );
-
       break;
-    }
   }
+
+  /* get the points for the object. */
+  ia_calc_object_chess_points ( boardSize, squareSize,
+                                imagePoints.size(), &objectPoints);
+
+  /*
+   * calc camera matrix, dist matrix, rvector, tvector, no flags.
+   * imagesize = a_image.size() current image.
+   */
+  vector<Mat> rvecs, tvecs; // will not be used in other places.
+  calibrateCamera( objectPoints, imagePoints, a_image.size(),
+                   (*camMat), (*disMat), rvecs, tvecs, 0 );
+
+  /* finally create the configuration file */
+  ia_create_config ( disMat, camMat );
+
+
 }
