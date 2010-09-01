@@ -344,7 +344,7 @@ ia_create_conf ( const char **images, const char *video_file,
                  const float squareSize, const int delay,
                  Mat *camMat, Mat *disMat )
 {
-  enum  { IMAGES, VIDEO, CAPTURE, NONE} input_type = NONE;
+  enum  { IMAGES, VIDEO, NONE} input_type = NONE;
   VideoCapture capture;
   Mat frame_buffer;
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
@@ -360,11 +360,10 @@ ia_create_conf ( const char **images, const char *video_file,
   /*setup the capture stuff*/
   if ( images != '\0' )
     input_type = IMAGES;
-  else if ( video_file != NULL &&
-            capture.open ( (string)video_file ) )
+  else if ( (video_file != NULL
+             && capture.open((string)video_file))
+            || capture.open(0) )
     input_type = VIDEO;
-  else if ( capture.open ( 0 ) )
-    input_type = CAPTURE;
   else
   {
     fprintf ( stderr, "Could not get images...\n" );
@@ -374,7 +373,7 @@ ia_create_conf ( const char **images, const char *video_file,
   for ( int i = 0 ; ; i++ )
   {
     /*get the next image*/
-    if ( input_type == CAPTURE || input_type == VIDEO )
+    if ( input_type == VIDEO )
     {
       if ( !capture.grab() ) break;
       capture.retrieve ( frame_buffer );
@@ -382,11 +381,10 @@ ia_create_conf ( const char **images, const char *video_file,
     else if ( input_type == IMAGES )
     {
       if ( images[i] != '\0' )
-        frame_buffer = imread ( images[i], 1 ); //gray scale
+        frame_buffer = imread ( images[i], 1 );
       else
         break;
     }
-
 
     try
     {
@@ -434,11 +432,11 @@ ia_create_conf ( const char **images, const char *video_file,
       sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
                 num_in_imgs );
       ia_put_text_on_image ( image_message, a_image );
-    }
 
-    /* we change state when we have enough images */
-    if ( imagePoints.size() >= num_in_imgs )
-      break;
+      /* we change state when we have enough images */
+      if ( (int)imagePoints.size() >= num_in_imgs )
+        break;
+    }
   }
 
   /* get the points for the object. */
@@ -455,6 +453,4 @@ ia_create_conf ( const char **images, const char *video_file,
 
   /* finally create the configuration file */
   ia_create_config ( disMat, camMat );
-
-
 }
