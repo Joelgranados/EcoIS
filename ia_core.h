@@ -40,9 +40,6 @@ void ia_calculate_and_capture ( const Size, const int,  const char*,
                                 const int = 0, const float = -1,
                                 const float = 1, const int = 20 );
 
-void ia_create_conf ( const char**, const char*, const Size, const int,
-                      const float, const int, Mat*, Mat* );
-
 int ia_video_calc_intr ( const char*, const Size, const float, const int,
                          const bool, const int,  Mat*, Mat* );
 int ia_image_calc_intr ( const char**, const Size, const float, const int,
