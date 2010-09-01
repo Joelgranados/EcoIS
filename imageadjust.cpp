@@ -16,6 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <stdio.h>
 #include <cv.h>
 #include <highgui.h>
 #include "ia_core.h"
@@ -35,18 +36,24 @@ main ( int argc, char** argv ) {
   {
     if ( input->images != NULL )
       ia_image_calc_intr ( (const char**)input->images, input->b_size,
-                           input->squareSize, input->num_in_img,
-                           &camMat, &disMat, true );
+                           input->squareSize, input->num_in_img, true,
+                           &camMat, &disMat );
 
     else if ( input->vid_file != NULL )
       ia_video_calc_intr ( input->vid_file, input->b_size, input->squareSize,
-                           input->num_in_img, &camMat, &disMat, true );
-  }
+                           input->num_in_img, true, input->delay,
+                           &camMat, &disMat );
 
-  else if ( input->capture )
-    ia_calculate_and_capture ( input->b_size, input->delay, input->vid_file,
-                               input->camera_id, input->r_dist,
-                               input->squareSize, input->num_in_img );
+    else if ( input->camera_id >= 0 )
+      ia_video_calc_intr ( NULL, input->b_size, input->squareSize,
+                           input->num_in_img, true, input->delay,
+                           &camMat, &disMat );
+
+    else
+      fprintf ( stderr, "Could not create the configuration file.\n" );
+
+
+  }
 
   else if ( input->calInt )
     ia_calculate_all ( input->images, input->b_size, &camMat, &disMat,

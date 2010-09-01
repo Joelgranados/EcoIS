@@ -41,8 +41,7 @@ ia_init_input_struct ( struct ia_input *input )
   input->disMat = Mat::zeros(5, 1, CV_64F);
   input->corDist = false;
 
-  input->capture = false; //we don't use the camera by default.
-  input->camera_id = 0;
+  input->camera_id = -1; //no camera id unless specified.
   input->vid_file = NULL;
 
   /*
@@ -144,13 +143,14 @@ ia_usage ( char *command )
           "-D | --rdist   The distance from where you want to resize.  If the\n"
           "               image gets closer, it will be adjusted.  Nothing\n"
           "               will be done if it goes farther.\n"
-          "-d | --delay   The delay time in miliseconds between events in the\n"
-          "               capture state.\n"
+          "-d | --delay   The delay time in miliseconds between events when\n"
+          "               capturing.\n"
           "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
           "-C | --camera  The camera id.\n"
           "-I | --num_int The number of images to calculate intrinsic data.\n"
           "               Defaults to 20.\n"
-          "-c | --capture Use camera capture instead of images.\n"
+          "-c | --camera_id\n"
+          "               Should specify the camera id. Default is 0.\n"
           "OBJECTIVES\n"
           "-k | --create_conf\n"
           "               This will create a configuration file\n\n"
@@ -295,10 +295,9 @@ ia_init_input ( int argc, char **argv)
       /* These options don't set a flag.
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
-      {"capture",       no_argument,          0, 'c'},
       {"create_conf",   no_argument,          0, 'k'},
+      {"camera_id",     required_argument,    0, 'c'},
       {"num_int",       required_argument,    0, 'I'},
-      {"camera",        required_argument,    0, 'C'},
       {"video",         required_argument,    0, 'v'},
       {"ininput",       required_argument,    0, 'i'},
       {"ch",            required_argument,    0, 'H'},
@@ -316,7 +315,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "hcki:a:b:s:d:v:C:D:I:", long_options,
+    c = getopt_long ( argc, argv, "hki:a:b:s:d:v:c:D:I:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -376,7 +375,11 @@ ia_init_input ( int argc, char **argv)
           break;
 
         case 'c':
-          input->capture = true;
+          if ( sscanf(optarg, "%d", &(input->camera_id)) != 1 )
+          {
+            fprintf ( stderr, "Bad value for camera id.  Using 0\n" );
+            input->camera_id = 0;
+          }
           break;
 
         case 's':
@@ -399,17 +402,7 @@ ia_init_input ( int argc, char **argv)
 
         case 'v':
           input->vid_file = (char*)optarg;
-          input->capture = true;
 
-          break;
-
-        case 'C':
-          if ( sscanf(optarg, "%d", &(input->camera_id)) != 1 )
-          {
-            fprintf ( stderr, "Bad value for camera id.  Using 0\n" );
-            input->camera_id = 0;
-          }
-          input->capture = true;
           break;
 
         case 'D':
@@ -441,8 +434,8 @@ ia_init_input ( int argc, char **argv)
       }
   }
 
-  /* We error out if there are no additional images and capture is false. */
-  if ( optind >= argc && !input->capture )
+  /* We error out if there are no additional images and no capture method. */
+  if ( optind >= argc && input->camera_id == -1 && input->vid_file == NULL )
   {
     // The option indicator is at the last argument and there are no images...
     fprintf(stderr, "You must provide a list of images\n");

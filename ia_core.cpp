@@ -342,7 +342,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
 int
 ia_image_calc_intr ( const char **images, const Size boardSize,
                      const float squareSize, const int num_in_imgs,
-                     Mat *camMat, Mat *disMat, bool create_config )
+                     const bool create_config, Mat *camMat, Mat *disMat )
 {
   fprintf ( stderr, "Entrando en image_caclc" );
   Mat frame_buffer;
@@ -419,7 +419,8 @@ ia_image_calc_intr ( const char **images, const Size boardSize,
 int
 ia_video_calc_intr ( const char *video_file, const Size boardSize,
                      const float squareSize, const int num_in_imgs,
-                     Mat *camMat, Mat *disMat, bool create_config )
+                     const bool create_config, const int delay,
+                     Mat *camMat, Mat *disMat )
 {
   fprintf ( stderr, "Entrando en video_caclc" );
   VideoCapture capture;
@@ -476,8 +477,11 @@ ia_video_calc_intr ( const char *video_file, const Size boardSize,
     drawChessboardCorners( a_image, boardSize, Mat(pointbuf), true );
 
     /* We make sure we keep the image points. */
-    imagePoints.push_back(pointbuf);
-    timestamp = clock();
+    if ( clock() - timestamp > delay*1e-3*CLOCKS_PER_SEC )
+    {
+      imagePoints.push_back(pointbuf);
+      timestamp = clock();
+    }
 
     /* Create and put message on image */
     if ( num_in_imgs > 0 )
