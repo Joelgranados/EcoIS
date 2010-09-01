@@ -1,3 +1,9 @@
 * ia_calculate_and_capture needs cleaning up.  Things we should do:
     1. Find a better way to log stuff to the stdout.
     2. Think of a better way of doing the rotation and translation adjustments.
+
+* Make the command save the images in a directory.
+* Remove the distance argument.
+* Allow user to control when to see the process.
+* There is some repeated logic in ia_core.cpp, fix that!!!!.
+* Rename the initial calculate function to demo or something like "demo"
