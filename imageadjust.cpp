@@ -32,9 +32,16 @@ main ( int argc, char** argv ) {
     exit(0); //an error message has already been printed
 
   if ( input->objective == CREATE_CONF )
-    ia_create_conf ( (const char**)input->images, input->vid_file,
-                     input->b_size, input->num_in_img, input->squareSize,
-                     input->delay, &camMat, &disMat );
+  {
+    if ( input->images != NULL )
+      ia_image_calc_intr ( (const char**)input->images, input->b_size,
+                           input->squareSize, input->num_in_img,
+                           &camMat, &disMat, true );
+
+    else if ( input->vid_file != NULL )
+      ia_video_calc_intr ( input->vid_file, input->b_size, input->squareSize,
+                           input->num_in_img, &camMat, &disMat, true );
+  }
 
   else if ( input->capture )
     ia_calculate_and_capture ( input->b_size, input->delay, input->vid_file,

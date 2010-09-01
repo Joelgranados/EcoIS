@@ -338,6 +338,177 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   }
 }
 
+/* returns -1 in failure*/
+int
+ia_image_calc_intr ( const char **images, const Size boardSize,
+                     const float squareSize, const int num_in_imgs,
+                     Mat *camMat, Mat *disMat, bool create_config )
+{
+  fprintf ( stderr, "Entrando en image_caclc" );
+  Mat frame_buffer;
+  Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
+  vector<Point2f> pointbuf;
+  vector<vector<Point2f> > imagePoints;
+  vector<vector<Point3f> > objectPoints;
+  char image_message[30]; //output text to the image
+
+  if ( images == '\0' )
+    return -1;
+
+  /*lets show the process*/
+  namedWindow ( "Output", 1 );
+
+  for ( int i = 0 ; images[i] != '\0' ; i++ )
+  {
+    /* get next image*/
+    frame_buffer = imread ( images[i], 1 );
+
+    try
+    {
+      /* show what we have */
+      imshow ( "Output", a_image );
+      if( (waitKey(50) & 255) == 27 )
+        break;
+
+      /* transform to grayscale */
+      cvtColor(frame_buffer, a_image, CV_BGR2GRAY);
+
+      /* find the chessboard points in the image and put them in pointbuf.*/
+      if ( !findChessboardCorners(a_image, boardSize, pointbuf,
+                                  CV_CALIB_CB_ADAPTIVE_THRESH) )
+        continue; //We will get another chance in the next image
+    }catch (cv::Exception){continue;}
+
+    /* improve the found corners' coordinate accuracy */
+    cornerSubPix ( a_image, pointbuf, Size(11,11), Size(-1,-1),
+                   TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+
+    /* Draw chessboard on image.*/
+    drawChessboardCorners ( a_image, boardSize, Mat(pointbuf), true );
+
+    /* We make sure we keep the image points. */
+    imagePoints.push_back(pointbuf);
+
+    /* Create and put message on image */
+    sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
+              num_in_imgs );
+    ia_put_text_on_image ( image_message, a_image );
+
+    /* we change state when we have enough images */
+    if ( num_in_imgs > 0 && (int)imagePoints.size() >= num_in_imgs )
+      break;
+  }
+
+  /* get the points for the object. */
+  ia_calc_object_chess_points ( boardSize, squareSize,
+                                imagePoints.size(), &objectPoints);
+
+  /*
+   * calc camera matrix, dist matrix, rvector, tvector, no flags.
+   * imagesize = a_image.size() current image.
+   */
+  vector<Mat> rvecs, tvecs; // will not be used in other places.
+  calibrateCamera( objectPoints, imagePoints, a_image.size(),
+                   (*camMat), (*disMat), rvecs, tvecs, 0 );
+
+  /* finally create the configuration file */
+  if ( create_config )
+    ia_create_config ( disMat, camMat );
+}
+
+int
+ia_video_calc_intr ( const char *video_file, const Size boardSize,
+                     const float squareSize, const int num_in_imgs,
+                     Mat *camMat, Mat *disMat, bool create_config )
+{
+  fprintf ( stderr, "Entrando en video_caclc" );
+  VideoCapture capture;
+  Mat frame_buffer;
+  Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
+  vector<Point2f> pointbuf;
+  vector<vector<Point2f> > imagePoints;
+  vector<vector<Point3f> > objectPoints;
+  clock_t timestamp = 0;
+  char image_message[30]; //output text to the image
+
+  /*lets show the process*/
+  namedWindow ( "Output", 1 );
+
+  /*setup the capture stuff*/
+  if ( video_file != NULL )
+    capture.open( (string)video_file );
+  if ( !capture.isOpened() )
+    capture.open(0);
+  if ( !capture.isOpened() )
+    return -1;
+
+  while (true)
+  {
+    if ( !capture.grab() ) break;
+    capture.retrieve ( frame_buffer );
+
+    try
+    {
+      /* show what we have */
+      imshow ( "Output", a_image );
+      if( (waitKey(50) & 255) == 27 )
+        break;
+
+      /* transform to grayscale */
+      cvtColor(frame_buffer, a_image, CV_BGR2GRAY);
+
+      /* find the chessboard points in the image and put them in pointbuf.*/
+      if ( !findChessboardCorners(a_image, boardSize, pointbuf,
+                                  CV_CALIB_CB_ADAPTIVE_THRESH) )
+        continue; //We will get another chance in the next image
+    }catch (cv::Exception)
+    {
+      /* Ugly hack.  Sometimes opencv does not like a_image */
+      a_image = Mat::zeros(1,1,CV_64F);
+      continue;
+    }
+
+    /* improve the found corners' coordinate accuracy */
+    cornerSubPix ( a_image, pointbuf, Size(11,11), Size(-1,-1),
+                   TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+
+    /* Draw chessboard on image.*/
+    drawChessboardCorners( a_image, boardSize, Mat(pointbuf), true );
+
+    /* We make sure we keep the image points. */
+    imagePoints.push_back(pointbuf);
+    timestamp = clock();
+
+    /* Create and put message on image */
+    if ( num_in_imgs > 0 )
+    {
+      sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
+                num_in_imgs );
+      ia_put_text_on_image ( image_message, a_image );
+
+      /* we change state when we have enough images */
+      if ( (int)imagePoints.size() >= num_in_imgs )
+        break;
+    }
+  }
+
+  /* get the points for the object. */
+  ia_calc_object_chess_points ( boardSize, squareSize,
+                                imagePoints.size(), &objectPoints);
+
+  /*
+   * calc camera matrix, dist matrix, rvector, tvector, no flags.
+   * imagesize = a_image.size() current image.
+   */
+  vector<Mat> rvecs, tvecs; // will not be used in other places.
+  calibrateCamera( objectPoints, imagePoints, a_image.size(),
+                   (*camMat), (*disMat), rvecs, tvecs, 0 );
+
+  /* finally create the configuration file */
+  if ( create_config )
+    ia_create_config ( disMat, camMat );
+}
+
 void
 ia_create_conf ( const char **images, const char *video_file,
                  const Size boardSize, const int num_in_imgs,
