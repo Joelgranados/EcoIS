@@ -37,7 +37,7 @@ main ( int argc, char** argv ) {
     if ( input->images != NULL )
       ia_image_calc_intr ( (const char**)input->images, input->b_size,
                            input->squareSize, input->num_in_img, true,
-                           &camMat, &disMat );
+                           &camMat, &disMat, &rvecs, &tvecs );
 
     else if ( input->vid_file != NULL )
       ia_video_calc_intr ( input->vid_file, input->b_size, input->squareSize,

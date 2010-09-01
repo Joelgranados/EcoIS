@@ -43,4 +43,7 @@ void ia_calculate_and_capture ( const Size, const int,  const char*,
 int ia_video_calc_intr ( const char*, const Size, const float, const int,
                          const bool, const int,  Mat*, Mat* );
 int ia_image_calc_intr ( const char**, const Size, const float, const int,
-                         const bool, Mat*, Mat* );
+                         const bool, Mat*, Mat*, vector<Mat>*, vector<Mat>* );
+
+void ia_imageadjsut ( const char**, const Size, const float,
+                      const Mat* = NULL, const Mat* = NULL );
