@@ -153,7 +153,9 @@ ia_usage ( char *command )
           "               Should specify the camera id. Default is 0.\n"
           "OBJECTIVES\n"
           "-k | --create_conf\n"
-          "               This will create a configuration file\n\n"
+          "               This will create a configuration file\n"
+          "-a | --image_adjust\n"
+          "               This will only accept a list of images.\n\n"
           , command);
 }
 
@@ -296,6 +298,7 @@ ia_init_input ( int argc, char **argv)
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
       {"create_conf",   no_argument,          0, 'k'},
+      {"image_adjust",  no_argument,          0, 'a'},
       {"camera_id",     required_argument,    0, 'c'},
       {"num_int",       required_argument,    0, 'I'},
       {"video",         required_argument,    0, 'v'},
@@ -315,7 +318,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "hki:a:b:s:d:v:c:D:I:", long_options,
+    c = getopt_long ( argc, argv, "hkai:b:s:d:v:c:D:I:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -425,6 +428,10 @@ ia_init_input ( int argc, char **argv)
 
         case 'k':
           input->objective = CREATE_CONF;
+          break;
+
+        case 'a':
+          input->objective = IMAGE_ADJUST;
           break;
 
         default:

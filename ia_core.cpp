@@ -347,7 +347,6 @@ ia_image_calc_intr ( const char **images, const Size boardSize,
                      const bool create_config, Mat *camMat, Mat *disMat,
                      vector<Mat> *rvecs, vector<Mat> *tvecs)
 {
-  fprintf ( stderr, "Entrando en image_caclc" );
   Mat frame_buffer;
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
   vector<Point2f> pointbuf;
@@ -424,7 +423,6 @@ ia_video_calc_intr ( const char *video_file, const Size boardSize,
                      const bool create_config, const int delay,
                      Mat *camMat, Mat *disMat )
 {
-  fprintf ( stderr, "Entrando en video_caclc" );
   VideoCapture capture;
   Mat frame_buffer;
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
@@ -584,10 +582,11 @@ ia_imageadjust ( const char **images, const Size boardSize,
 
   /* We transform all the images and put them in a new dir */
   //FIXME: this is probably better at the beginning of the function.
-  sprintf ( dirname, "Adjusted%d", getpid() );
-  if ( mkdir ( dirname, 0777 ) == -1 )
-    return; //FIXME: output a message.
+  //sprintf ( dirname, "Adjusted%d", getpid() );
+  //if ( mkdir ( dirname, 0777 ) == -1 )
+  //  return; //FIXME: output a message.
 
+  namedWindow ( "Adjusted", 1 );
   for ( int i = 0 ; images[i] != '\0' ; i++ )
   {
     r_t = rvecs[i];
@@ -611,8 +610,11 @@ ia_imageadjust ( const char **images, const Size boardSize,
     else
       frame_buffer.copyTo(a_img);
 
-    sprintf ( filename, "%s/%d.png", dirname, i );
-    cvSaveImage ( filename, &a_img );
+    //sprintf ( filename, "%s/%d.png", dirname, i );
+    //cvSaveImage ( filename, &a_img );
+    imshow ( "Adjusted", a_img );
+    if( (waitKey(1000) & 255) == 27 )
+      break;
   }
 
 }

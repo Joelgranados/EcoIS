@@ -45,5 +45,5 @@ int ia_video_calc_intr ( const char*, const Size, const float, const int,
 int ia_image_calc_intr ( const char**, const Size, const float, const int,
                          const bool, Mat*, Mat*, vector<Mat>*, vector<Mat>* );
 
-void ia_imageadjsut ( const char**, const Size, const float,
+void ia_imageadjust ( const char**, const Size, const float,
                       const Mat* = NULL, const Mat* = NULL );

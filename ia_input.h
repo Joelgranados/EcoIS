@@ -20,7 +20,7 @@
 #include <string.h>
 
 /* command objective description */
-enum ia_obj { NONE, CREATE_CONF };
+enum ia_obj { NONE, CREATE_CONF, IMAGE_ADJUST };
 
 //Structure holding all the user input and some initial calculations.
 struct ia_input

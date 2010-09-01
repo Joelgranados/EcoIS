@@ -51,17 +51,10 @@ main ( int argc, char** argv ) {
 
     else
       fprintf ( stderr, "Could not create the configuration file.\n" );
-
-
+  } else if (input->objective == IMAGE_ADJUST )
+  {
+    //FIXME : we still need to handle the case were the user provides a config
+    ia_imageadjust ( (const char**)input->images, input->b_size,
+                     input->squareSize );
   }
-
-  else if ( input->calInt )
-    ia_calculate_all ( input->images, input->b_size, &camMat, &disMat,
-                       &rvecs, &tvecs, input->squareSize );
-
-  else  // We used the intrinsics from the file if the calculation is avoided
-    ia_calculate_extrinsics ( input->images, &(input->camMat), &(input->disMat),
-                              input->b_size, &rvecs, &tvecs,
-                              input->squareSize );
-
 }
