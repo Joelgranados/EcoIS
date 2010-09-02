@@ -397,6 +397,8 @@ ia_imageadjust ( const char **images, const Size boardSize,
   }
   else
   {
+    camMat = *cam;
+    disMat = *dis;
     /* get the points for the object. */
     ia_calc_object_chess_points ( boardSize, squareSize, 1, &objectPoints);
 
