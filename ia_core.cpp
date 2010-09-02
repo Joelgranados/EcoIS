@@ -23,6 +23,7 @@
 #include <highgui.h>
 #include <stdio.h>
 #include <time.h>
+#include <sstream>
 
 using namespace cv;
 
@@ -363,7 +364,7 @@ ia_image_calc_intr ( const char **images, const Size boardSize,
   for ( int i = 0 ; images[i] != '\0' ; i++ )
   {
     /* get next image*/
-    frame_buffer = imread ( images[i], 1 );
+    frame_buffer = imread ( images[i] );
 
     try
     {
@@ -520,11 +521,12 @@ ia_imageadjust ( const char **images, const Size boardSize,
 {
   vector<Mat> rvecs, tvecs;
   Mat camMat, disMat;
-  Mat frame_buffer, r_t, t_t, trans_mat; //temporary Mats
+  Mat r_t, t_t, trans_mat; //temporary Mats
   Mat o_img, a_img;
   vector<Point2f> pointbuf;
   vector<vector<Point3f> > objectPoints;
-  char dirname[30], filename[60];
+  std::string dirname, filename;
+  std::stringstream ss;
   double maxHeight = 0;
 
   if ( dis == NULL || cam == NULL )
@@ -546,17 +548,16 @@ ia_imageadjust ( const char **images, const Size boardSize,
     /* create the rvecs and tvecs vectors. */
     for ( int i = 0 ; images[i] != '\0' ; i++ )
     {
-
       /* get next image*/
-      frame_buffer = imread ( images[i], 1 );
+      o_img = imread ( images[i] );
 
       try
       {
         /* transform to grayscale */
-        cvtColor(frame_buffer, o_img, CV_BGR2GRAY);
+        cvtColor(o_img, a_img, CV_BGR2GRAY);
 
         /* find the chessboard points in the image and put them in pointbuf.*/
-        if ( !findChessboardCorners(o_img, boardSize, pointbuf,
+        if ( !findChessboardCorners(a_img, boardSize, pointbuf,
                                     CV_CALIB_CB_ADAPTIVE_THRESH) )
         {
           fprintf ( stderr, "Did not find chessboard for %s\n", images[i] );
@@ -569,7 +570,7 @@ ia_imageadjust ( const char **images, const Size boardSize,
       }
 
       /* improve the found corners' coordinate accuracy */
-      cornerSubPix ( o_img, pointbuf, Size(11,11), Size(-1,-1),
+      cornerSubPix ( a_img, pointbuf, Size(11,11), Size(-1,-1),
                      TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
       /* calc the rvec and tvec.  Note that we use the camMat and disMat*/
@@ -588,18 +589,17 @@ ia_imageadjust ( const char **images, const Size boardSize,
 
   /* We transform all the images and put them in a new dir */
   //FIXME: this is probably better at the beginning of the function.
-  //sprintf ( dirname, "Adjusted%d", getpid() );
-  //if ( mkdir ( dirname, 0777 ) == -1 )
-  //  return; //FIXME: output a message.
+  ss << getpid();
+  dirname = "Adjusted" + ss.str();
+  if ( mkdir ( dirname.data(), 0777 ) == -1 )
+    return; //FIXME: output a message.
 
-  namedWindow ( "Adjusted", 1 );
   for ( int i = 0 ; images[i] != '\0' ; i++ )
   {
     r_t = rvecs[i];
     t_t = tvecs[i];
     /* get next image*/
-    frame_buffer = imread ( images[i], 1 );
-    frame_buffer.copyTo(o_img);
+    o_img = imread ( images[i] );
 
     /* Calc rotation transformation matrix. First arg is center */
     trans_mat = getRotationMatrix2D ( Point(o_img.size().width/2,
@@ -607,20 +607,15 @@ ia_imageadjust ( const char **images, const Size boardSize,
                                       ia_rad2deg(r_t.at<double>(0,2)), 1 );
 
     /* Perform the rotation and put it in a_img */
-    warpAffine ( o_img, frame_buffer, trans_mat, o_img.size() );
+    warpAffine ( o_img, a_img, trans_mat, o_img.size() );
 
     /* calculate the scaling size. t_t(0.2)/maxHeight = ratio */
-    if ( 0 < maxHeight && t_t.at<double>(0,2) < maxHeight )
-      resize ( frame_buffer, a_img, Size(0,0),
-               t_t.at<double>(0,2)/maxHeight, t_t.at<double>(0,2)/maxHeight );
-    else
-      frame_buffer.copyTo(a_img);
+    resize ( a_img, o_img, Size(0,0), // we assume a correct maxHeight
+             t_t.at<double>(0,2)/maxHeight, t_t.at<double>(0,2)/maxHeight );
 
-    //sprintf ( filename, "%s/%d.png", dirname, i );
-    //cvSaveImage ( filename, &a_img );
-    imshow ( "Adjusted", a_img );
-    if( (waitKey(1000) & 255) == 27 )
-      break;
+    filename = images[i];
+    filename = dirname + "/" + filename.substr( filename.rfind('/')+1 );
+    imwrite ( filename, o_img );
   }
 
 }
