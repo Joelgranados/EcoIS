@@ -98,10 +98,10 @@ ia_print_input_struct ( struct ia_input *input )
       //file name
       input->iif,
       //camera distortion
-      dm.at<double>(0,1), dm.at<double>(0,1), dm.at<double>(0,2),
+      dm.at<double>(0,0), dm.at<double>(0,1), dm.at<double>(0,2),
         dm.at<double>(0,3), dm.at<double>(0,4),
       //camera matrix
-      cm.at<double>(0,0),cm.at<double>(0,1),cm.at<double>(0,3),
+      cm.at<double>(0,0),cm.at<double>(0,1),cm.at<double>(0,2),
       cm.at<double>(1,0),cm.at<double>(1,1),cm.at<double>(1,2),
       cm.at<double>(2,0),cm.at<double>(2,1),cm.at<double>(2,2),
       //Undistort flag
@@ -189,16 +189,16 @@ ia_get_intrinsics_from_file ( const char *filename, Mat *camMat, Mat *disMat)
   /* we parse the file */
   while ( getline(&line, &len, fp) != -1 )
   {
-    /* We parse the 5 distorition values */
+    /* We parse the 5 distortion values */
     if ( !dist_found
-         && (sscanf( line, "distortion %1f %1f %1f %1f %1f",
+         && (sscanf( line, "distortion %le %le %le %le %le",
                      &t_dist[0], &t_dist[1], &t_dist[2], &t_dist[3], &t_dist[4] )
              == 5) )
       dist_found = true;
 
     /* We parse the 9 cameramatrix values */
     if ( !cammat_found
-         && (sscanf( line, "cameramatrix %1f %1f %1f %1f %1f %1f %1f %f %1f",
+         && (sscanf( line, "cameramatrix %le %le %le %le %le %le %le %le %le",
                      &t_cam[0][0], &t_cam[0][1], &t_cam[0][2],
                      &t_cam[1][0], &t_cam[1][1], &t_cam[1][2],
                      &t_cam[2][0], &t_cam[2][1], &t_cam[2][2] )
