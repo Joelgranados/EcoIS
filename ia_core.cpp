@@ -525,11 +525,19 @@ ia_imageadjust ( const char **images, const Size boardSize,
   vector<Point2f> pointbuf;
   vector<vector<Point3f> > objectPoints;
   char dirname[30], filename[60];
+  double maxHeight = 0;
 
   if ( dis == NULL || cam == NULL )
+  {
     /* When we dont have intrinsics we calculate them */
     ia_image_calc_intr ( images, boardSize, squareSize, -1, false,
                          &camMat, &disMat, &rvecs, &tvecs );
+
+    /* we calculate the maximum height from the tvecs.*/
+    for ( int i = 0 ; i < tvecs.size() ; i++ )
+      if ( maxHeight < tvecs[i].at<double>(0,2) )
+        maxHeight = tvecs[i].at<double>(0,2);
+  }
   else
   {
     /* get the points for the object. */
@@ -571,14 +579,12 @@ ia_imageadjust ( const char **images, const Size boardSize,
       /* append them to the respective vector */
       rvecs.push_back ( r_t );
       tvecs.push_back ( t_t );
+
+      /* we calculate the max distance from image plane at the same time */
+      if ( maxHeight < t_t.at<double>(0,2) )
+        maxHeight = t_t.at<double>(0,2);
     }
   }
-
-  /* we calculate the maximum height from the tvecs.*/
-  double maxHeight = 0;
-  for ( int i = 0 ; i < tvecs.size() ; i++ )
-    if ( maxHeight < tvecs[i].at<double>(0,2) )
-      maxHeight = tvecs[i].at<double>(0,2);
 
   /* We transform all the images and put them in a new dir */
   //FIXME: this is probably better at the beginning of the function.
