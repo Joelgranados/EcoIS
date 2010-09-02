@@ -51,10 +51,15 @@ main ( int argc, char** argv ) {
 
     else
       fprintf ( stderr, "Could not create the configuration file.\n" );
-  } else if (input->objective == IMAGE_ADJUST )
+
+  }else if (input->objective == IMAGE_ADJUST )
   {
     //FIXME : we still need to handle the case were the user provides a config
     ia_imageadjust ( (const char**)input->images, input->b_size,
                      input->squareSize );
-  }
+
+  }else if (input->objective == VIDEO_DEMO )
+    ia_calculate_and_capture ( input->b_size, input->delay, input->vid_file,
+                               input->camera_id, input->squareSize,
+                               input->num_in_img );
 }
