@@ -225,8 +225,7 @@ ia_rad2deg (const double Angle)
 void
 ia_calculate_and_capture ( const Size boardSize, const int delay,
                            const char* vid_file, const int camera_id = 0,
-                           const float r_dist = -1, const float squareSize = 1,
-                           const int num_in_imgs = 20)
+                           const float squareSize = 1, const int num_in_imgs=20)
 {
   /* Reflects the process state of the function. start accumulating. */
   enum proc_state { ACCUM, OUTPUT} p_state = ACCUM;
@@ -241,6 +240,7 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   Mat frame_buffer, trans_mat; // temporary vars
   clock_t timestamp = 0;
   char image_message[30]; //output text to the image
+  float r_dist = 0;
 
   /* We start the capture.  And bail out if we can't */
   if ( vid_file != NULL
@@ -336,6 +336,12 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
         vector<Mat> rvecs, tvecs; // will not be used in other places.
         calibrateCamera( objectPoints, imagePoints, o_img.size(),
                          camMat, disMat, rvecs, tvecs, 0 );
+
+        /* we calculate the maximum height from the tvecs.*/
+        for ( int i = 0 ; i < tvecs.size() ; i++ )
+          if ( r_dist < tvecs[i].at<double>(0,2) )
+            r_dist = tvecs[i].at<double>(0,2);
+
         p_state = OUTPUT;
       }
     }
@@ -621,6 +627,5 @@ ia_imageadjust ( const char **images, const Size boardSize,
     filename = dirname + "/" + filename.substr( filename.rfind('/')+1 );
     imwrite ( filename, o_img );
   }
-
 }
 
