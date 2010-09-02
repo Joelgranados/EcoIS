@@ -529,6 +529,16 @@ ia_imageadjust ( const char **images, const Size boardSize,
   std::stringstream ss;
   double maxHeight = 0;
 
+  /* We transform all the images and put them in a new dir */
+  ss << getpid();
+  dirname = "Adjusted" + ss.str();
+  if ( mkdir ( dirname.data(), 0777 ) == -1 )
+  {
+    fprintf ( stderr, "Could not create directory %s\n", dirname.data() );
+    return;
+  }
+
+
   if ( dis == NULL || cam == NULL )
   {
     /* When we dont have intrinsics we calculate them */
@@ -586,13 +596,6 @@ ia_imageadjust ( const char **images, const Size boardSize,
         maxHeight = t_t.at<double>(0,2);
     }
   }
-
-  /* We transform all the images and put them in a new dir */
-  //FIXME: this is probably better at the beginning of the function.
-  ss << getpid();
-  dirname = "Adjusted" + ss.str();
-  if ( mkdir ( dirname.data(), 0777 ) == -1 )
-    return; //FIXME: output a message.
 
   for ( int i = 0 ; images[i] != '\0' ; i++ )
   {
