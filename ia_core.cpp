@@ -28,7 +28,7 @@
 
 using namespace cv;
 
-/* Puts object vector in objectPoints */
+/* Helper function: Puts object vector in objectPoints */
 bool
 ia_calc_object_chess_points ( const Size boardSize, const int squareSize,
                               const int numElems,
@@ -47,7 +47,9 @@ ia_calc_object_chess_points ( const Size boardSize, const int squareSize,
   return true;
 }
 
-void ia_put_text_on_image ( const char* message, Mat& image )
+/* Helper function.*/
+void
+ia_put_text_on_image ( const char* message, Mat& image )
 {
   string msg;
   int baseLine = 0;
@@ -58,6 +60,7 @@ void ia_put_text_on_image ( const char* message, Mat& image )
   putText ( image, msg, orig, 1, 1, Scalar(0,0,255) );
 }
 
+/* Helper function. */
 double
 ia_rad2deg (const double Angle)
 {
