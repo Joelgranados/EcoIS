@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <sstream>
+#include <iostream>
 
 using namespace cv;
 
@@ -534,7 +535,7 @@ ia_imageadjust ( const char **images, const Size boardSize,
   dirname = "Adjusted" + ss.str();
   if ( mkdir ( dirname.data(), 0777 ) == -1 )
   {
-    fprintf ( stderr, "Could not create directory %s\n", dirname.data() );
+    std::cerr << "Could not create directory " << dirname << "\n" ;
     return;
   }
 
@@ -570,12 +571,12 @@ ia_imageadjust ( const char **images, const Size boardSize,
         if ( !findChessboardCorners(a_img, boardSize, pointbuf,
                                     CV_CALIB_CB_ADAPTIVE_THRESH) )
         {
-          fprintf ( stderr, "Did not find chessboard for %s\n", images[i] );
+          std::cerr << "Did not find chessboard for " << images[i] << "\n";
           continue;
         }
       }catch (cv::Exception)
       {
-        fprintf ( stderr, "Error while analyzing %s\n", images[i] );
+        std::cerr << "Error while analyzing " << images[i] << "\n";
         continue;
       }
 
