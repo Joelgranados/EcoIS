@@ -68,6 +68,28 @@ ia_rad2deg (const double Angle)
   return Angle * ratio;
 }
 
+/* Helper function. returns -1 when unsuccessfull. this is repeated a lot*/
+int
+ia_find_chessboard_points( const Mat *image, const Size boardSize,
+                           vector<Point2f> *pointbuf )
+{
+  Mat t_img; //temp image
+  try
+  {
+    /* transform to grayscale */
+    cvtColor((*image), t_img, CV_BGR2GRAY);
+
+    /* find the chessboard points in the image and put them in pointbuf.*/
+    if ( !findChessboardCorners(t_img, boardSize, (*pointbuf),
+                                CV_CALIB_CB_ADAPTIVE_THRESH) )
+      return -1;
+
+    /* improve the found corners' coordinate accuracy */
+    cornerSubPix ( t_img, (*pointbuf), Size(11,11), Size(-1,-1),
+                   TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+  }catch (cv::Exception){return -1;}
+}
+
 void
 ia_calculate_and_capture ( const Size boardSize, const int delay,
                            const char* vid_file, const int camera_id = 0,
@@ -114,20 +136,9 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
     if( (waitKey(50) & 255) == 27 )
       break;
 
-    try
-    {
-      /* transform to grayscale */
-      cvtColor(frame_buffer, o_img, CV_BGR2GRAY);
-
-      /* find the chessboard points in the image and put them in pointbuf.*/
-      if ( !findChessboardCorners(o_img, boardSize, pointbuf,
-                                  CV_CALIB_CB_ADAPTIVE_THRESH) )
-        continue; //We will get another chance in the next image
-    }catch (cv::Exception){continue;}
-
-    /* improve the found corners' coordinate accuracy */
-    cornerSubPix ( o_img, pointbuf, Size(11,11), Size(-1,-1),
-                   TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+    frame_buffer.copyTo(o_img); //can't use frame_buffer.
+    if ( ia_find_chessboard_points ( &o_img, boardSize, &pointbuf ) == -1 )
+      continue;
 
     /* Draw chessboard on image.*/
     drawChessboardCorners( o_img, boardSize, Mat(pointbuf), true );
@@ -201,7 +212,6 @@ ia_image_calc_intr ( const char **images, const Size boardSize,
                      const bool create_config, Mat *camMat, Mat *disMat,
                      vector<Mat> *rvecs, vector<Mat> *tvecs)
 {
-  Mat frame_buffer;
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
   vector<Point2f> pointbuf;
   vector<vector<Point2f> > imagePoints;
@@ -217,30 +227,20 @@ ia_image_calc_intr ( const char **images, const Size boardSize,
   for ( int i = 0 ; images[i] != '\0' ; i++ )
   {
     /* get next image*/
-    frame_buffer = imread ( images[i] );
+    a_image = imread ( images[i] );
 
-    try
-    {
-      /* show what we have */
-      imshow ( "Output", a_image );
-      if( (waitKey(50) & 255) == 27 )
-        break;
-
-      /* transform to grayscale */
-      cvtColor(frame_buffer, a_image, CV_BGR2GRAY);
-
-      /* find the chessboard points in the image and put them in pointbuf.*/
-      if ( !findChessboardCorners(a_image, boardSize, pointbuf,
-                                  CV_CALIB_CB_ADAPTIVE_THRESH) )
-        continue; //We will get another chance in the next image
-    }catch (cv::Exception){continue;}
-
-    /* improve the found corners' coordinate accuracy */
-    cornerSubPix ( a_image, pointbuf, Size(11,11), Size(-1,-1),
-                   TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+    if ( ia_find_chessboard_points ( &a_image, boardSize, &pointbuf ) == -1 )
+      continue;
 
     /* Draw chessboard on image.*/
     drawChessboardCorners ( a_image, boardSize, Mat(pointbuf), true );
+
+    /* show what we found */
+    try{
+      imshow ( "Output", a_image );
+    }catch (cv::Exception){continue;}
+    if( (waitKey(50) & 255) == 27 )
+      break;
 
     /* We make sure we keep the image points. */
     imagePoints.push_back(pointbuf);
@@ -250,7 +250,7 @@ ia_image_calc_intr ( const char **images, const Size boardSize,
               num_in_imgs );
     ia_put_text_on_image ( image_message, a_image );
 
-    /* we change state when we have enough images */
+    /* we break when we have enough images */
     if ( num_in_imgs > 0 && (int)imagePoints.size() >= num_in_imgs )
       break;
   }
@@ -302,30 +302,10 @@ ia_video_calc_intr ( const char *video_file, const Size boardSize,
     if ( !capture.grab() ) break;
     capture.retrieve ( frame_buffer );
 
-    try
-    {
-      /* show what we have */
-      imshow ( "Output", a_image );
-      if( (waitKey(50) & 255) == 27 )
-        break;
+    frame_buffer.copyTo ( a_image ); // we cant use frame_buffer.
 
-      /* transform to grayscale */
-      cvtColor(frame_buffer, a_image, CV_BGR2GRAY);
-
-      /* find the chessboard points in the image and put them in pointbuf.*/
-      if ( !findChessboardCorners(a_image, boardSize, pointbuf,
-                                  CV_CALIB_CB_ADAPTIVE_THRESH) )
-        continue; //We will get another chance in the next image
-    }catch (cv::Exception)
-    {
-      /* Ugly hack.  Sometimes opencv does not like a_image */
-      a_image = Mat::zeros(1,1,CV_64F);
+    if ( ia_find_chessboard_points ( &a_image, boardSize, &pointbuf ) == -1 )
       continue;
-    }
-
-    /* improve the found corners' coordinate accuracy */
-    cornerSubPix ( a_image, pointbuf, Size(11,11), Size(-1,-1),
-                   TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
     /* Draw chessboard on image.*/
     drawChessboardCorners( a_image, boardSize, Mat(pointbuf), true );
@@ -347,6 +327,18 @@ ia_video_calc_intr ( const char *video_file, const Size boardSize,
       /* we change state when we have enough images */
       if ( (int)imagePoints.size() >= num_in_imgs )
         break;
+    }
+
+    /* show what we have */
+    try{
+      imshow ( "Output", a_image );
+      if( (waitKey(50) & 255) == 27 )
+        break;
+    }catch (cv::Exception)
+    {
+      /* Ugly hack.  Sometimes opencv does not like a_image */
+      a_image = Mat::zeros(1,1,CV_64F);
+      continue;
     }
   }
 
@@ -414,27 +406,11 @@ ia_imageadjust ( const char **images, const Size boardSize,
       /* get next image*/
       o_img = imread ( images[i] );
 
-      try
+      if ( ia_find_chessboard_points ( &o_img, boardSize, &pointbuf ) == -1 )
       {
-        /* transform to grayscale */
-        cvtColor(o_img, a_img, CV_BGR2GRAY);
-
-        /* find the chessboard points in the image and put them in pointbuf.*/
-        if ( !findChessboardCorners(a_img, boardSize, pointbuf,
-                                    CV_CALIB_CB_ADAPTIVE_THRESH) )
-        {
-          std::cerr << "Did not find chessboard for " << images[i] << "\n";
-          continue;
-        }
-      }catch (cv::Exception)
-      {
-        std::cerr << "Error while analyzing " << images[i] << "\n";
+        std::cerr << "Did not find chessboard for " << images[i] << "\n";
         continue;
       }
-
-      /* improve the found corners' coordinate accuracy */
-      cornerSubPix ( a_img, pointbuf, Size(11,11), Size(-1,-1),
-                     TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
 
       /* calc the rvec and tvec.  Note that we use the camMat and disMat*/
       solvePnP ( (Mat)objectPoints[0], (Mat)pointbuf, camMat, disMat,
@@ -474,4 +450,3 @@ ia_imageadjust ( const char **images, const Size boardSize,
     imwrite ( filename, o_img );
   }
 }
-

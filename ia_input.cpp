@@ -142,7 +142,7 @@ ia_usage ( char *command )
           "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
           "-C | --camera  The camera id.\n"
           "-I | --num_int The number of images to calculate intrinsic data.\n"
-          "               Defaults to 20.\n"
+          "               Defaults to 20. -1 means use all images/frames.\n"
           "-c | --camera_id\n"
           "               Should specify the camera id. Default is 0.\n"
           "OBJECTIVES\n"
