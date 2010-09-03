@@ -2,8 +2,4 @@
     1. Find a better way to log stuff to the stdout.
     
 * Allow user to control when to see the process.
-* There is an issue when calling with a configuration file.  I think it
-  has to do with the fact that the values in the config file don't fall
-  in the correct place in the camera matrix.  But without a config it seems to
-  work fine.
 * Rename the initial calculate function to demo or something like "demo"

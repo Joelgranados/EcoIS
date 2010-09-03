@@ -419,8 +419,8 @@ ia_imageadjust ( const char **images, const Size boardSize,
                  r_t, t_t );
 
       /* append them to the respective vector */
-      rvecs.push_back ( r_t );
-      tvecs.push_back ( t_t );
+      rvecs.push_back ( r_t.clone() );
+      tvecs.push_back ( t_t.clone() );
 
       /* we calculate the max distance from image plane at the same time */
       if ( maxHeight < t_t.at<double>(0,2) )
@@ -430,22 +430,21 @@ ia_imageadjust ( const char **images, const Size boardSize,
 
   for ( int i = 0 ; images[i] != '\0' ; i++ )
   {
-    r_t = rvecs[i];
-    t_t = tvecs[i];
     /* get next image*/
     o_img = imread ( images[i] );
 
     /* Calc rotation transformation matrix. First arg is center */
     trans_mat = getRotationMatrix2D ( Point(o_img.size().width/2,
                                             o_img.size().height/2),
-                                      ia_rad2deg(r_t.at<double>(0,2)), 1 );
+                                      ia_rad2deg(rvecs[i].at<double>(0,2)), 1 );
 
     /* Perform the rotation and put it in a_img */
     warpAffine ( o_img, a_img, trans_mat, o_img.size() );
 
-    /* calculate the scaling size. t_t(0.2)/maxHeight = ratio */
+    /* calculate the scaling size. tvecs[i](0.2)/maxHeight = ratio */
     resize ( a_img, o_img, Size(0,0), // we assume a correct maxHeight
-             t_t.at<double>(0,2)/maxHeight, t_t.at<double>(0,2)/maxHeight );
+             tvecs[i].at<double>(0,2)/maxHeight,
+             tvecs[i].at<double>(0,2)/maxHeight );
 
     filename = images[i];
     filename = dirname + "/" + filename.substr( filename.rfind('/')+1 );
