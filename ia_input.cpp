@@ -38,7 +38,6 @@ ia_init_input_struct ( struct ia_input *input )
 
   input->camMat = Mat::eye(3, 3, CV_64F);
   input->disMat = Mat::zeros(5, 1, CV_64F);
-  input->corDist = false;
 
   input->camera_id = -1; //no camera id unless specified.
   input->vid_file = NULL;
@@ -85,7 +84,6 @@ ia_print_input_struct ( struct ia_input *input )
       "Camera Matrix: [ %f, %f, %f;\n"
       "                 %f, %f, %f;\n"
       "                 %f, %f, %f]\n"
-      "Undistort flat: %d\n"
       "BoardSize (w,h): (%u, %u)\n"
       "SquareSize: %f\n"
       "Delay: %d\n"
@@ -102,8 +100,6 @@ ia_print_input_struct ( struct ia_input *input )
       cm.at<double>(0,0),cm.at<double>(0,1),cm.at<double>(0,2),
       cm.at<double>(1,0),cm.at<double>(1,1),cm.at<double>(1,2),
       cm.at<double>(2,0),cm.at<double>(2,1),cm.at<double>(2,2),
-      //Undistort flag
-      input->corDist,
       //chessboard sizes.
       input->b_size.width, input->b_size.height,
       //square size
@@ -281,12 +277,9 @@ ia_init_input ( int argc, char **argv)
 
   struct ia_input *input;
   //Don't use distortion by default
-  int undistort=0;
   int c;
   static struct option long_options[] =
     {
-      /* These options set a flag. */
-      {"undistort",     no_argument,          &undistort, 1},
       /* These options don't set a flag.
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
@@ -443,10 +436,6 @@ ia_init_input ( int argc, char **argv)
    */
   if ( optind < argc ) // We consider everything as an image name.
     input->images = &argv[optind];
-
-  // Check the flags.
-  if ( undistort )
-    input->corDist = true;
 
   // Check to see if the relation between arguments is ok.
   /*

@@ -30,8 +30,6 @@ struct ia_input
   cv::Mat camMat; //The camera matrix.
   cv::Mat disMat; //The distortion matrix.
 
-  bool corDist; //whether to correct distortion or not.
-
   int camera_id;
   char* vid_file; //Video file to use instead of the camera.
   char** images; // a list of image file names.
