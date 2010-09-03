@@ -35,7 +35,6 @@ ia_init_input_struct ( struct ia_input *input )
    * an intrinsics file to change behavior.
    */
   input->iif = NULL;
-  input->calInt = true;
 
   input->camMat = Mat::eye(3, 3, CV_64F);
   input->disMat = Mat::zeros(5, 1, CV_64F);
@@ -87,7 +86,6 @@ ia_print_input_struct ( struct ia_input *input )
       "                 %f, %f, %f;\n"
       "                 %f, %f, %f]\n"
       "Undistort flat: %d\n"
-      "Calculate Intrinsics: %d\n"
       "BoardSize (w,h): (%u, %u)\n"
       "SquareSize: %f\n"
       "Delay: %d\n"
@@ -106,8 +104,6 @@ ia_print_input_struct ( struct ia_input *input )
       cm.at<double>(2,0),cm.at<double>(2,1),cm.at<double>(2,2),
       //Undistort flag
       input->corDist,
-      //Calculate intrinsics flag
-      input->calInt,
       //chessboard sizes.
       input->b_size.width, input->b_size.height,
       //square size
@@ -349,7 +345,6 @@ ia_init_input ( int argc, char **argv)
               && ia_get_intrinsics_from_file(optarg, &(input->camMat),
                     &(input->disMat)) )
           {
-            input->calInt = false;
             input->iif = optarg;
           }
           break;
@@ -458,8 +453,7 @@ ia_init_input ( int argc, char **argv)
    * Minimum chessboard check.  FIXME: we could do better by checking the
    * relation between sides.  I'll leave it for later.
    */
-  if ( input->calInt
-       && ( input->b_size.height <= 0 || input->b_size.width <= 0 ) )
+  if (  input->b_size.height <= 0 || input->b_size.width <= 0 )
   {
     fprintf(stderr, "To calculate the camera intrinsics you need to provide"
         " positive chessboard height and width values.\n");

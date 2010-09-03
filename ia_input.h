@@ -26,7 +26,6 @@ enum ia_obj { NONE, CREATE_CONF, IMAGE_ADJUST, VIDEO_DEMO };
 struct ia_input
 {
   char* iif; //The intrinsic input file.
-  bool calInt; //Whether to calculate intrinsic values or not.
 
   cv::Mat camMat; //The camera matrix.
   cv::Mat disMat; //The distortion matrix.
