@@ -70,7 +70,7 @@ ia_free_input_struct ( struct ia_input *input )
 }
 
 void
-ia_print_input_struct ( struct ia_input *input )
+ia_print_input_struct ( const struct ia_input *input )
 {
   if ( input == NULL )
     return;
@@ -117,7 +117,7 @@ ia_print_input_struct ( struct ia_input *input )
 }
 
 void
-ia_usage ( char *command )
+ia_usage ( const char *command )
 {
   printf( "%s [OPTIONS] IMAGES\n\n"
           "OPTIONS:\n"

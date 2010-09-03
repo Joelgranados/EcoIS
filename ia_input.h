@@ -46,8 +46,8 @@ struct ia_input
   ia_obj objective;
 };
 
-void ia_usage (char*);
+void ia_usage (const char*);
 ia_input* ia_init_input (int, char**);
-void ia_print_input_struct (struct ia_input*);
+void ia_print_input_struct (const struct ia_input*);
 
 void ia_create_config (const cv::Mat*, const cv::Mat*);
