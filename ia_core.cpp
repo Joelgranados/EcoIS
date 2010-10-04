@@ -131,8 +131,10 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
     if ( !capture.grab() ) break;
     capture.retrieve ( frame_buffer );
 
-    imshow("Original", o_img);
-    imshow("Adjusted", a_img);
+    try{
+      imshow("Original", o_img);
+      imshow("Adjusted", a_img);
+    }catch (cv::Exception){;}
     if( (waitKey(50) & 255) == 27 )
       break;
 
