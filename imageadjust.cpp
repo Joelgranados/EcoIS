@@ -54,12 +54,7 @@ main ( int argc, char** argv ) {
 
   }else if (input->objective == IMAGE_ADJUST )
   {
-    if ( input->iif == NULL )
-      ia_imageadjust ( (const char**)input->images, input->b_size,
-                       input->squareSize );
-    else
-      ia_imageadjust ( (const char**)input->images, input->b_size,
-                       input->squareSize, &input->camMat, &input->disMat );
+    ia_information_extraction_debug ( (const char**)input->images, input->b_size );
 
   }else if (input->objective == VIDEO_DEMO )
     ia_calculate_and_capture ( input->b_size, input->delay, input->vid_file,

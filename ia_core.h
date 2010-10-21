@@ -35,3 +35,4 @@ int ia_image_calc_intr ( const char**, const Size, const float, const int,
 
 void ia_imageadjust ( const char**, const Size, const float,
                       const Mat* = NULL, const Mat* = NULL );
+void ia_information_extraction_debug ( const char**, const Size );

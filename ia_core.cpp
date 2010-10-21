@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "ia_input.h"
+#include "IA_Square.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <cv.h>
@@ -453,3 +454,14 @@ ia_imageadjust ( const char **images, const Size boardSize,
     imwrite ( filename, o_img );
   }
 }
+
+void
+ia_information_extraction_debug ( const char **images, const Size boardSize )
+{
+  for ( int i = 0 ; images[i] != '\0' ; i++ )
+  {
+    IA_ChessboardImage cb = IA_ChessboardImage ( images[i], boardSize );
+    cb.debug_print();
+  }
+}
+
