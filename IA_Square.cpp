@@ -281,9 +281,8 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
 
   try
   {
-    //FIXME: we should transform to HSV
     /* transform to grayscale */
-    cvtColor( a_image, t_img, CV_BGR2GRAY);
+    cvtColor( a_image, t_img, CV_BGR2HSV );
 
     /* find the chessboard points in the image and put them in pointbuf.*/
     if ( !findChessboardCorners(t_img, boardSize, (pointbuf),
