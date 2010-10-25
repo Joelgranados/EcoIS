@@ -161,9 +161,9 @@ IA_Square::initRowIter ( struct ia_square_point **v_order,
     }
   }
 
-  p1 = Point ( min (line1->lref->resolve_y(row), line2->lref->resolve_y(row)),
+  p1 = Point ( min (line1->lref->resolve_width(row), line2->lref->resolve_width(row)),
                row );
-  p2 = Point ( max (line1->lref->resolve_y(row), line2->lref->resolve_y(row)),
+  p2 = Point ( max (line1->lref->resolve_width(row), line2->lref->resolve_width(row)),
                row );
   LineIterator ri( *subimage, p1, p2, 8 );
   row_iter = &ri;
@@ -224,26 +224,48 @@ IA_Square::gen_square_messy_points ( Point2f *p[] )
                                              sqr.ls[i]->lps[1]->pref );
 }
 
-//FIXME: What to do with the slope = 0 and slope = infinity?
 IA_Line::IA_Line ( Point2f *p1, Point2f *p2 )
 {
   this->p1 = p1;
   this->p2 = p2;
-  slope = ( p2->y - p1->y)/(p2->x - p1->x);
+
+  horizontal = vertical = false;
+  if ( p2->y - p1->y == 0 ) /* We have a horizontal line */
+    horizontal = true;
+
+  else if ( p2->x - p1->x == 0 ) /* We have a vertical line */
+    vertical = true;
+
+  else /* We have a "normal" liine */
+    slope = ( p2->y - p1->y)/(p2->x - p1->x);
 }
 
-//FIXME: What to do with the slope = 0 and slope = infinity?
-float
-IA_Line::resolve_y ( int xvalue )
+int
+IA_Line::resolve_width ( int height )
 {
-  return slope * (xvalue - p1->x) + p1->y;
+  /* it's an error to ask for width of a horizontal line */
+  if ( horizontal )
+    return -1;
+
+  else if ( vertical )
+    return p1->x; /* == to p2->x */
+
+  else
+    return floor ( (height - p1->y)/slope + p1->x );
 }
 
-//FIXME: What to do with the slope = 0 and slope = infinity?
-float
-IA_Line::resolve_x (int yvalue )
+int
+IA_Line::resolve_height ( int width )
 {
-  return (yvalue - p1->y)/slope + p1->x ;
+  if ( horizontal )
+    return p1->y; /*== to p2->y*/
+
+  /* it's an error to ask for height of a vertical line */
+  else if ( vertical )
+    return -1;
+
+  else
+    return floor ( slope * (width - p1->x) + p1->y );
 }
 
 

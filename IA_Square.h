@@ -96,13 +96,15 @@ private:
 class IA_Line{
 public:
   IA_Line ( Point2f*, Point2f* );
-  float resolve_y ( int );
-  float resolve_x ( int );
+  int resolve_width ( int );
+  int resolve_height ( int );
 
 private:
   Point2f *p1;
   Point2f *p2;
   float slope;
+  bool vertical;
+  bool horizontal;
 };
 
 class IA_ChessboardImage{
