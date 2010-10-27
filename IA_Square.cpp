@@ -70,7 +70,7 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
                                      sqr.ls[i]->lps[1]->pref );
 
   /* We need a reference to the original image */
-  image = img;
+  hsv_img = img;
 
   /* We create a helper rectangle (x, y, width, height)*/
   Rect t_rect = Rect(
@@ -80,7 +80,15 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
     O_S_HEIGHT(sqr.ps[0]->pref,sqr.ps[1]->pref,sqr.ps[2]->pref,sqr.ps[3]->pref)
   );
 
-  *subimage = Mat( *image, t_rect );
+  /* The square is contained in this image.  They are probably not the same */
+  *hsv_subimg = Mat( *hsv_img, t_rect );
+
+  /* We separate hsv into its different dimensions */
+  vector<Mat> tmp_dim;
+  split( *hsv_img, tmp_dim );
+  h_subimg = &tmp_dim[0];
+  s_subimg = &tmp_dim[1];
+  v_subimg = &tmp_dim[2];
 
   calculate_color_average();
 }
@@ -93,7 +101,7 @@ IA_Square::~IA_Square ()
     delete sqr.ps[i];
     delete sqr.ls[i];
   }
-  delete subimage;
+  delete hsv_subimg;
 }
 
 void
@@ -116,7 +124,7 @@ IA_Square::calculate_color_average ()
   }
 
   /* We analyze all the rows in the image */
-  for ( unsigned int row ; row <= subimage->size().height ; row++ )
+  for ( unsigned int row ; row <= hsv_subimage->size().height ; row++ )
   {
     initRowIter ( v_order, row_iter, row );
     //FIXME: Lets cast to float for now.  We mus make sure we are dealing with
@@ -165,7 +173,7 @@ IA_Square::initRowIter ( struct ia_square_point **v_order,
                row );
   p2 = Point ( max (line1->lref->resolve_width(row), line2->lref->resolve_width(row)),
                row );
-  LineIterator ri( *subimage, p1, p2, 8 );
+  LineIterator ri( *hsv_subimg, p1, p2, 8 );
   row_iter = &ri;
 }
 
@@ -273,7 +281,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
                                          const Size boardSize )
 {
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
-  Mat hsv_image; //temp image
+  Mat hsv_img; //temp image
   vector<Point2f> pointbuf;
 
   /* get next image*/
@@ -299,7 +307,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
 
   if (has_chessboard)
   {
-    cvtColor ( a_image, hsv_image, CV_BGR2HSV );
+    cvtColor ( a_image, hsv_img, CV_BGR2HSV );
 
     for ( int r = 0 ; r <= boardSize.height ; r++ )
       for ( int c = 0 ; r <= boardSize.width ; c++ )
@@ -310,7 +318,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
         ordered_points[2] = &pointbuf[ (r*boardSize.width)+boardSize.width+c ];
         ordered_points[3] = &pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ];
 
-        squares.push_back( IA_Square( ordered_points, &hsv_image ) );
+        squares.push_back( IA_Square( ordered_points, &hsv_img ) );
       }
   }
 }

@@ -83,8 +83,11 @@ public:
   int* get_values();
 
 private:
-  const Mat *image; /* Original image where the points are taken from */
-  Mat *subimage; /* minimal subimage that contains the 4 points. */
+  const Mat *hsv_img; /* Original image where the points are taken from */
+  Mat *hsv_subimg; /* minimal subimage that contains the 4 points. */
+  Mat *h_subimg; /* subimage for the hue dimension */
+  Mat *s_subimg; /* subimage for the saturation dimension */
+  Mat *v_subimg; /* subimage for the value dimension */
   int rgb[3]; // Representation of the values in the square.
   struct ia_square_square sqr;
   void gen_square_messy_points (Point2f**);
