@@ -273,7 +273,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
                                          const Size boardSize )
 {
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
-  Mat t_img; //temp image
+  Mat hsv_image; //temp image
   vector<Point2f> pointbuf;
 
   /* get next image*/
@@ -281,22 +281,26 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
 
   try
   {
+    /* Initialize gray image here so the scope takes care of it for us */
+    Mat g_img; //temp gray image
     /* transform to grayscale */
-    cvtColor( a_image, t_img, CV_BGR2HSV );
+    cvtColor ( a_image, g_img, CV_BGR2GRAY );
 
     /* find the chessboard points in the image and put them in pointbuf.*/
-    if ( !findChessboardCorners(t_img, boardSize, (pointbuf),
+    if ( !findChessboardCorners(g_img, boardSize, (pointbuf),
                                 CV_CALIB_CB_ADAPTIVE_THRESH) )
       has_chessboard = false;
 
     else
       /* improve the found corners' coordinate accuracy */
-      cornerSubPix ( t_img, (pointbuf), Size(11,11), Size(-1,-1),
+      cornerSubPix ( g_img, (pointbuf), Size(11,11), Size(-1,-1),
                      TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1) );
   }catch (cv::Exception){has_chessboard = false;}
 
   if (has_chessboard)
   {
+    cvtColor ( a_image, hsv_image, CV_BGR2HSV );
+
     for ( int r = 0 ; r <= boardSize.height ; r++ )
       for ( int c = 0 ; r <= boardSize.width ; c++ )
       {
@@ -306,7 +310,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
         ordered_points[2] = &pointbuf[ (r*boardSize.width)+boardSize.width+c ];
         ordered_points[3] = &pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ];
 
-        squares.push_back( IA_Square( ordered_points, &a_image ) );
+        squares.push_back( IA_Square( ordered_points, &hsv_image ) );
       }
   }
 }
