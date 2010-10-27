@@ -92,8 +92,8 @@ IA_Square::~IA_Square ()
     delete sqr.ls[i]->lref;
     delete sqr.ps[i];
     delete sqr.ls[i];
-    delete subimage;
   }
+  delete subimage;
 }
 
 void
