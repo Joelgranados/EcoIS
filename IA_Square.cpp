@@ -376,13 +376,13 @@ IA_ChessboardImage::debug_print ()
 {
   fprintf ( stderr, "Printing red\n" );
   for ( int i = 0; i < squares.size() ; i++ )
-    fprintf ( stderr, " %d ", squares[i].get_red_value() );
+    fprintf ( stderr, "%d ", squares[i].get_red_value() );
 
-  fprintf ( stderr, "Printing green\n" );
+  fprintf ( stderr, "\nPrinting green\n" );
   for ( int i = 0; i < squares.size() ; i++ )
-    fprintf ( stderr, " %d ", squares[i].get_green_value() );
+    fprintf ( stderr, "%d ", squares[i].get_green_value() );
 
-  fprintf ( stderr, "Printing blue\n" );
+  fprintf ( stderr, "\nPrinting blue\n" );
   for ( int i = 0; i < squares.size() ; i++ )
-    fprintf ( stderr, " %d ", squares[i].get_blue_value() );
+    fprintf ( stderr, "%d ", squares[i].get_blue_value() );
 }
