@@ -91,9 +91,9 @@ private:
   int rgb[3]; // Representation of the values in the square.
   struct ia_square_square sqr;
   void gen_square_messy_points (Point2f**);
-  void calculate_color_average ();
-  void initRowIter ( struct ia_square_point**, LineIterator*,
-                      const unsigned int );
+  void calculate_rgb ();
+  inline bool row_between_lines ( const unsigned int,
+      const struct ia_square_line*, const struct ia_square_line* );
 };
 
 class IA_Line{

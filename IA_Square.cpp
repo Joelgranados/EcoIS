@@ -30,6 +30,9 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
 
 IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
 {
+  /* Initialize the array that will hold the bits. */
+  rgb[0]=rgb[1]=rgb[2]=0;
+
   /* Initialize the square struct */
   for ( int i = 0 ; i <= 3 ; i++ )
   {
@@ -90,7 +93,7 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
   s_subimg = &tmp_dim[1];
   v_subimg = &tmp_dim[2];
 
-  calculate_color_average();
+  calculate_rgb();
 }
 
 IA_Square::~IA_Square ()
@@ -105,16 +108,18 @@ IA_Square::~IA_Square ()
 }
 
 void
-IA_Square::calculate_color_average ()
+IA_Square::calculate_rgb ()
 {
   struct ia_square_point *v_order[4], *temp;
-  LineIterator *row_iter;
+  struct ia_square_line *line1, *line2, **l1ad;
+  int col1, col2;
   float ca_angle = 0;
 
-  /* Calculate the "vertical" order of the points */
+  /* v_order will contain the points sorted by their y component (row).  they
+   * are in increasing order. */
   for ( int i=0 ; i<=3 ; i++ )
     v_order[i] = sqr.ps[i];
-  for ( int i=0, j=0 ; i<=3 ; i++ )
+  for ( int i=0, j=0 ; i<=3 ; i++ ) /*simple sorting argorithm.  Thx pearls!*/
   {
     temp = v_order[i];
     j = i;
@@ -123,58 +128,101 @@ IA_Square::calculate_color_average ()
     v_order[j] = temp;
   }
 
-  /* We analyze all the rows in the image */
-  for ( unsigned int row ; row <= hsv_subimage->size().height ; row++ )
+  /* We analyze all the rows in the image.  The next for loop contains two
+   * steps: 1. We select the lines that intersec the row that is being analized,
+   * and 2. we traverse that row from left line to right line and do a
+   * cumulative average.*/
+  line1 = sqr.ls[0]; /* select random lines to begin */
+  line2 = sqr.ls[1];
+  for ( unsigned int row ; row <= h_subimg->size().height ; row++ )
   {
-    initRowIter ( v_order, row_iter, row );
-    //FIXME: Lets cast to float for now.  We mus make sure we are dealing with
-    //the HUE!!!!!!!
-    for ( int i = 0 ; i < row_iter->count ; i++, row_iter++ )
-      ca_angle = (*(float*)row_iter + i*ca_angle) / (i + 1);
+    /* Step 1: We don't change the lines if row intersects them.  If row
+     * does not intersect at leaset one, we use v_order to calculate new
+     * lines. 'row' here can be seen as a horizontal line.*/
+    if ( ! row_between_lines ( row, line1, line2 ) )
+    {
+      /* It's 2 because we traverse 3 intervals and not 4 points */
+      for ( int order_pos = 0 ; order_pos <= 2; order_pos++ )
+      {
+        //FIXME : I think the = is here.!!!
+        if ( v_order[order_pos]->pref->y <= row
+             && v_order[order_pos+1]->pref->y > row )
+        {
+          /* v_order[order_pos]->pls points to two lines, line1 is the common
+           * line between the v_order[order_pos]->pls pointers and
+           * v_order[order_pos+1]->pls pointers. */
+          line1=(v_order[order_pos]->pls[0] != v_order[order_pos+1]->pls[0]
+                 && v_order[order_pos]->pls[0] != v_order[order_pos+1]->pls[1])
+                ? v_order[order_pos]->pls[1] : v_order[order_pos]->pls[0];
+
+          /* Choose line2 when a point is between line1 and line2 */
+          if ( row_between_lines ( row, line1, line1->ladjs[0] ) )
+            line2 = line1->ladjs[0];
+          else if ( row_between_lines ( row, line1, line1->ladjs[1] ) )
+            line2 = line1->ladjs[1];
+          else /*We choose the opposite line */
+            line2 = line1->ladjs[1]->ladjs[1];
+
+          break;
+        }
+      }
+    }
+
+    /* At this point we are sure that line1 and line2 intersect.  We now
+     * calculate col1 (left) and col2 (right).*/
+    col1=min(line1->lref->resolve_width(row), line2->lref->resolve_width(row));
+    col2=max(line1->lref->resolve_width(row), line2->lref->resolve_width(row));
+
+    /* Step 2: We traverse all of 'row' from col1 (left) to col2 (right) and do
+     * a cumulative average*/
+    for ( int i = 0 ; col1 + i < col2 ; i++ )
+      ca_angle = ((*h_subimg).at<float>(col1+1, row) + (i*ca_angle))/(i+i);
   }
+
+  /*
+   * We calculate rgb array from ca_angle with the folloing table.
+   *  red                 -> (165,180] || [0,15]
+   *  yellow (red-green)  -> (15,45]
+   *  green               -> (45,75]
+   *  cyan (green-blue)   -> (75,105]
+   *  blue                -> (105,135]
+   *  magenta (red-blue)  -> (135,165]
+   *  This is dependant on RBGtoHSV transformation in IAChessboardImage.
+   */
+  if ( ca_angle < 15 && ca_angle >= 45 ) {
+    rgb[0] = 1;
+    rgb[1] = 1;
+  } else if ( ca_angle < 45 && ca_angle >= 75 ) {
+    rgb[1] = 1;
+  } else if ( ca_angle < 75 && ca_angle >= 105 ) {
+    rgb[1] = 1;
+    rgb[2] = 1;
+  } else if ( ca_angle < 105 && ca_angle >= 135 ) {
+    rgb[2] = 1;
+  } else if ( ca_angle < 135 && ca_angle >= 165 ) {
+    rgb[0] = 1;
+    rgb[2] = 1;
+  } else if ( (ca_angle < 165 && ca_angle >= 180)
+              || (ca_angle <= 0 && ca_angle >= 15) ){
+    rgb[0] = 1;
+  } else
+    ;/* It should not get here */
 }
 
-void
-IA_Square::initRowIter ( struct ia_square_point **v_order,
-                         LineIterator *row_iter, const unsigned int row )
+inline bool
+IA_Square::row_between_lines ( const unsigned int row,
+                               const struct ia_square_line *line1,
+                               const struct ia_square_line *line2 )
 {
-  struct ia_square_line *line1, *line2;
-  struct ia_square_line **l1ad; // To shorten the lines further down.
-  Point2f p1, p2;
-
-  /* It's 2 because we traverse 3 intervals and not 4 points */
-  for ( int order_pos = 0 ; order_pos <= 2; order_pos++)
-  {
-    if ( v_order[order_pos]->pref->y <= row
-         && v_order[order_pos+1]->pref->y > row )
-    {
-      /* line1 is the common line between the two points */
-      line1=(v_order[order_pos]->pls[0] != v_order[order_pos+1]->pls[0]
-             && v_order[order_pos]->pls[0] != v_order[order_pos+1]->pls[1])
-            ? v_order[order_pos]->pls[1] : v_order[order_pos]->pls[0];
-      l1ad = line1->ladjs;
-
-      if ( min(l1ad[0]->lps[0]->pref->y, l1ad[0]->lps[1]->pref->y) < row
-           && max(l1ad[0]->lps[0]->pref->y, l1ad[0]->lps[1]->pref->y) > row )
-        line2 = l1ad[0];
-
-      else if ( min(l1ad[1]->lps[0]->pref->y, l1ad[1]->lps[1]->pref->y) < row
-            && max(l1ad[1]->lps[0]->pref->y, l1ad[1]->lps[1]->pref->y) > row )
-        line2 = l1ad[1];
-
-      else /*We choose the opposite line */
-        line2 = l1ad[1]->ladjs[1];
-
-      break;
-    }
-  }
-
-  p1 = Point ( min (line1->lref->resolve_width(row), line2->lref->resolve_width(row)),
-               row );
-  p2 = Point ( max (line1->lref->resolve_width(row), line2->lref->resolve_width(row)),
-               row );
-  LineIterator ri( *hsv_subimg, p1, p2, 8 );
-  row_iter = &ri;
+  /* The row (horizontal line) is between the line only if it is between the
+   * points of line 1 and between the points of line2 */
+  //FIXME: I should decide where to put the =
+  if ( ( min (line1->lps[0]->pref->y, line1->lps[1]->pref->y) < row
+         && max (line1->lps[0]->pref->y, line1->lps[1]->pref->y) > row )
+       && ( min (line2->lps[0]->pref->y, line2->lps[1]->pref->y) < row
+            && max (line2->lps[0]->pref->y, line2->lps[1]->pref->y) > row ) )
+    return true;
+  return false;
 }
 
 int
