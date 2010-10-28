@@ -84,7 +84,7 @@ public:
 
 private:
   const Mat *hsv_img; /* Original image where the points are taken from */
-  Mat *hsv_subimg; /* minimal subimage that contains the 4 points. */
+  Mat hsv_subimg; /* minimal subimage that contains the 4 points. */
   Mat *h_subimg; /* subimage for the hue dimension */
   Mat *s_subimg; /* subimage for the saturation dimension */
   Mat *v_subimg; /* subimage for the value dimension */

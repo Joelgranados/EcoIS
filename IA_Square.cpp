@@ -41,7 +41,7 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
   }
 
   /* Interconnect lines and points.  None point to anything */
-  for ( int i = 0 ; i <= 4 ; i++ )
+  for ( int i = 0 ; i <= 3 ; i++ )
   {
     /* Create a double linked list of points */
     sqr.ps[i]->padjs[0] = sqr.ps[ (i+1)%4 ];
@@ -84,11 +84,11 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
   );
 
   /* The square is contained in this image.  They are probably not the same */
-  *hsv_subimg = Mat( *hsv_img, t_rect );
+  hsv_subimg = Mat( *hsv_img, t_rect );
 
   /* We separate hsv into its different dimensions */
   vector<Mat> tmp_dim;
-  split( *hsv_img, tmp_dim );
+  split( hsv_subimg, tmp_dim );
   h_subimg = &tmp_dim[0];
   s_subimg = &tmp_dim[1];
   v_subimg = &tmp_dim[2];
@@ -104,7 +104,6 @@ IA_Square::~IA_Square ()
     delete sqr.ps[i];
     delete sqr.ls[i];
   }
-  delete hsv_subimg;
 }
 
 void
@@ -176,7 +175,7 @@ IA_Square::calculate_rgb ()
     /* Step 2: We traverse all of 'row' from col1 (left) to col2 (right) and do
      * a cumulative average*/
     for ( int i = 0 ; col1 + i < col2 ; i++ )
-      ca_angle = ((*h_subimg).at<float>(col1+1, row) + (i*ca_angle))/(i+i);
+      ca_angle = ((*h_subimg).at<float>(col1+1, row) + (i*ca_angle))/(i+1);
   }
 
   /*
@@ -292,8 +291,10 @@ IA_Line::IA_Line ( Point2f *p1, Point2f *p2 )
   else if ( p2->x - p1->x == 0 ) /* We have a vertical line */
     vertical = true;
 
-  else /* We have a "normal" liine */
-    slope = ( p2->y - p1->y)/(p2->x - p1->x);
+  else
+    /* We have a "normal" liine. */
+    //FIXME: why does the slope need to be Dx/Dy ?
+    slope = ( p2->x - p1->x )/( p2->y - p1->y);
 }
 
 int
