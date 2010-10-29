@@ -72,9 +72,6 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
     sqr.ls[i]->lref =  new IA_Line ( sqr.ls[i]->lps[0]->pref,
                                      sqr.ls[i]->lps[1]->pref );
 
-  /* We need a reference to the original image */
-  hsv_img = img;
-
   /* We create a helper rectangle (x, y, width, height)*/
   Rect t_rect = Rect(
     X_MIN (sqr.ps[0]->pref, sqr.ps[1]->pref, sqr.ps[2]->pref, sqr.ps[3]->pref),
@@ -84,7 +81,7 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
   );
 
   /* The square is contained in this image.  They are probably not the same */
-  hsv_subimg = Mat( *hsv_img, t_rect );
+  hsv_subimg = Mat( *img, t_rect );
 
   /* We separate hsv into its different dimensions */
   vector<Mat> tmp_dim;
