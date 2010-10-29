@@ -95,7 +95,7 @@ IA_Square::~IA_Square ()
 void
 IA_Square::calculate_rgb ()
 {
-  struct ia_square_point *v_order[4], *temp;
+  struct ia_square_point *v_order[5]; /* the 5 element will be the temp*/
   struct ia_square_line *line1, *line2, **l1ad;
   int col1, col2;
   float ca_angle = 0;
@@ -106,12 +106,12 @@ IA_Square::calculate_rgb ()
     v_order[i] = sqr.ps[i];
   for ( int i=0, j=0 ; i<=3 ; i++ ) /*simple sorting argorithm.  Thx pearls!*/
   {
-    temp = v_order[i];
-    j = i;
-    for ( ; j>0 && v_order[j-1]->pref.y > v_order[j]->pref.y ; j-- )
-      v_order[j-1] = v_order[j];
-    v_order[j] = temp;
+    v_order[4] = v_order[i];
+    for ( j = i ; j>0 && v_order[j-1]->pref.y > v_order[4]->pref.y ; j-- )
+      v_order[j] = v_order[j-1];
+    v_order[j] = v_order[4];
   }
+  v_order[4] = NULL;
 
   /* We analyze all the rows in the image.  The next for loop contains two
    * steps: 1. We select the lines that intersec the row that is being analized,
