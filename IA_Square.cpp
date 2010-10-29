@@ -65,12 +65,12 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
     gen_square_messy_points ( p );
   else
     for ( int i = 0 ; i <= 3 ; i++ )
-      sqr.ps[i]->pref = p[i];
+      sqr.ps[i]->pref = Point2f( p[i]->x, p[i]->y );
 
   /* We fill in the square lines */
   for ( int i = 0 ; i <= 3 ; i++ )
-    sqr.ls[i]->lref =  new IA_Line ( sqr.ls[i]->lps[0]->pref,
-                                     sqr.ls[i]->lps[1]->pref );
+    sqr.ls[i]->lref =  new IA_Line ( &sqr.ls[i]->lps[0]->pref,
+                                     &sqr.ls[i]->lps[1]->pref );
 
   /* We create a helper rectangle (x, y, width, height)*/
   Rect t_rect = Rect(
@@ -119,7 +119,7 @@ IA_Square::calculate_rgb ()
   {
     temp = v_order[i];
     j = i;
-    for ( ; j>0 && v_order[j-1]->pref->y > v_order[j]->pref->y ; j-- )
+    for ( ; j>0 && v_order[j-1]->pref.y > v_order[j]->pref.y ; j-- )
       v_order[j-1] = v_order[j];
     v_order[j] = temp;
   }
@@ -141,8 +141,8 @@ IA_Square::calculate_rgb ()
       for ( int order_pos = 0 ; order_pos <= 2; order_pos++ )
       {
         //FIXME : I think the = is here.!!!
-        if ( v_order[order_pos]->pref->y <= row
-             && v_order[order_pos+1]->pref->y > row )
+        if ( v_order[order_pos]->pref.y <= row
+             && v_order[order_pos+1]->pref.y > row )
         {
           /* v_order[order_pos]->pls points to two lines, line1 is the common
            * line between the v_order[order_pos]->pls pointers and
@@ -213,10 +213,10 @@ IA_Square::row_between_lines ( const unsigned int row,
   /* The row (horizontal line) is between the line only if it is between the
    * points of line 1 and between the points of line2 */
   //FIXME: I should decide where to put the =
-  if ( ( min (line1->lps[0]->pref->y, line1->lps[1]->pref->y) < row
-         && max (line1->lps[0]->pref->y, line1->lps[1]->pref->y) > row )
-       && ( min (line2->lps[0]->pref->y, line2->lps[1]->pref->y) < row
-            && max (line2->lps[0]->pref->y, line2->lps[1]->pref->y) > row ) )
+  if ( ( min (line1->lps[0]->pref.y, line1->lps[1]->pref.y) < row
+         && max (line1->lps[0]->pref.y, line1->lps[1]->pref.y) > row )
+       && ( min (line2->lps[0]->pref.y, line2->lps[1]->pref.y) < row
+            && max (line2->lps[0]->pref.y, line2->lps[1]->pref.y) > row ) )
     return true;
   return false;
 }
@@ -249,12 +249,12 @@ void
 IA_Square::gen_square_messy_points ( Point2f *p[] )
 {
   /* P0 will be the vertex */
-  Point2f *combinations[5] = { p[1], p[2], p[3], p[1], NULL };
+  Point2f *comb[5] = { p[1], p[2], p[3], p[1], NULL };
   int result;
   float angle_temp, angle_result = 0;
-  for ( int i = 0 ; combinations[i+1] != NULL ; i ++ )
+  for ( int i = 0 ; comb[i+1] != NULL ; i ++ )
   {
-    angle_temp = VECTORS_ANGLE(combinations[i], combinations[i+1], p[0]);
+    angle_temp = VECTORS_ANGLE(comb[i], comb[i+1], p[0]);
     if ( angle_temp > angle_result )
     {
       angle_result = angle_temp;
@@ -263,17 +263,17 @@ IA_Square::gen_square_messy_points ( Point2f *p[] )
   }
 
   /* We fill in the point pointers */
-  sqr.ps[0]->pref = p[0];
-  sqr.ps[1]->pref = combinations[result];
-  sqr.ps[3]->pref = combinations[result+1];
-  sqr.ps[2]->pref = combinations[result+2] != NULL
-                    ? combinations[result+2]
-                    : combinations[result-1];
+  sqr.ps[0]->pref = Point2f(p[0]->x, p[0]->y);
+  sqr.ps[1]->pref = Point2f(comb[result]->x, comb[result]->y);
+  sqr.ps[3]->pref = Point2f(comb[result+1]->x, comb[result+1]->y);
+  sqr.ps[2]->pref = comb[result+2] != NULL
+                    ? Point2f(comb[result+2]->x, comb[result+2]->y)
+                    : Point2f(comb[result-1]->x, comb[result-1]->y);
 
   /* Fill in the lines */
   for ( int i = 0 ; i <= 3 ; i++ )
-    sqr.ls[i]->lref = new IA_Line::IA_Line ( sqr.ls[i]->lps[0]->pref,
-                                             sqr.ls[i]->lps[1]->pref );
+    sqr.ls[i]->lref = new IA_Line::IA_Line ( &sqr.ls[i]->lps[0]->pref,
+                                             &sqr.ls[i]->lps[1]->pref );
 }
 
 IA_Line::IA_Line ( Point2f *p1, Point2f *p2 )
