@@ -361,8 +361,8 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
         Point2f *ordered_points[4];
         ordered_points[0] = &pointbuf[ (r*boardSize.width)+c ];
         ordered_points[1] = &pointbuf[ (r*boardSize.width)+c+1 ];
-        ordered_points[2] = &pointbuf[ (r*boardSize.width)+boardSize.width+c ];
-        ordered_points[3] = &pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ];
+        ordered_points[2] = &pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ];
+        ordered_points[3] = &pointbuf[ (r*boardSize.width)+boardSize.width+c ];
 
         squares.push_back( IA_Square( ordered_points, &hsv_img ) );
       }
