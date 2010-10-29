@@ -30,10 +30,9 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
 
   /* initialize the sub_image */
   Rect t_rect = Rect( /* helper rectangle (x, y, width, height) */
-    X_MIN (sqr.ps[0]->pref, sqr.ps[1]->pref, sqr.ps[2]->pref, sqr.ps[3]->pref),
-    Y_MIN (sqr.ps[0]->pref, sqr.ps[1]->pref, sqr.ps[2]->pref, sqr.ps[3]->pref),
-    O_S_WIDTH(sqr.ps[0]->pref,sqr.ps[1]->pref,sqr.ps[2]->pref,sqr.ps[3]->pref),
-    O_S_HEIGHT(sqr.ps[0]->pref,sqr.ps[1]->pref,sqr.ps[2]->pref,sqr.ps[3]->pref)
+    X_MIN (p[0], p[1], p[2], p[3]),
+    Y_MIN (p[0], p[1], p[2], p[3]),
+    O_S_WIDTH(p[0],p[1],p[2],p[3]), O_S_HEIGHT(p[0],p[1],p[2],p[3])
   );
   hsv_subimg = Mat( *img, t_rect );
 

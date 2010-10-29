@@ -23,17 +23,20 @@
 using namespace cv;
 
 /* Returns the angle between the two vectos in radians */
+#define MIN_4(v1, v2, v3, v4) \
+  min ( min (v1,v2), min(v3,v4) )
+
 #define X_MIN(p1, p2, p3, p4) \
-  min ( min (p1.x, p2.x), min (p3.x, p4.x) )
+  min ( min (p1->x, p2->x), min (p3->x, p4->x) )
 
 #define X_MAX(p1, p2, p3, p4) \
- max ( max (p1.x, p2.x), max (p3.x, p4.x) )
+ max ( max (p1->x, p2->x), max (p3->x, p4->x) )
 
 #define Y_MIN(p1, p2, p3, p4) \
- min ( min (p1.y, p2.y), min (p3.y, p4.y) )
+ min ( min (p1->y, p2->y), min (p3->y, p4->y) )
 
 #define Y_MAX(p1, p2, p3, p4) \
- max ( max (p1.y, p2.y), max (p3.y, p4.y) )
+ max ( max (p1->y, p2->y), max (p3->y, p4->y) )
 
 #define O_S_WIDTH(p1, p2, p3, p4) \
   X_MAX ( p1, p2, p3, p4 ) - X_MIN ( p1, p2, p3, p4 )
