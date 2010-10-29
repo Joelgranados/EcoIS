@@ -25,13 +25,24 @@
 
 IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
 {
-  IA_Square::IA_Square ( p, img, false );
-}
-
-IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
-{
   /* Initialize the array that will hold the bits. */
   rgb[0]=rgb[1]=rgb[2]=0;
+
+  /* initialize the sub_image */
+  Rect t_rect = Rect( /* helper rectangle (x, y, width, height) */
+    X_MIN (sqr.ps[0]->pref, sqr.ps[1]->pref, sqr.ps[2]->pref, sqr.ps[3]->pref),
+    Y_MIN (sqr.ps[0]->pref, sqr.ps[1]->pref, sqr.ps[2]->pref, sqr.ps[3]->pref),
+    O_S_WIDTH(sqr.ps[0]->pref,sqr.ps[1]->pref,sqr.ps[2]->pref,sqr.ps[3]->pref),
+    O_S_HEIGHT(sqr.ps[0]->pref,sqr.ps[1]->pref,sqr.ps[2]->pref,sqr.ps[3]->pref)
+  );
+  hsv_subimg = Mat( *img, t_rect );
+
+  /* We separate hsv into its different dimensions */
+  vector<Mat> tmp_dim;
+  split( hsv_subimg, tmp_dim );
+  h_subimg = &tmp_dim[0];
+  s_subimg = &tmp_dim[1];
+  v_subimg = &tmp_dim[2];
 
   /* Initialize the square struct */
   for ( int i = 0 ; i <= 3 ; i++ )
@@ -61,34 +72,13 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img, bool messy_points )
   }
 
   /* We fill in the point pointers */
-  if ( messy_points )
-    gen_square_messy_points ( p );
-  else
-    for ( int i = 0 ; i <= 3 ; i++ )
-      sqr.ps[i]->pref = Point2f( p[i]->x, p[i]->y );
+  for ( int i = 0 ; i <= 3 ; i++ ) /* dim 0 and 1 will never be negative */
+    sqr.ps[i]->pref = Point2f ( (p[i]->x-t_rect.x), (p[i]->y-t_rect.y) );
 
   /* We fill in the square lines */
   for ( int i = 0 ; i <= 3 ; i++ )
     sqr.ls[i]->lref =  new IA_Line ( &sqr.ls[i]->lps[0]->pref,
                                      &sqr.ls[i]->lps[1]->pref );
-
-  /* We create a helper rectangle (x, y, width, height)*/
-  Rect t_rect = Rect(
-    X_MIN (sqr.ps[0]->pref, sqr.ps[1]->pref, sqr.ps[2]->pref, sqr.ps[3]->pref),
-    Y_MIN (sqr.ps[0]->pref, sqr.ps[1]->pref, sqr.ps[2]->pref, sqr.ps[3]->pref),
-    O_S_WIDTH(sqr.ps[0]->pref,sqr.ps[1]->pref,sqr.ps[2]->pref,sqr.ps[3]->pref),
-    O_S_HEIGHT(sqr.ps[0]->pref,sqr.ps[1]->pref,sqr.ps[2]->pref,sqr.ps[3]->pref)
-  );
-
-  /* The square is contained in this image.  They are probably not the same */
-  hsv_subimg = Mat( *img, t_rect );
-
-  /* We separate hsv into its different dimensions */
-  vector<Mat> tmp_dim;
-  split( hsv_subimg, tmp_dim );
-  h_subimg = &tmp_dim[0];
-  s_subimg = &tmp_dim[1];
-  v_subimg = &tmp_dim[2];
 
   calculate_rgb();
 }
@@ -243,37 +233,6 @@ int*
 IA_Square::get_values ()
 {
   return rgb;
-}
-
-void
-IA_Square::gen_square_messy_points ( Point2f *p[] )
-{
-  /* P0 will be the vertex */
-  Point2f *comb[5] = { p[1], p[2], p[3], p[1], NULL };
-  int result;
-  float angle_temp, angle_result = 0;
-  for ( int i = 0 ; comb[i+1] != NULL ; i ++ )
-  {
-    angle_temp = VECTORS_ANGLE(comb[i], comb[i+1], p[0]);
-    if ( angle_temp > angle_result )
-    {
-      angle_result = angle_temp;
-      result = i; //It's i and i+1
-    }
-  }
-
-  /* We fill in the point pointers */
-  sqr.ps[0]->pref = Point2f(p[0]->x, p[0]->y);
-  sqr.ps[1]->pref = Point2f(comb[result]->x, comb[result]->y);
-  sqr.ps[3]->pref = Point2f(comb[result+1]->x, comb[result+1]->y);
-  sqr.ps[2]->pref = comb[result+2] != NULL
-                    ? Point2f(comb[result+2]->x, comb[result+2]->y)
-                    : Point2f(comb[result-1]->x, comb[result-1]->y);
-
-  /* Fill in the lines */
-  for ( int i = 0 ; i <= 3 ; i++ )
-    sqr.ls[i]->lref = new IA_Line::IA_Line ( &sqr.ls[i]->lps[0]->pref,
-                                             &sqr.ls[i]->lps[1]->pref );
 }
 
 IA_Line::IA_Line ( Point2f *p1, Point2f *p2 )

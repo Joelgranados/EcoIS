@@ -23,15 +23,6 @@
 using namespace cv;
 
 /* Returns the angle between the two vectos in radians */
-#define VECTORS_ANGLE(a, b, v) \
-  acos( \
-        ( ((a->x-v->x)*(b->x-v->x)) \
-          + ((a->y-v->y)*(b->y-v->y)) ) \
-        / \
-        ( sqrt(pow(a->x-v->x,2)+pow(a->y-v->y,2)) \
-          * sqrt(pow(b->x-v->x,2)+pow(b->y-v->y,2)) ) \
-      )
-
 #define X_MIN(p1, p2, p3, p4) \
   min ( min (p1.x, p2.x), min (p3.x, p4.x) )
 
@@ -74,7 +65,6 @@ struct ia_square_square
 
 class IA_Square{
 public:
-  IA_Square ( Point2f*[4], const Mat*, bool );
   IA_Square ( Point2f*[4], const Mat* );
   ~IA_Square ();
   int get_red_value ();
@@ -89,7 +79,6 @@ private:
   Mat *v_subimg; /* subimage for the value dimension */
   int rgb[3]; // Representation of the values in the square.
   struct ia_square_square sqr;
-  void gen_square_messy_points (Point2f**);
   void calculate_rgb ();
   inline bool row_between_lines ( const unsigned int,
       const struct ia_square_line*, const struct ia_square_line* );
