@@ -86,7 +86,7 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
 void
 IA_Square::calculate_rgb ()
 {
-  struct ia_square_line *line1, *line2, **l1ad;
+  struct ia_square_line *line1, *line2;
   int col1, col2;
   float ca_angle = 0;
 
