@@ -295,7 +295,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
     cvtColor ( a_image, hsv_img, CV_BGR2HSV );
 
     for ( int r = 0 ; r <= boardSize.height ; r++ )
-      for ( int c = 0 ; r <= boardSize.width ; c++ )
+      for ( int c = 0 ; c <= boardSize.width ; c++ )
       {
         Point2f *ordered_points[4];
         ordered_points[0] = &pointbuf[ (r*boardSize.width)+c ];
