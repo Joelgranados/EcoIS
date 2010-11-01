@@ -112,13 +112,28 @@ IA_Square::calculate_rgb ()
      * does not intersect at leaset one, we use row_between_lines to find new
      * lines. 'row' here can be seen as a horizontal line.*/
     if ( ! row_between_lines ( row, line1, line2 ) )
+    {
+      bool found = false;
       for ( int i = 0 ; i <= 3 ; i++ )
         if ( row_between_lines ( row, sqr.ls[i], sqr.ls[(i+1)%4] ) )
         {
+          found = true;
           line1 = sqr.ls[i];
           line2 = sqr.ls[(i+1)%4];
           break;
         }
+      if ( ! found )
+      {
+        if ( row_between_lines ( row, sqr.ls[0], sqr.ls[2] ) )
+        {
+          line1 = sqr.ls[0];
+          line2 = sqr.ls[2];
+        } else {
+          line1 = sqr.ls[1];
+          line1 = sqr.ls[3];
+        }
+      }
+    }
 
     /* At this point we are sure that line1 and line2 intersect.  We now
      * calculate col1 (left) and col2 (right).*/
