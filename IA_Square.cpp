@@ -253,7 +253,7 @@ IA_Line::resolve_height ( int width )
 
 
 IA_ChessboardImage::IA_ChessboardImage ( const char *image,
-                                         const Size boardSize )
+                                         const Size &boardSize )
 {
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
   Mat hsv_img; //temp image
@@ -284,8 +284,8 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
   {
     cvtColor ( a_image, hsv_img, CV_BGR2HSV );
 
-    for ( int r = 0 ; r <= boardSize.height ; r++ )
-      for ( int c = 0 ; c <= boardSize.width ; c++ )
+    for ( int r = 0 ; r < boardSize.height-1 ; r++ )
+      for ( int c = 0 ; c < boardSize.width-1 ; c++ )
       {
         Point2f *ordered_points[4];
         ordered_points[0] = &pointbuf[ (r*boardSize.width)+c ];
