@@ -311,7 +311,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
 void
 IA_ChessboardImage::debug_print ()
 {
-  fprintf ( stderr, "Printing red\n" );
+  fprintf ( stderr, "\nPrinting red\n" );
   for ( int i = 0; i < squares.size() ; i++ )
     fprintf ( stderr, "%d ", squares[i].get_red_value() );
 
