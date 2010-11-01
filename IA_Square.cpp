@@ -96,7 +96,7 @@ IA_Square::calculate_rgb ()
    * cumulative average.*/
   line1 = sqr.ls[0]; /* select random lines to begin */
   line2 = sqr.ls[1];
-  for ( unsigned int row ; row <= h_subimg->size().height ; row++ )
+  for ( unsigned int row = 0 ; row <= h_subimg->rows ; row++ )
   {
     /* Step 1: We don't change the lines if row intersects them.  If row
      * does not intersect at leaset one, we use row_between_lines to find new
