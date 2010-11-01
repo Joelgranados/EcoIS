@@ -83,16 +83,6 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
   calculate_rgb();
 }
 
-IA_Square::~IA_Square ()
-{
-  for ( int i = 0 ; i <=3 ; i++ )
-  {
-    delete sqr.ls[i]->lref;
-    delete sqr.ps[i];
-    delete sqr.ls[i];
-  }
-}
-
 void
 IA_Square::calculate_rgb ()
 {
