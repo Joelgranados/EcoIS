@@ -96,23 +96,9 @@ IA_Square::~IA_Square ()
 void
 IA_Square::calculate_rgb ()
 {
-  struct ia_square_point *v_order[5]; /* the 5 element will be the temp*/
   struct ia_square_line *line1, *line2, **l1ad;
   int col1, col2;
   float ca_angle = 0;
-
-  /* v_order will contain the points sorted by their y component (row).  they
-   * are in increasing order. */
-  for ( int i=0 ; i<=3 ; i++ )
-    v_order[i] = sqr.ps[i];
-  for ( int i=0, j=0 ; i<=3 ; i++ ) /*simple sorting argorithm.  Thx pearls!*/
-  {
-    v_order[4] = v_order[i];
-    for ( j = i ; j>0 && v_order[j-1]->pref.y > v_order[4]->pref.y ; j-- )
-      v_order[j] = v_order[j-1];
-    v_order[j] = v_order[4];
-  }
-  v_order[4] = NULL;
 
   /* We analyze all the rows in the image.  The next for loop contains two
    * steps: 1. We select the lines that intersec the row that is being analized,
@@ -123,36 +109,16 @@ IA_Square::calculate_rgb ()
   for ( unsigned int row ; row <= h_subimg->size().height ; row++ )
   {
     /* Step 1: We don't change the lines if row intersects them.  If row
-     * does not intersect at leaset one, we use v_order to calculate new
+     * does not intersect at leaset one, we use row_between_lines to find new
      * lines. 'row' here can be seen as a horizontal line.*/
     if ( ! row_between_lines ( row, line1, line2 ) )
-    {
-      /* It's 2 because we traverse 3 intervals and not 4 points */
-      for ( int order_pos = 0 ; order_pos <= 2; order_pos++ )
-      {
-        //FIXME : I think the = is here.!!!
-        if ( v_order[order_pos]->pref.y <= row
-             && v_order[order_pos+1]->pref.y > row )
+      for ( int i = 0 ; i <= 3 ; i++ )
+        if ( row_between_lines ( row, sqr.ls[i], sqr.ls[(i+1)%4] ) )
         {
-          /* v_order[order_pos]->pls points to two lines, line1 is the common
-           * line between the v_order[order_pos]->pls pointers and
-           * v_order[order_pos+1]->pls pointers. */
-          line1=(v_order[order_pos]->pls[0] != v_order[order_pos+1]->pls[0]
-                 && v_order[order_pos]->pls[0] != v_order[order_pos+1]->pls[1])
-                ? v_order[order_pos]->pls[1] : v_order[order_pos]->pls[0];
-
-          /* Choose line2 when a point is between line1 and line2 */
-          if ( row_between_lines ( row, line1, line1->ladjs[0] ) )
-            line2 = line1->ladjs[0];
-          else if ( row_between_lines ( row, line1, line1->ladjs[1] ) )
-            line2 = line1->ladjs[1];
-          else /*We choose the opposite line */
-            line2 = line1->ladjs[1]->ladjs[1];
-
+          line1 = sqr.ls[i];
+          line2 = sqr.ls[(i+1)%4];
           break;
         }
-      }
-    }
 
     /* At this point we are sure that line1 and line2 intersect.  We now
      * calculate col1 (left) and col2 (right).*/
