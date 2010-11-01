@@ -72,7 +72,8 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
 
   /* We fill in the point pointers */
   for ( int i = 0 ; i <= 3 ; i++ ) /* dim 0 and 1 will never be negative */
-    sqr.ps[i]->pref = Point2f ( (p[i]->x-t_rect.x), (p[i]->y-t_rect.y) );
+    sqr.ps[i]->pref = Point2f ( floor(p[i]->x-t_rect.x),
+                                floor(p[i]->y-t_rect.y) );
 
   /* We fill in the square lines */
   for ( int i = 0 ; i <= 3 ; i++ )
@@ -202,9 +203,9 @@ IA_Square::row_between_lines ( const unsigned int row,
   /* The row (horizontal line) is between the line only if it is between the
    * points of line 1 and between the points of line2 */
   //FIXME: I should decide where to put the =
-  if ( ( min (line1->lps[0]->pref.y, line1->lps[1]->pref.y) < row
+  if ( ( min (line1->lps[0]->pref.y, line1->lps[1]->pref.y) <= row
          && max (line1->lps[0]->pref.y, line1->lps[1]->pref.y) > row )
-       && ( min (line2->lps[0]->pref.y, line2->lps[1]->pref.y) < row
+       && ( min (line2->lps[0]->pref.y, line2->lps[1]->pref.y) <= row
             && max (line2->lps[0]->pref.y, line2->lps[1]->pref.y) > row ) )
     return true;
   return false;
