@@ -166,13 +166,13 @@ IA_Square::row_between_lines ( const unsigned int row,
                                const struct ia_square_line *line1,
                                const struct ia_square_line *line2 )
 {
-  /* The row (horizontal line) is between the line only if it is between the
-   * points of line 1 and between the points of line2 */
-  //FIXME: I should decide where to put the =
-  if ( ( min (line1->lps[0]->pref.y, line1->lps[1]->pref.y) <= row
-         && max (line1->lps[0]->pref.y, line1->lps[1]->pref.y) > row )
-       && ( min (line2->lps[0]->pref.y, line2->lps[1]->pref.y) <= row
-            && max (line2->lps[0]->pref.y, line2->lps[1]->pref.y) > row ) )
+  /* The row (horizontal line) is between the lines only if the maximum of the
+   * lines starting point is less than row and if the minimum of the lines
+   * ending points is greater than row.*/
+  if ( max( min(line1->lps[0]->pref.y,line1->lps[1]->pref.y),
+            min(line2->lps[0]->pref.y,line2->lps[1]->pref.y) ) <= row
+      && min ( max(line1->lps[0]->pref.y,line1->lps[1]->pref.y),
+               max(line2->lps[0]->pref.y,line2->lps[1]->pref.y) ) >= row )
     return true;
   return false;
 }
@@ -214,9 +214,8 @@ IA_Line::IA_Line ( Point2f *p1, Point2f *p2 )
     vertical = true;
 
   else
-    /* We have a "normal" liine. */
-    //FIXME: why does the slope need to be Dx/Dy ?
-    slope = ( p2->x - p1->x )/( p2->y - p1->y);
+    /* We have a "normal" line. */
+    slope = ( p2->y - p1->y )/( p2->x - p1->x );
 }
 
 int
