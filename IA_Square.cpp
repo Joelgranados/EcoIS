@@ -282,7 +282,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
 
   if (has_chessboard)
   {
-    cvtColor ( a_image, hsv_img, CV_BGR2HSV );
+    cvtColor ( a_image, hsv_img, CV_BGR2HSV_FULL );
 
     for ( int r = 0 ; r < boardSize.height-1 ; r++ )
       for ( int c = 0 ; c < boardSize.width-1 ; c++ )
