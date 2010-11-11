@@ -17,8 +17,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "IA_Square.h"
-#include <cv.h>
-#include <highgui.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 #include <stdio.h>
 
 //using namespace cv;

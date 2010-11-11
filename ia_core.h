@@ -16,8 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include <cv.h>
-#include <highgui.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 using namespace cv;
 

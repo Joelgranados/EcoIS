@@ -17,7 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "ia_input.h"
-#include <cv.h>
+#include <opencv/cv.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>

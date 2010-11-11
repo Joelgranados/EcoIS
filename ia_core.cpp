@@ -20,8 +20,8 @@
 #include "IA_Square.h"
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <cv.h>
-#include <highgui.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 #include <stdio.h>
 #include <time.h>
 #include <sstream>

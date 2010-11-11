@@ -17,7 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <cv.h>
+#include <opencv/cv.h>
 #include <math.h>
 
 using namespace cv;
