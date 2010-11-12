@@ -115,11 +115,11 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   if ( vid_file != ""
        && !capture.isOpened()
        && !capture.open( vid_file ) )
-    std::cout << vid_file << " could not be played" << endl;
+    std::cerr << vid_file << " could not be played" << endl;
   if ( vid_file == ""
        && !capture.isOpened()
        && !capture.open(camera_id) )
-    fprintf ( stderr, "Could not open camera input\n" );
+    std::cerr << "Could not open camera input" << endl;
   if ( !capture.isOpened() )
     return;
 

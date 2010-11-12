@@ -182,7 +182,7 @@ ia_get_intrinsics_from_file ( const char *filename, Mat *camMat, Mat *disMat)
   /* we make sure we actually read everything */
   if ( !dist_found || !cammat_found )
   {
-    std::cout << "File contained bad format: " << filename << endl;
+    std::cerr << "File contained bad format: " << filename << endl;
     return false;
   }
 
@@ -338,7 +338,7 @@ ia_init_input ( int argc, char **argv)
         case 'c':
           if ( sscanf(optarg, "%d", &(input.camera_id)) != 1 )
           {
-            std::cout << "Bad value for camera id. Using 0" << endl;
+            std::cerr << "Bad value for camera id. Using 0" << endl;
             input.camera_id = 0;
           }
           break;
@@ -346,7 +346,7 @@ ia_init_input ( int argc, char **argv)
         case 's':
           if ( sscanf(optarg, "%f", &(input.squareSize)) != 1 )
           {
-            std::cout << "Could not use specified squareSize: " << optarg
+            std::cerr << "Could not use specified squareSize: " << optarg
                       << ". Using default: 1." << endl;
             input.squareSize = (float)1.0;
           }
@@ -355,7 +355,7 @@ ia_init_input ( int argc, char **argv)
         case 'd':
           if ( sscanf(optarg, "%d", &(input.delay)) != 1 )
           {
-            std::cout << "Could not use specified delay: " << optarg
+            std::cerr << "Could not use specified delay: " << optarg
                       << ". Using default: 250." << endl;
             input.delay = 250;
           }
@@ -369,8 +369,8 @@ ia_init_input ( int argc, char **argv)
         case 'I':
           if ( sscanf(optarg, "%d", &(input.num_in_img)) != 1 )
           {
-            std::cout << "Could not use the specified value for the -I "
-                      << "argument.  Using the default: 20" << endl;
+            std::cerr << "Could not use the specified value for the -I "
+                         "argument.  Using the default: 20" << endl;
             input.num_in_img = 20;
           }
           break;
@@ -403,7 +403,7 @@ ia_init_input ( int argc, char **argv)
   //FIXME: remember that we don't need images for video state.
   if ( input.images.size() < 1 )
   {
-    std::cout << "You must provide a list of images" << endl;
+    std::cerr << "You must provide a list of images" << endl;
     return input;
   }
 
@@ -411,7 +411,7 @@ ia_init_input ( int argc, char **argv)
   if ( optind >= argc && input.camera_id == -1 && input.vid_file == "" )
   {
     // The option indicator is at the last argument and there are no images...
-    std::cout << "You must provide a list of images" << endl;
+    std::cerr << "You must provide a list of images" << endl;
     ia_usage(argv[0]);
     return input;
   }
@@ -423,7 +423,7 @@ ia_init_input ( int argc, char **argv)
    */
   if (  input.b_size.height <= 0 || input.b_size.width <= 0 )
   {
-    std::cout << "To calculate the camera intrinsics you need to provide "
+    std::cerr << "To calculate the camera intrinsics you need to provide "
               << "positive chessboard height and width values." << endl;
     ia_usage(argv[0]);
     return input;
