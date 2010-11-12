@@ -97,33 +97,32 @@ ia_print_input_struct ( ia_input& input )
 }
 
 void
-ia_usage ( const char *command )
+ia_usage ( const string command )
 {
-  printf( "%s [OPTIONS] IMAGES\n\n"
-          "OPTIONS:\n"
-          "-h | --help    Print this help message.\n"
-          "-i | --ininput Intrinsics file name.  Defaults to intrinsics.cfg\n"
-          "-W | --cw      Chessboard width in inner squares\n"
-          "-H | --ch      Chessboard height in inner squares\n"
-          "-s | --squaresize\n"
-          "               The size of the chessboard square.  1 by default\n"
-          "               The resulting values will be given with respect to\n"
-          "               this number.\n"
-          "-d | --delay   The delay time in miliseconds between events when\n"
-          "               capturing.\n"
-          "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
-          "-C | --camera  The camera id.\n"
-          "-I | --num_int The number of images to calculate intrinsic data.\n"
-          "               Defaults to 20. -1 means use all images/frames.\n"
-          "-c | --camera_id\n"
-          "               Should specify the camera id. Default is 0.\n"
-          "OBJECTIVES\n"
-          "-D | --video_demo\n"
-          "               Demostrates the ability of the command with video\n"
-          "               input.  Works with -c or -v\n"
-          "-a | --image_adjust\n"
-          "               This will only accept a list of images.\n\n"
-          , command);
+  std::cout << command << " [OPTIONS] IMAGES" << endl;
+    "OPTIONS:\n"
+    "-h | --help    Print this help message.\n"
+    "-i | --ininput Intrinsics file name.  Defaults to intrinsics.cfg\n"
+    "-W | --cw      Chessboard width in inner squares\n"
+    "-H | --ch      Chessboard height in inner squares\n"
+    "-s | --squaresize\n"
+    "               The size of the chessboard square.  1 by default\n"
+    "               The resulting values will be given with respect to\n"
+    "               this number.\n"
+    "-d | --delay   The delay time in miliseconds between events when\n"
+    "               capturing.\n"
+    "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
+    "-C | --camera  The camera id.\n"
+    "-I | --num_int The number of images to calculate intrinsic data.\n"
+    "               Defaults to 20. -1 means use all images/frames.\n"
+    "-c | --camera_id\n"
+    "               Should specify the camera id. Default is 0.\n"
+    "OBJECTIVES\n"
+    "-D | --video_demo\n"
+    "               Demostrates the ability of the command with video\n"
+    "               input.  Works with -c or -v\n"
+    "-a | --image_adjust\n"
+    "               This will only accept a list of images.\n\n";
 }
 
 /** Get intrinsics from file.
