@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <iostream>
+#include <fstream>
 #include "ia_input.h"
 #include <opencv/cv.h>
 #include <getopt.h>
@@ -202,47 +203,42 @@ ia_create_config ( const Mat *dist = NULL, const Mat *cam = NULL )
   char *filename = (char*)"intrinsics.cfg";
   FILE *fp;
 
-  /* we try to access the file*/
-  fp = fopen(filename, "w");
-  if ( fp == NULL )
+  ofstream int_file ( "intrinsics.cfg" );
+
+  if ( int_file.is_open() )
   {
-    std::cout << "Could not open file: " << filename << endl;
-    return;
-  }
+    int_file <<
+      "# The intrinsics file should have two lines specifying the\n"
+      "# distortion values and the camera matrix values.  The distortion\n"
+      "# values are given by a line that begins with 'distortion ' followed\n"
+      "# by 5 space separated values that specify K1, K2, P1, P2 and K3\n"
+      "# respectively.  The camera matrix values are given by a line that\n"
+      "# begins with 'cameramatrix ' and is followed by 9 space separated\n"
+      "# values that represent a 3x3 matrix.  The first 3 numbers are the\n"
+      "# first row, the second three are the second row ant the last three\n"
+      "# are the last row. Example:\n"
+      "# distortion K1 K2 P1 P2 K3\n"
+      "# cameramatrix 00(FX) 01 02(CX) 10 11(FY) 12(CY) 20 21 22\n\n";
+    if ( dist == NULL || cam == NULL )
+      int_file << "distortion 0 0 0 0 0\ncameramatrix 0 0 0 0 0 0 0 0 0\n";
+    else
+    {
+      /* We put the distortion*/
+      int_file << "distortion";
+      for ( int i = 0 ; i < 5 ; i++ )
+        int_file << (*dist).at<double>(0,i);
+      int_file << endl;
 
-  /* We put the documentation in the file */
-  fprintf ( fp, "# The intrinsics file should have two lines specifying the\n"
-          "# distortion values and the camera matrix values.  The distortion\n"
-          "# values are given by a line that begins with 'distortion ' followed\n"
-          "# by 5 space separated values that specify K1, K2, P1, P2 and K3\n"
-          "# respectively.  The camera matrix values are given by a line that\n"
-          "# begins with 'cameramatrix ' and is followed by 9 space separated\n"
-          "# values that represent a 3x3 matrix.  The first 3 numbers are the\n"
-          "# first row, the second three are the second row ant the last three\n"
-          "# are the last row. Example:\n"
-          "# distortion K1 K2 P1 P2 K3\n"
-          "# cameramatrix 00(FX) 01 02(CX) 10 11(FY) 12(CY) 20 21 22\n\n" );
-
-  if ( dist == NULL || cam == NULL )
-    fprintf ( fp, "distortion 0 0 0 0 0\ncameramatrix 0 0 0 0 0 0 0 0 0\n" );
-  else
-  {
-    /* We put the distortion*/
-    fprintf ( fp, "distortion" );
-    for ( int i = 0 ; i < 5 ; i++ )
-      fprintf ( fp, " %e", (*dist).at<double>(0,i) );
-    fprintf ( fp, "\n" );
-
-    /* We put the camera matrix*/
-    fprintf ( fp, "cameramatrix" );
-    for ( int i = 0 ; i < 3 ; i++ )
-      for ( int j = 0 ; j < 3 ; j++ )
-        fprintf ( fp, " %e", (*cam).at<double>(i,j) );
-    fprintf ( fp, "\n" );
-  }
-
-  /* close the file*/
-  fclose(fp);
+      /* We put the camera matrix*/
+      int_file << "cameramatrix";
+      for ( int i = 0 ; i < 3 ; i++ )
+        for ( int j = 0 ; j < 3 ; j++ )
+          int_file << (*cam).at<double>(i,j);
+      int_file << endl;
+    }
+    int_file.close();
+  } else
+    std::cerr << "Could not open file: " << filename << endl;
 }
 
 /*
