@@ -121,8 +121,6 @@ ia_usage ( const char *command )
           "-D | --video_demo\n"
           "               Demostrates the ability of the command with video\n"
           "               input.  Works with -c or -v\n"
-          "-k | --create_conf\n"
-          "               This will create a configuration file\n"
           "-a | --image_adjust\n"
           "               This will only accept a list of images.\n\n"
           , command);
@@ -197,50 +195,6 @@ ia_get_intrinsics_from_file ( const char *filename, Mat *camMat, Mat *disMat)
   return true;
 }
 
-void
-ia_create_config ( const Mat *dist = NULL, const Mat *cam = NULL )
-{
-  char *filename = (char*)"intrinsics.cfg";
-  FILE *fp;
-
-  ofstream int_file ( "intrinsics.cfg" );
-
-  if ( int_file.is_open() )
-  {
-    int_file <<
-      "# The intrinsics file should have two lines specifying the\n"
-      "# distortion values and the camera matrix values.  The distortion\n"
-      "# values are given by a line that begins with 'distortion ' followed\n"
-      "# by 5 space separated values that specify K1, K2, P1, P2 and K3\n"
-      "# respectively.  The camera matrix values are given by a line that\n"
-      "# begins with 'cameramatrix ' and is followed by 9 space separated\n"
-      "# values that represent a 3x3 matrix.  The first 3 numbers are the\n"
-      "# first row, the second three are the second row ant the last three\n"
-      "# are the last row. Example:\n"
-      "# distortion K1 K2 P1 P2 K3\n"
-      "# cameramatrix 00(FX) 01 02(CX) 10 11(FY) 12(CY) 20 21 22\n\n";
-    if ( dist == NULL || cam == NULL )
-      int_file << "distortion 0 0 0 0 0\ncameramatrix 0 0 0 0 0 0 0 0 0\n";
-    else
-    {
-      /* We put the distortion*/
-      int_file << "distortion";
-      for ( int i = 0 ; i < 5 ; i++ )
-        int_file << (*dist).at<double>(0,i);
-      int_file << endl;
-
-      /* We put the camera matrix*/
-      int_file << "cameramatrix";
-      for ( int i = 0 ; i < 3 ; i++ )
-        for ( int j = 0 ; j < 3 ; j++ )
-          int_file << (*cam).at<double>(i,j);
-      int_file << endl;
-    }
-    int_file.close();
-  } else
-    std::cerr << "Could not open file: " << filename << endl;
-}
-
 /*
  * Will prepare all the input parameters.
  * Returns a pointer to the input struct if all went well.  Pointer to NULL
@@ -259,7 +213,6 @@ ia_init_input ( int argc, char **argv)
       /* These options don't set a flag.
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
-      {"create_conf",   no_argument,          0, 'k'},
       {"image_adjust",  no_argument,          0, 'a'},
       {"video_demo",    no_argument,          0, 'D'},
       {"camera_id",     required_argument,    0, 'c'},
@@ -280,7 +233,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "hkDai:b:s:d:v:c:I:", long_options,
+    c = getopt_long ( argc, argv, "hDai:b:s:d:v:c:I:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -373,10 +326,6 @@ ia_init_input ( int argc, char **argv)
                          "argument.  Using the default: 20" << endl;
             input.num_in_img = 20;
           }
-          break;
-
-        case 'k':
-          input.objective = CREATE_CONF;
           break;
 
         case 'a':
