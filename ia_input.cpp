@@ -202,7 +202,6 @@ ia_get_intrinsics_from_file ( const char *filename, Mat *camMat, Mat *disMat)
 ia_input
 ia_init_input ( int argc, char **argv)
 {
-
   //Don't use distortion by default
   int c;
   char** temp_images;
@@ -245,10 +244,10 @@ ia_init_input ( int argc, char **argv)
           /* If this option set a flag, do nothing else now. */
           if (long_options[option_index].flag != 0)
             break;
-          printf ("option %s", long_options[option_index].name);
+          std::cout << "option " << long_options[option_index].name;
           if (optarg)
-            printf (" with arg %s", optarg);
-          printf ("\n");
+            std::cout << "with args " << optarg;
+          std::cout << endl;
           break;
 
         case '?':
