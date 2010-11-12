@@ -22,7 +22,6 @@
 #include <opencv/cv.h>
 #include <getopt.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 using namespace cv;
 
