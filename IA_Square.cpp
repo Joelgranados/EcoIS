@@ -121,7 +121,7 @@ IA_Square::calculate_rgb ()
           line2 = sqr.ls[2];
         } else {
           line1 = sqr.ls[1];
-          line1 = sqr.ls[3];
+          line2 = sqr.ls[3];
         }
       }
     }
