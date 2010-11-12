@@ -93,7 +93,7 @@ ia_find_chessboard_points( const Mat *image, const Size boardSize,
 
 void
 ia_calculate_and_capture ( const Size boardSize, const int delay,
-                           const char* vid_file, const int camera_id = 0,
+                           const string vid_file, const int camera_id = 0,
                            const float squareSize = 1, const int num_in_imgs=20)
 {
   /* Reflects the process state of the function. start accumulating. */
@@ -112,11 +112,11 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   float r_dist = 0;
 
   /* We start the capture.  And bail out if we can't */
-  if ( vid_file != NULL
+  if ( vid_file != ""
        && !capture.isOpened()
-       && !capture.open( (string)vid_file ) )
-    fprintf ( stderr, "File %s could not be played\n", vid_file );
-  if ( vid_file == NULL
+       && !capture.open( vid_file ) )
+    std::cout << vid_file << " could not be played" << endl;
+  if ( vid_file == ""
        && !capture.isOpened()
        && !capture.open(camera_id) )
     fprintf ( stderr, "Could not open camera input\n" );
@@ -208,259 +208,13 @@ ia_calculate_and_capture ( const Size boardSize, const int delay,
   }
 }
 
-/* returns -1 in failure*/
-int
-ia_image_calc_intr ( const char **images, const Size boardSize,
-                     const float squareSize, const int num_in_imgs,
-                     const bool create_config, Mat *camMat, Mat *disMat,
-                     vector<Mat> *rvecs, vector<Mat> *tvecs)
-{
-  Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
-  vector<Point2f> pointbuf;
-  vector<vector<Point2f> > imagePoints;
-  vector<vector<Point3f> > objectPoints;
-  char image_message[30]; //output text to the image
-
-  if ( images == '\0' )
-    return -1;
-
-  /*lets show the process*/
-  namedWindow ( "Output", 1 );
-
-  for ( int i = 0 ; images[i] != '\0' ; i++ )
-  {
-    /* get next image*/
-    a_image = imread ( images[i] );
-
-    if ( ia_find_chessboard_points ( &a_image, boardSize, &pointbuf ) == -1 )
-      continue;
-
-    /* Draw chessboard on image.*/
-    drawChessboardCorners ( a_image, boardSize, Mat(pointbuf), true );
-
-    /* show what we found */
-    try{
-      imshow ( "Output", a_image );
-    }catch (cv::Exception){continue;}
-    if( (waitKey(50) & 255) == 27 )
-      break;
-
-    /* We make sure we keep the image points. */
-    imagePoints.push_back(pointbuf);
-
-    /* Create and put message on image */
-    sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
-              num_in_imgs );
-    ia_put_text_on_image ( image_message, a_image );
-
-    /* we break when we have enough images */
-    if ( num_in_imgs > 0 && (int)imagePoints.size() >= num_in_imgs )
-      break;
-  }
-
-  /* get the points for the object. */
-  ia_calc_object_chess_points ( boardSize, squareSize,
-                                imagePoints.size(), &objectPoints);
-
-  /*
-   * calc camera matrix, dist matrix, rvector, tvector, no flags.
-   * imagesize = a_image.size() current image.
-   */
-  calibrateCamera( objectPoints, imagePoints, a_image.size(),
-                   (*camMat), (*disMat), (*rvecs), (*tvecs), 0 );
-
-  /* finally create the configuration file */
-  if ( create_config )
-    ia_create_config ( disMat, camMat );
-}
-
-int
-ia_video_calc_intr ( const char *video_file, const Size boardSize,
-                     const float squareSize, const int num_in_imgs,
-                     const bool create_config, const int delay,
-                     Mat *camMat, Mat *disMat )
-{
-  VideoCapture capture;
-  Mat frame_buffer;
-  Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
-  vector<Point2f> pointbuf;
-  vector<vector<Point2f> > imagePoints;
-  vector<vector<Point3f> > objectPoints;
-  clock_t timestamp = 0;
-  char image_message[30]; //output text to the image
-
-  /*lets show the process*/
-  namedWindow ( "Output", 1 );
-
-  /*setup the capture stuff*/
-  if ( video_file != NULL )
-    capture.open( (string)video_file );
-  if ( !capture.isOpened() )
-    capture.open(0);
-  if ( !capture.isOpened() )
-    return -1;
-
-  while (true)
-  {
-    if ( !capture.grab() ) break;
-    capture.retrieve ( frame_buffer );
-
-    frame_buffer.copyTo ( a_image ); // we cant use frame_buffer.
-
-    if ( ia_find_chessboard_points ( &a_image, boardSize, &pointbuf ) == -1 )
-      continue;
-
-    /* Draw chessboard on image.*/
-    drawChessboardCorners( a_image, boardSize, Mat(pointbuf), true );
-
-    /* We make sure we keep the image points. */
-    if ( clock() - timestamp > delay*1e-3*CLOCKS_PER_SEC )
-    {
-      imagePoints.push_back(pointbuf);
-      timestamp = clock();
-    }
-
-    /* Create and put message on image */
-    if ( num_in_imgs > 0 )
-    {
-      sprintf ( image_message, "Cal Intrinsics: %d/%d.", imagePoints.size(),
-                num_in_imgs );
-      ia_put_text_on_image ( image_message, a_image );
-
-      /* we change state when we have enough images */
-      if ( (int)imagePoints.size() >= num_in_imgs )
-        break;
-    }
-
-    /* show what we have */
-    try{
-      imshow ( "Output", a_image );
-      if( (waitKey(50) & 255) == 27 )
-        break;
-    }catch (cv::Exception)
-    {
-      /* Ugly hack.  Sometimes opencv does not like a_image */
-      a_image = Mat::zeros(1,1,CV_64F);
-      continue;
-    }
-  }
-
-  /* get the points for the object. */
-  ia_calc_object_chess_points ( boardSize, squareSize,
-                                imagePoints.size(), &objectPoints);
-
-  /*
-   * calc camera matrix, dist matrix, rvector, tvector, no flags.
-   * imagesize = a_image.size() current image.
-   */
-  vector<Mat> rvecs, tvecs; // will not be used in other places.
-  calibrateCamera( objectPoints, imagePoints, a_image.size(),
-                   (*camMat), (*disMat), rvecs, tvecs, 0 );
-
-  /* finally create the configuration file */
-  if ( create_config )
-    ia_create_config ( disMat, camMat );
-}
-
 void
-ia_imageadjust ( const char **images, const Size boardSize,
-                 const float squareSize, const Mat *cam = NULL,
-                 const Mat *dis = NULL )
+ia_information_extraction_debug ( vector<string>& images, Size& boardSize )
 {
-  vector<Mat> rvecs, tvecs;
-  Mat camMat, disMat;
-  Mat r_t, t_t, trans_mat; //temporary Mats
-  Mat o_img, a_img;
-  vector<Point2f> pointbuf;
-  vector<vector<Point3f> > objectPoints;
-  std::string dirname, filename;
-  std::stringstream ss;
-  double maxHeight = 0;
-
-  /* We transform all the images and put them in a new dir */
-  ss << getpid();
-  dirname = "Adjusted" + ss.str();
-  if ( mkdir ( dirname.data(), 0777 ) == -1 )
+  for ( vector<string>::iterator image = images.begin() ;
+        image != images.end() ; image++ )
   {
-    std::cerr << "Could not create directory " << dirname << "\n" ;
-    return;
-  }
-
-
-  if ( dis == NULL || cam == NULL )
-  {
-    /* When we dont have intrinsics we calculate them */
-    ia_image_calc_intr ( images, boardSize, squareSize, -1, false,
-                         &camMat, &disMat, &rvecs, &tvecs );
-
-    /* we calculate the maximum height from the tvecs.*/
-    for ( int i = 0 ; i < tvecs.size() ; i++ )
-      if ( maxHeight < tvecs[i].at<double>(0,2) )
-        maxHeight = tvecs[i].at<double>(0,2);
-  }
-  else
-  {
-    camMat = *cam;
-    disMat = *dis;
-    /* get the points for the object. */
-    ia_calc_object_chess_points ( boardSize, squareSize, 1, &objectPoints);
-
-    /* create the rvecs and tvecs vectors. */
-    for ( int i = 0 ; images[i] != '\0' ; i++ )
-    {
-      /* get next image*/
-      o_img = imread ( images[i] );
-
-      if ( ia_find_chessboard_points ( &o_img, boardSize, &pointbuf ) == -1 )
-      {
-        std::cerr << "Did not find chessboard for " << images[i] << "\n";
-        continue;
-      }
-
-      /* calc the rvec and tvec.  Note that we use the camMat and disMat*/
-      solvePnP ( (Mat)objectPoints[0], (Mat)pointbuf, camMat, disMat,
-                 r_t, t_t );
-
-      /* append them to the respective vector */
-      rvecs.push_back ( r_t.clone() );
-      tvecs.push_back ( t_t.clone() );
-
-      /* we calculate the max distance from image plane at the same time */
-      if ( maxHeight < t_t.at<double>(0,2) )
-        maxHeight = t_t.at<double>(0,2);
-    }
-  }
-
-  for ( int i = 0 ; images[i] != '\0' ; i++ )
-  {
-    /* get next image*/
-    o_img = imread ( images[i] );
-
-    /* Calc rotation transformation matrix. First arg is center */
-    trans_mat = getRotationMatrix2D ( Point(o_img.size().width/2,
-                                            o_img.size().height/2),
-                                      ia_rad2deg(rvecs[i].at<double>(0,2)), 1 );
-
-    /* Perform the rotation and put it in a_img */
-    warpAffine ( o_img, a_img, trans_mat, o_img.size() );
-
-    /* calculate the scaling size. tvecs[i](0.2)/maxHeight = ratio */
-    resize ( a_img, o_img, Size(0,0), // we assume a correct maxHeight
-             tvecs[i].at<double>(0,2)/maxHeight,
-             tvecs[i].at<double>(0,2)/maxHeight );
-
-    filename = images[i];
-    filename = dirname + "/" + filename.substr( filename.rfind('/')+1 );
-    imwrite ( filename, o_img );
-  }
-}
-
-void
-ia_information_extraction_debug ( const char **images, const Size boardSize )
-{
-  for ( int i = 0 ; images[i] != '\0' ; i++ )
-  {
-    IA_ChessboardImage cb = IA_ChessboardImage ( images[i], boardSize );
+    IA_ChessboardImage cb = IA_ChessboardImage ( *image, boardSize );
     cb.debug_print();
   }
 }

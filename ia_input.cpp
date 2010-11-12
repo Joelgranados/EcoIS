@@ -16,6 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <iostream>
 #include "ia_input.h"
 #include <opencv/cv.h>
 #include <getopt.h>
@@ -28,92 +29,70 @@ using namespace cv;
  * Input specific functions.
  */
 static void
-ia_init_input_struct ( struct ia_input *input )
+ia_init_input_struct ( ia_input& input )
 {
   /*
    * We default to calculating the intrinsics of the camera.  User must specify
    * an intrinsics file to change behavior.
    */
-  input->iif = NULL;
+  input.iif = "";
 
-  input->camMat = Mat::eye(3, 3, CV_64F);
-  input->disMat = Mat::zeros(5, 1, CV_64F);
+  input.camMat = Mat::eye(3, 3, CV_64F);
+  input.disMat = Mat::zeros(5, 1, CV_64F);
 
-  input->camera_id = -1; //no camera id unless specified.
-  input->vid_file = NULL;
+  input.camera_id = -1; //no camera id unless specified.
+  input.vid_file = "";
 
   /*
    * Chessboard default size will be 0,0.  If the user does not specify the
    * sizes, the intrinsics cannot be calculated.
    */
-  input->b_size.height = (unsigned int)0;
-  input->b_size.width = (unsigned int)0;
+  input.b_size.height = (unsigned int)0;
+  input.b_size.width = (unsigned int)0;
 
-  input->squareSize = 1;
-  input->delay = 250;
+  input.squareSize = 1;
+  input.delay = 250;
 
-  input->images = NULL;
+  input.images = vector<string>(0);
 
-  input->num_in_img = 20;
+  input.num_in_img = 20;
 
   /* default command objective will be to create a config file */
-  input->objective = NONE;
+  input.objective = NONE;
+
+  input.checked = false;
   return;
 }
 
-static void
-ia_free_input_struct ( struct ia_input *input )
-{
-  input->camMat.release();
-  input->disMat.release();
-  free(input);
-}
-
 void
-ia_print_input_struct ( const struct ia_input *input )
+ia_print_input_struct ( ia_input& input )
 {
-  if ( input == NULL )
-    return;
+  Mat& cm = input.camMat;
+  Mat& dm = input.disMat;
+  std::cout << "Arguments used for input:" << endl
+    << "Filename: " << input.iif.data() << endl
 
-  Mat cm = input->camMat;
-  Mat dm = input->disMat;
-  fprintf(stdout, "Arguments used for input:\n"
+    << "Camera distortion :" 
+  <<dm.at<double>(0,0)<<" "<<dm.at<double>(0,1)<<" "<<dm.at<double>(0,2)<<" "
+  <<dm.at<double>(0,3)<<" "<< dm.at<double>(0,4)<<endl
 
-      "Filename: %s\n"
-      "Camera distortion: %f, %f, %f, %f, %f\n"
-      "Camera Matrix: [ %f, %f, %f;\n"
-      "                 %f, %f, %f;\n"
-      "                 %f, %f, %f]\n"
-      "BoardSize (w,h): (%u, %u)\n"
-      "SquareSize: %f\n"
-      "Delay: %d\n"
-      "Video File: %s\n"
-      "Camera id: %d\n"
-      "Number of Images for Intrinsics: %d\n",
+    << "Camera Matrix:" << endl
+  <<cm.at<double>(0,0)<<", "<<cm.at<double>(0,1)<<", "<<cm.at<double>(0,2)<<endl
+  <<cm.at<double>(1,0)<<", "<<cm.at<double>(1,1)<<", "<<cm.at<double>(1,2)<<endl
+  <<cm.at<double>(2,0)<<", "<<cm.at<double>(2,1)<<", "<<cm.at<double>(2,2)<<endl
 
-      //file name
-      input->iif,
-      //camera distortion
-      dm.at<double>(0,0), dm.at<double>(0,1), dm.at<double>(0,2),
-        dm.at<double>(0,3), dm.at<double>(0,4),
-      //camera matrix
-      cm.at<double>(0,0),cm.at<double>(0,1),cm.at<double>(0,2),
-      cm.at<double>(1,0),cm.at<double>(1,1),cm.at<double>(1,2),
-      cm.at<double>(2,0),cm.at<double>(2,1),cm.at<double>(2,2),
-      //chessboard sizes.
-      input->b_size.width, input->b_size.height,
-      //square size
-      input->squareSize,
-      input->delay,
-      input->vid_file,
-      input->camera_id,
-      input->num_in_img);
+    <<"BoardSize (w,h): "<<input.b_size.width<<", "<<input.b_size.height<<endl
+    << "SquareSize: " << input.squareSize << endl
+    << "Delay: " << input.delay << endl
+    << "Video File: " << input.vid_file << endl
+    << "Camera id: " << input.camera_id << endl
+    << "Num images for intrinsic: " << input.num_in_img << endl;
 
-  // We print the image list.
-  fprintf(stdout, "Image List: ");
-  for (int i = 0 ; input->images != NULL && input->images[i] != '\0' ; i++)
-    fprintf(stdout, "%s, ", input->images[i]);
-  fprintf(stdout, "\n");
+  std::cout << "Image List: ";
+  for ( vector<string>::iterator image = input.images.begin() ;
+        image != input.images.end() ; ++image )
+    std::cout << *image;
+  std::cout << "\n";
 }
 
 void
@@ -174,7 +153,7 @@ ia_get_intrinsics_from_file ( const char *filename, Mat *camMat, Mat *disMat)
   fp = fopen(filename, "r");
   if ( fp == NULL )
   {
-    fprintf(stderr, "Could not open file: %s\n", filename);
+    std::cerr << "Could not open file: " << filename << endl;
     return false;
   }
 
@@ -202,7 +181,7 @@ ia_get_intrinsics_from_file ( const char *filename, Mat *camMat, Mat *disMat)
   /* we make sure we actually read everything */
   if ( !dist_found || !cammat_found )
   {
-    fprintf(stderr, "File contained bad format: %s\n", filename);
+    std::cout << "File contained bad format: " << filename << endl;
     return false;
   }
 
@@ -227,7 +206,7 @@ ia_create_config ( const Mat *dist = NULL, const Mat *cam = NULL )
   fp = fopen(filename, "w");
   if ( fp == NULL )
   {
-    fprintf(stderr, "Could not open file: %s\n", filename);
+    std::cout << "Could not open file: " << filename << endl;
     return;
   }
 
@@ -271,13 +250,14 @@ ia_create_config ( const Mat *dist = NULL, const Mat *cam = NULL )
  * Returns a pointer to the input struct if all went well.  Pointer to NULL
  * otherwise.
  */
-ia_input*
+ia_input
 ia_init_input ( int argc, char **argv)
 {
 
-  struct ia_input *input;
   //Don't use distortion by default
   int c;
+  char** temp_images;
+
   static struct option long_options[] =
     {
       /* These options don't set a flag.
@@ -297,7 +277,7 @@ ia_init_input ( int argc, char **argv)
       {0, 0, 0, 0}
     };
 
-  input = (ia_input*)malloc(sizeof(ia_input));
+  ia_input input;
   ia_init_input_struct(input);
 
   while (1)
@@ -329,130 +309,133 @@ ia_init_input ( int argc, char **argv)
 
         case 'h':
           ia_usage(argv[0]);
-          ia_free_input_struct(input);
-          return NULL;
+          return input;
 
         case 'i':
           /* Notihing changes if ia_get_intrinsics_from_file returns false. */
           if (optarg
-              && ia_get_intrinsics_from_file(optarg, &(input->camMat),
-                    &(input->disMat)) )
+              && ia_get_intrinsics_from_file(optarg, &(input.camMat),
+                    &(input.disMat)) )
           {
-            input->iif = optarg;
+            input.iif = optarg;
           }
           break;
 
         case 'H':
-          if ( sscanf(optarg, "%u", &(input->b_size.height)) != 1 )
+          if ( sscanf(optarg, "%u", &(input.b_size.height)) != 1 )
           {
-            fprintf(stderr, "Remember to give --ch an argument");
+            std::cerr << "Remember to give --ch an argument" << endl;
             ia_usage(argv[0]);
-            ia_free_input_struct(input);
-            return NULL;
+            return input;
           }
           break;
 
         case 'W':
-          if ( sscanf(optarg, "%u", &(input->b_size.width)) != 1 )
+          if ( sscanf(optarg, "%u", &(input.b_size.width)) != 1 )
           {
-            fprintf(stderr, "Remember to give --cw an argument");
+            std::cerr << "Remember to give --cw an argument" << endl;
             ia_usage(argv[0]);
-            ia_free_input_struct(input);
-            return NULL;
+            return input;
           }
           break;
 
         case 'c':
-          if ( sscanf(optarg, "%d", &(input->camera_id)) != 1 )
+          if ( sscanf(optarg, "%d", &(input.camera_id)) != 1 )
           {
-            fprintf ( stderr, "Bad value for camera id.  Using 0\n" );
-            input->camera_id = 0;
+            std::cout << "Bad value for camera id. Using 0" << endl;
+            input.camera_id = 0;
           }
           break;
 
         case 's':
-          if ( sscanf(optarg, "%f", &(input->squareSize)) != 1 )
+          if ( sscanf(optarg, "%f", &(input.squareSize)) != 1 )
           {
-            fprintf( stderr, "Could not use specified squareSize: %s"
-                             "Using default: 1.\n", optarg );
-            input->squareSize = (float)1.0;
+            std::cout << "Could not use specified squareSize: " << optarg
+                      << ". Using default: 1." << endl;
+            input.squareSize = (float)1.0;
           }
           break;
 
         case 'd':
-          if ( sscanf(optarg, "%d", &(input->delay)) != 1 )
+          if ( sscanf(optarg, "%d", &(input.delay)) != 1 )
           {
-            fprintf( stderr, "Could not use specified delay: %s"
-                             "Using default: 250.\n", optarg );
-            input->delay = 250;
+            std::cout << "Could not use specified delay: " << optarg
+                      << ". Using default: 250." << endl;
+            input.delay = 250;
           }
           break;
 
         case 'v':
-          input->vid_file = (char*)optarg;
+          input.vid_file = (char*)optarg;
 
           break;
 
         case 'I':
-          if ( sscanf(optarg, "%d", &(input->num_in_img)) != 1 )
+          if ( sscanf(optarg, "%d", &(input.num_in_img)) != 1 )
           {
-            fprintf ( stderr, "Could not use the specified value for "
-                              " the -I argument.  Using the devfault\n" );
-            input->num_in_img = 20;
+            std::cout << "Could not use the specified value for the -I "
+                      << "argument.  Using the default: 20" << endl;
+            input.num_in_img = 20;
           }
           break;
 
         case 'k':
-          input->objective = CREATE_CONF;
+          input.objective = CREATE_CONF;
           break;
 
         case 'a':
-          input->objective = IMAGE_ADJUST;
+          input.objective = IMAGE_ADJUST;
           break;
 
         case 'D':
-          input->objective = VIDEO_DEMO;
+          input.objective = VIDEO_DEMO;
           break;
 
         default:
           ia_usage(argv[0]);
-          ia_free_input_struct(input);
-          return NULL;
+          return input;
       }
+  }
+  /* We consider everything else as an image */
+  if ( optind < argc )
+  {
+    temp_images = &argv[optind];
+    for ( int i = 0 ; temp_images[i] != '\0' ; i++ )
+      input.images.push_back( temp_images[i] );
+  }
+
+  //FIXME: remember that we don't need images for video state.
+  if ( input.images.size() < 1 )
+  {
+    std::cout << "You must provide a list of images" << endl;
+    return input;
   }
 
   /* We error out if there are no additional images and no capture method. */
-  if ( optind >= argc && input->camera_id == -1 && input->vid_file == NULL )
+  if ( optind >= argc && input.camera_id == -1 && input.vid_file == "" )
   {
     // The option indicator is at the last argument and there are no images...
-    fprintf(stderr, "You must provide a list of images\n");
+    std::cout << "You must provide a list of images" << endl;
     ia_usage(argv[0]);
-    return NULL;
+    return input;
   }
-
-  /*
-   * Irespective of the state of input->capture we point the input->images to
-   * the rest of the arguments (if possible).
-   */
-  if ( optind < argc ) // We consider everything as an image name.
-    input->images = &argv[optind];
 
   // Check to see if the relation between arguments is ok.
   /*
    * Minimum chessboard check.  FIXME: we could do better by checking the
    * relation between sides.  I'll leave it for later.
    */
-  if (  input->b_size.height <= 0 || input->b_size.width <= 0 )
+  if (  input.b_size.height <= 0 || input.b_size.width <= 0 )
   {
-    fprintf(stderr, "To calculate the camera intrinsics you need to provide"
-        " positive chessboard height and width values.\n");
+    std::cout << "To calculate the camera intrinsics you need to provide "
+              << "positive chessboard height and width values." << endl;
     ia_usage(argv[0]);
-    ia_free_input_struct(input);
-    return NULL;
+    return input;
   }
 
   // We print the values so the user can see them
   ia_print_input_struct(input);
 
+  input.checked = true;
   return input;
 }

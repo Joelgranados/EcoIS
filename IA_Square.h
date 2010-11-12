@@ -102,7 +102,7 @@ private:
 
 class IA_ChessboardImage{
 public:
-  IA_ChessboardImage ( const char*, const Size& );
+  IA_ChessboardImage ( string&, Size& );
   void debug_print ();
 private:
   vector<IA_Square> squares;

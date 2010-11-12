@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "IA_Square.h"
+#include <iostream>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <stdio.h>
@@ -133,34 +134,40 @@ IA_Square::calculate_rgb ()
     /* Step 2: We traverse all of 'row' from col1 (left) to col2 (right) and do
      * a cumulative average*/
     for ( int i = 0 ; col1 + i < col2 ; i++ )
-      ca_angle = ((*h_subimg).at<float>(col1+1, row) + (i*ca_angle))/(i+1);
+    {
+      ca_angle = ( *(h_subimg->data + h_subimg->cols * row + col1 + i)
+                   + (i*ca_angle) )/(i+1);
+      std::cout << "|" <<(float)*(h_subimg->data + h_subimg->cols * row + col1 + i);
+    }
+      //ca_angle = ((*h_subimg).at<float>(col1+1, row) + (i*ca_angle))/(i+1);
   }
+  std::cout <<  "<=" << ca_angle << "|" << endl;
 
   /*
    * We calculate rgb array from ca_angle with the folloing table.
-   *  red                 -> (165,180] || [0,15]
-   *  yellow (red-green)  -> (15,45]
-   *  green               -> (45,75]
-   *  cyan (green-blue)   -> (75,105]
-   *  blue                -> (105,135]
-   *  magenta (red-blue)  -> (135,165]
+   *  red                 -> (348.33,380] || [0,31.66]
+   *  yellow (red-green)  -> (31.66,95]
+   *  green               -> (95,158.33]
+   *  cyan (green-blue)   -> (158.33,221.66]
+   *  blue                -> (221.66,285]
+   *  magenta (red-blue)  -> (285,348.33]
    *  This is dependant on RBGtoHSV transformation in IAChessboardImage.
    */
-  if ( ca_angle < 15 && ca_angle >= 45 ) {
+  if ( ca_angle > 31.66 && ca_angle <= 95 ) {
     rgb[0] = 1;
     rgb[1] = 1;
-  } else if ( ca_angle < 45 && ca_angle >= 75 ) {
+  } else if ( ca_angle > 95 && ca_angle <= 158.33 ) {
     rgb[1] = 1;
-  } else if ( ca_angle < 75 && ca_angle >= 105 ) {
+  } else if ( ca_angle > 158.33 && ca_angle <= 221.66 ) {
     rgb[1] = 1;
     rgb[2] = 1;
-  } else if ( ca_angle < 105 && ca_angle >= 135 ) {
+  } else if ( ca_angle > 221.66 && ca_angle <= 285 ) {
     rgb[2] = 1;
-  } else if ( ca_angle < 135 && ca_angle >= 165 ) {
+  } else if ( ca_angle > 285 && ca_angle <= 348.33 ) {
     rgb[0] = 1;
     rgb[2] = 1;
-  } else if ( (ca_angle < 165 && ca_angle >= 180)
-              || (ca_angle <= 0 && ca_angle >= 15) ){
+  } else if ( (ca_angle > 348.33 && ca_angle <= 380)
+              || (ca_angle >= 0 && ca_angle <= 31.66) ){
     rgb[0] = 1;
   } else
     ;/* It should not get here */
@@ -252,8 +259,7 @@ IA_Line::resolve_height ( int width )
 }
 
 
-IA_ChessboardImage::IA_ChessboardImage ( const char *image,
-                                         const Size &boardSize )
+IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
 {
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
   Mat hsv_img; //temp image
@@ -284,6 +290,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
   {
     cvtColor ( a_image, hsv_img, CV_BGR2HSV_FULL );
 
+    bool isBlack = true;
     for ( int r = 0 ; r < boardSize.height-1 ; r++ )
       for ( int c = 0 ; c < boardSize.width-1 ; c++ )
       {
@@ -293,7 +300,13 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
         ordered_points[2] = &pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ];
         ordered_points[3] = &pointbuf[ (r*boardSize.width)+boardSize.width+c ];
 
-        squares.push_back( IA_Square( ordered_points, &hsv_img ) );
+        if ( !isBlack )
+        {
+          squares.push_back( IA_Square( ordered_points, &hsv_img ) );
+          isBlack = !isBlack;
+        }
+        else
+          isBlack = !isBlack;
       }
   }
 }
@@ -301,15 +314,17 @@ IA_ChessboardImage::IA_ChessboardImage ( const char *image,
 void
 IA_ChessboardImage::debug_print ()
 {
-  fprintf ( stderr, "\nPrinting red\n" );
+  std::cout << endl << "Printing red\t";
   for ( int i = 0; i < squares.size() ; i++ )
-    fprintf ( stderr, "%d ", squares[i].get_red_value() );
+    std::cout << squares[i].get_red_value();
 
-  fprintf ( stderr, "\nPrinting green\n" );
+  std::cout << endl << "Printing green\t";
   for ( int i = 0; i < squares.size() ; i++ )
-    fprintf ( stderr, "%d ", squares[i].get_green_value() );
+    std::cout << squares[i].get_green_value();
 
-  fprintf ( stderr, "\nPrinting blue\n" );
+  std::cout << endl << "Printing blue\t";
   for ( int i = 0; i < squares.size() ; i++ )
-    fprintf ( stderr, "%d ", squares[i].get_blue_value() );
+    std::cout << squares[i].get_blue_value();
+
+  std::cout << endl;
 }

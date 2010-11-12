@@ -25,14 +25,14 @@ enum ia_obj { NONE, CREATE_CONF, IMAGE_ADJUST, VIDEO_DEMO };
 //Structure holding all the user input and some initial calculations.
 struct ia_input
 {
-  char* iif; //The intrinsic input file.
+  string iif; //The intrinsic input file.
 
   cv::Mat camMat; //The camera matrix.
   cv::Mat disMat; //The distortion matrix.
 
   int camera_id;
-  char* vid_file; //Video file to use instead of the camera.
-  char** images; // a list of image file names.
+  string vid_file; //Video file to use instead of the camera.
+  vector<string> images; // a list of image file names.
 
   cv::Size b_size; //chessboard size. height x width
 
@@ -44,10 +44,13 @@ struct ia_input
 
   /* These will be the command objectives */
   ia_obj objective;
+
+  /* Checks to see if the arguments have been checked */
+  bool checked;
 };
 
 void ia_usage (const char*);
-ia_input* ia_init_input (int, char**);
-void ia_print_input_struct (const struct ia_input*);
+ia_input ia_init_input (int, char**);
+void ia_print_input_struct (ia_input&);
 
 void ia_create_config (const cv::Mat*, const cv::Mat*);

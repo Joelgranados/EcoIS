@@ -24,15 +24,10 @@ using namespace cv;
 bool ia_calc_object_chess_points ( const Size, const int, const int,
                                    vector<vector<Point3f> >* );
 
-void ia_calculate_and_capture ( const Size, const int,  const char*,
+void ia_calculate_and_capture ( const Size, const int, const string,
                                 const int = 0, const float = 1,
                                 const int = 20 );
 
-int ia_video_calc_intr ( const char*, const Size, const float, const int,
-                         const bool, const int,  Mat*, Mat* );
-int ia_image_calc_intr ( const char**, const Size, const float, const int,
-                         const bool, Mat*, Mat*, vector<Mat>*, vector<Mat>* );
-
 void ia_imageadjust ( const char**, const Size, const float,
                       const Mat* = NULL, const Mat* = NULL );
-void ia_information_extraction_debug ( const char**, const Size );
+void ia_information_extraction_debug ( vector<string>&, Size& );
