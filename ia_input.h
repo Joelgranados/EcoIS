@@ -25,8 +25,6 @@ enum ia_obj { NONE, IMAGE_ADJUST, VIDEO_DEMO };
 //Structure holding all the user input and some initial calculations.
 struct ia_input
 {
-  string iif; //The intrinsic input file.
-
   cv::Mat camMat; //The camera matrix.
   cv::Mat disMat; //The distortion matrix.
 
