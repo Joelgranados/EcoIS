@@ -145,29 +145,29 @@ IA_Square::calculate_rgb ()
 
   /*
    * We calculate rgb array from ca_angle with the folloing table.
-   *  red                 -> (348.33,380] || [0,31.66]
-   *  yellow (red-green)  -> (31.66,95]
-   *  green               -> (95,158.33]
-   *  cyan (green-blue)   -> (158.33,221.66]
-   *  blue                -> (221.66,285]
-   *  magenta (red-blue)  -> (285,348.33]
+   *  red                 -> (234.66,256] || [0,21.33]
+   *  yellow (red-green)  -> (21.33,64]
+   *  green               -> (64,106.66]
+   *  cyan (green-blue)   -> (106.66,149.33]
+   *  blue                -> (149.33,192]
+   *  magenta (red-blue)  -> (192,234.66]
    *  This is dependant on RBGtoHSV transformation in IAChessboardImage.
    */
-  if ( ca_angle > 31.66 && ca_angle <= 95 ) {
+  if ( ca_angle > 21.66 && ca_angle <= 64 ) {
     rgb[0] = 1;
     rgb[1] = 1;
-  } else if ( ca_angle > 95 && ca_angle <= 158.33 ) {
+  } else if ( ca_angle > 64 && ca_angle <= 106.66 ) {
     rgb[1] = 1;
-  } else if ( ca_angle > 158.33 && ca_angle <= 221.66 ) {
+  } else if ( ca_angle > 106.66 && ca_angle <= 149.33 ) {
     rgb[1] = 1;
     rgb[2] = 1;
-  } else if ( ca_angle > 221.66 && ca_angle <= 285 ) {
+  } else if ( ca_angle > 149.33 && ca_angle <= 192 ) {
     rgb[2] = 1;
-  } else if ( ca_angle > 285 && ca_angle <= 348.33 ) {
+  } else if ( ca_angle > 192 && ca_angle <= 234.66 ) {
     rgb[0] = 1;
     rgb[2] = 1;
-  } else if ( (ca_angle > 348.33 && ca_angle <= 380)
-              || (ca_angle >= 0 && ca_angle <= 31.66) ){
+  } else if ( (ca_angle > 234.66 && ca_angle <= 256)
+              || (ca_angle >= 0 && ca_angle <= 21.66) ){
     rgb[0] = 1;
   } else
     ;/* It should not get here */
