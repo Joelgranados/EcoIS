@@ -1,5 +1,0 @@
-* ia_calculate_and_capture needs cleaning up.  Things we should do:
-    1. Find a better way to log stuff to the stdout.
-    
-* Allow user to control when to see the process.
-* Rename the initial calculate function to demo or something like "demo"
