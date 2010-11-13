@@ -87,9 +87,13 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
 void
 IA_Square::calculate_rgb ()
 {
+  /* Each accumulator offset will represent a color.
+   * c_accum[0] -> red,  c_accum[1] -> yellow, c_accum[2] -> green,
+   * c_accum[3] -> cyan, c_accum[4] -> Blue,   c_accum[5] -> magenta
+   * The color with more hits is the one that is chosen.*/
+  unsigned long c_accum[6] = {0,0,0,0,0,0};
   struct ia_square_line *line1, *line2;
-  int col1, col2;
-  float ca_angle = 0;
+  int col1, col2, angle_temp;
 
   /* We analyze all the rows in the image.  The next for loop contains two
    * steps: 1. We select the lines that intersec the row that is being analized,
@@ -135,43 +139,55 @@ IA_Square::calculate_rgb ()
      * a cumulative average*/
     for ( int i = 0 ; col1 + i < col2 ; i++ )
     {
-      ca_angle = ( *(h_subimg->data + h_subimg->cols * row + col1 + i)
-                   + (i*ca_angle) )/(i+1);
-      std::cout << "|" <<(float)*(h_subimg->data + h_subimg->cols * row + col1 + i);
+      angle_temp = *(h_subimg->data + h_subimg->cols * row + col1 + i);
+      /*
+       * We calculate rgb array from ca_angle with the folloing table.
+       *  red                 -> (234.66,256] || [0,21.33]
+       *  yellow (red-green)  -> (21.33,64]
+       *  green               -> (64,106.66]
+       *  cyan (green-blue)   -> (106.66,149.33]
+       *  blue                -> (149.33,192]
+       *  magenta (red-blue)  -> (192,234.66]
+       *  This is dependant on RBGtoHSV transformation in IAChessboardImage.
+       */
+      if ( (angle_temp > 234.66 && angle_temp <= 256)
+           || (angle_temp >= 0 && angle_temp <= 21.66) )
+        c_accum[0]++;
+      else if ( angle_temp > 21.66 && angle_temp <= 64 )
+        c_accum[1]++;
+      else if ( angle_temp > 64 && angle_temp <= 106.66 )
+        c_accum[2]++;
+      else if ( angle_temp > 106.66 && angle_temp <= 149.33 )
+        c_accum[3]++;
+      else if ( angle_temp > 149.33 && angle_temp <= 192 )
+        c_accum[4]++;
+      else if ( angle_temp > 192 && angle_temp <= 234.66 )
+        c_accum[5]++;
+      else
+        ;/* It should not get here */
     }
-    std::cout << "---" << endl;
-      //ca_angle = ((*h_subimg).at<float>(col1+1, row) + (i*ca_angle))/(i+1);
   }
-  std::cout <<  "<=" << ca_angle << "|" << endl;
 
-  /*
-   * We calculate rgb array from ca_angle with the folloing table.
-   *  red                 -> (234.66,256] || [0,21.33]
-   *  yellow (red-green)  -> (21.33,64]
-   *  green               -> (64,106.66]
-   *  cyan (green-blue)   -> (106.66,149.33]
-   *  blue                -> (149.33,192]
-   *  magenta (red-blue)  -> (192,234.66]
-   *  This is dependant on RBGtoHSV transformation in IAChessboardImage.
-   */
-  if ( ca_angle > 21.66 && ca_angle <= 64 ) {
+  /* find where the maximum offset is*/
+  int max_offset = 0;
+  for ( int i = 0 ; i < 6 ; i++ )
+    if ( c_accum[max_offset] < c_accum[i] )
+      max_offset = i;
+
+  if ( max_offset == 0 )
     rgb[0] = 1;
+  else if ( max_offset == 1 )
+    rgb[0] = rgb[1] = 1;
+  else if ( max_offset == 2 )
     rgb[1] = 1;
-  } else if ( ca_angle > 64 && ca_angle <= 106.66 ) {
-    rgb[1] = 1;
-  } else if ( ca_angle > 106.66 && ca_angle <= 149.33 ) {
-    rgb[1] = 1;
+  else if ( max_offset == 3 )
+    rgb[1] = rgb[2] = 1;
+  else if ( max_offset == 4 )
     rgb[2] = 1;
-  } else if ( ca_angle > 149.33 && ca_angle <= 192 ) {
-    rgb[2] = 1;
-  } else if ( ca_angle > 192 && ca_angle <= 234.66 ) {
-    rgb[0] = 1;
-    rgb[2] = 1;
-  } else if ( (ca_angle > 234.66 && ca_angle <= 256)
-              || (ca_angle >= 0 && ca_angle <= 21.66) ){
-    rgb[0] = 1;
-  } else
-    ;/* It should not get here */
+  else if ( max_offset == 5 )
+    rgb[0] = rgb[2] = 1;
+  else
+    ; /* should not get here */
 }
 
 inline bool
