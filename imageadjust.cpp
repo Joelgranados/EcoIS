@@ -16,10 +16,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include <stdio.h>
+#include <iostream>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include "ia_core.h"
+#include "IA_Square.h"
 #include "ia_input.h"
 
 int
@@ -33,11 +33,12 @@ main ( int argc, char** argv ) {
     exit(0); //an error message has already been printed
 
   if (input.objective == IMAGE_ADJUST )
-  {
-    ia_information_extraction_debug ( input.images, input.b_size );
-
-  }else if (input.objective == VIDEO_DEMO )
-    ia_calculate_and_capture ( input.b_size, input.delay, input.vid_file,
-                               input.camera_id, input.squareSize,
-                               input.num_in_img );
+    for ( vector<string>::iterator image = input.images.begin() ;
+          image != input.images.end() ; image++ )
+    {
+      IA_ChessboardImage cb = IA_ChessboardImage ( *image, input.b_size );
+      cb.debug_print();
+    }
+  else
+    std::cerr << "You did not specify any valid objective " << endl;
 }

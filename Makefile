@@ -19,7 +19,7 @@ CFLAGS=`pkg-config --cflags opencv`
 LIBS=`pkg-config --libs opencv`
 
 all: ctag
-	g++ ${CFLAGS} ${LIBS} -g imageadjust.cpp ia_input.cpp ia_core.cpp IA_Square.cpp -o imageadjust
+	g++ ${CFLAGS} ${LIBS} -g imageadjust.cpp ia_input.cpp IA_Square.cpp -o imageadjust
 
 ctag:
 	ctags -R *
