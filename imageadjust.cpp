@@ -24,8 +24,6 @@
 
 int
 main ( int argc, char** argv ) {
-  Mat camMat, disMat;
-  vector<Mat> rvecs, tvecs;
 
   /* parse intput */
   ia_input input = ia_init_input ( argc, argv );

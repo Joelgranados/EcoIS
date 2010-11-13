@@ -31,9 +31,6 @@ using namespace cv;
 static void
 ia_init_input_struct ( ia_input& input )
 {
-  input.camMat = Mat::eye(3, 3, CV_64F);
-  input.disMat = Mat::zeros(5, 1, CV_64F);
-
   /*
    * Chessboard default size will be 0,0.  If the user does not specify the
    * sizes, the intrinsics cannot be calculated.
@@ -55,17 +52,7 @@ ia_init_input_struct ( ia_input& input )
 void
 ia_print_input_struct ( ia_input& input )
 {
-  Mat& cm = input.camMat;
-  Mat& dm = input.disMat;
   std::cout << "Arguments used for input:" << endl
-    << "Camera distortion :" 
-  <<dm.at<double>(0,0)<<" "<<dm.at<double>(0,1)<<" "<<dm.at<double>(0,2)<<" "
-  <<dm.at<double>(0,3)<<" "<< dm.at<double>(0,4)<<endl
-
-    << "Camera Matrix:" << endl
-  <<cm.at<double>(0,0)<<", "<<cm.at<double>(0,1)<<", "<<cm.at<double>(0,2)<<endl
-  <<cm.at<double>(1,0)<<", "<<cm.at<double>(1,1)<<", "<<cm.at<double>(1,2)<<endl
-  <<cm.at<double>(2,0)<<", "<<cm.at<double>(2,1)<<", "<<cm.at<double>(2,2)<<endl
 
     <<"BoardSize (w,h): "<<input.b_size.width<<", "<<input.b_size.height<<endl
     << "SquareSize: " << input.squareSize << endl;
