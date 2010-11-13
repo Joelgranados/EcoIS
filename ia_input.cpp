@@ -45,7 +45,6 @@ ia_init_input_struct ( ia_input& input )
   input.b_size.width = (unsigned int)0;
 
   input.squareSize = 1;
-  input.delay = 250;
 
   input.images = vector<string>(0);
 
@@ -75,7 +74,6 @@ ia_print_input_struct ( ia_input& input )
 
     <<"BoardSize (w,h): "<<input.b_size.width<<", "<<input.b_size.height<<endl
     << "SquareSize: " << input.squareSize << endl
-    << "Delay: " << input.delay << endl
     << "Video File: " << input.vid_file << endl
     << "Camera id: " << input.camera_id << endl
     << "Num images for intrinsic: " << input.num_in_img << endl;
@@ -99,8 +97,6 @@ ia_usage ( const string command )
     "               The size of the chessboard square.  1 by default\n"
     "               The resulting values will be given with respect to\n"
     "               this number.\n"
-    "-d | --delay   The delay time in miliseconds between events when\n"
-    "               capturing.\n"
     "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
     "-C | --camera  The camera id.\n"
     "-I | --num_int The number of images to calculate intrinsic data.\n"
@@ -140,7 +136,6 @@ ia_init_input ( int argc, char **argv)
       {"ch",            required_argument,    0, 'H'},
       {"cw",            required_argument,    0, 'W'},
       {"squaresize",    required_argument,    0, 's'},
-      {"delay",         required_argument,    0, 'd'},
       {0, 0, 0, 0}
     };
 
@@ -151,7 +146,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "hDab:s:d:v:c:I:", long_options,
+    c = getopt_long ( argc, argv, "hDab:s:v:c:I:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -210,15 +205,6 @@ ia_init_input ( int argc, char **argv)
             std::cerr << "Could not use specified squareSize: " << optarg
                       << ". Using default: 1." << endl;
             input.squareSize = (float)1.0;
-          }
-          break;
-
-        case 'd':
-          if ( sscanf(optarg, "%d", &(input.delay)) != 1 )
-          {
-            std::cerr << "Could not use specified delay: " << optarg
-                      << ". Using default: 250." << endl;
-            input.delay = 250;
           }
           break;
 
