@@ -20,7 +20,7 @@
 #include <string.h>
 
 /* command objective description */
-enum ia_obj { NONE, IMAGE_ADJUST, VIDEO_DEMO };
+enum ia_obj { NONE, IMAGE_ADJUST };
 
 //Structure holding all the user input and some initial calculations.
 struct ia_input
@@ -28,7 +28,6 @@ struct ia_input
   cv::Mat camMat; //The camera matrix.
   cv::Mat disMat; //The distortion matrix.
 
-  string vid_file; //Video file to use instead of the camera.
   vector<string> images; // a list of image file names.
 
   cv::Size b_size; //chessboard size. height x width

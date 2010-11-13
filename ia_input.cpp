@@ -34,8 +34,6 @@ ia_init_input_struct ( ia_input& input )
   input.camMat = Mat::eye(3, 3, CV_64F);
   input.disMat = Mat::zeros(5, 1, CV_64F);
 
-  input.vid_file = "";
-
   /*
    * Chessboard default size will be 0,0.  If the user does not specify the
    * sizes, the intrinsics cannot be calculated.
@@ -70,8 +68,7 @@ ia_print_input_struct ( ia_input& input )
   <<cm.at<double>(2,0)<<", "<<cm.at<double>(2,1)<<", "<<cm.at<double>(2,2)<<endl
 
     <<"BoardSize (w,h): "<<input.b_size.width<<", "<<input.b_size.height<<endl
-    << "SquareSize: " << input.squareSize << endl
-    << "Video File: " << input.vid_file << endl;
+    << "SquareSize: " << input.squareSize << endl;
 
   std::cout << "Image List: ";
   for ( vector<string>::iterator image = input.images.begin() ;
@@ -92,11 +89,7 @@ ia_usage ( const string command )
     "               The size of the chessboard square.  1 by default\n"
     "               The resulting values will be given with respect to\n"
     "               this number.\n"
-    "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
     "OBJECTIVES\n"
-    "-D | --video_demo\n"
-    "               Demostrates the ability of the command with video\n"
-    "               input.  Works with -c or -v\n"
     "-a | --image_adjust\n"
     "               This will only accept a list of images.\n\n";
 }
@@ -119,8 +112,6 @@ ia_init_input ( int argc, char **argv)
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
       {"image_adjust",  no_argument,          0, 'a'},
-      {"video_demo",    no_argument,          0, 'D'},
-      {"video",         required_argument,    0, 'v'},
       {"ch",            required_argument,    0, 'H'},
       {"cw",            required_argument,    0, 'W'},
       {"squaresize",    required_argument,    0, 's'},
@@ -134,7 +125,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "hDab:s:v:", long_options,
+    c = getopt_long ( argc, argv, "hab:s:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -188,17 +179,8 @@ ia_init_input ( int argc, char **argv)
           }
           break;
 
-        case 'v':
-          input.vid_file = (char*)optarg;
-
-          break;
-
         case 'a':
           input.objective = IMAGE_ADJUST;
-          break;
-
-        case 'D':
-          input.objective = VIDEO_DEMO;
           break;
 
         default:
@@ -214,7 +196,6 @@ ia_init_input ( int argc, char **argv)
       input.images.push_back( temp_images[i] );
   }
 
-  //FIXME: remember that we don't need images for video state.
   if ( input.images.size() < 1 )
   {
     std::cerr << "You must provide a list of images" << endl;
