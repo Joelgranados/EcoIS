@@ -28,7 +28,6 @@ struct ia_input
   cv::Mat camMat; //The camera matrix.
   cv::Mat disMat; //The distortion matrix.
 
-  int camera_id;
   string vid_file; //Video file to use instead of the camera.
   vector<string> images; // a list of image file names.
 

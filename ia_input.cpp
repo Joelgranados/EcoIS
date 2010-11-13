@@ -34,7 +34,6 @@ ia_init_input_struct ( ia_input& input )
   input.camMat = Mat::eye(3, 3, CV_64F);
   input.disMat = Mat::zeros(5, 1, CV_64F);
 
-  input.camera_id = -1; //no camera id unless specified.
   input.vid_file = "";
 
   /*
@@ -72,8 +71,7 @@ ia_print_input_struct ( ia_input& input )
 
     <<"BoardSize (w,h): "<<input.b_size.width<<", "<<input.b_size.height<<endl
     << "SquareSize: " << input.squareSize << endl
-    << "Video File: " << input.vid_file << endl
-    << "Camera id: " << input.camera_id << endl;
+    << "Video File: " << input.vid_file << endl;
 
   std::cout << "Image List: ";
   for ( vector<string>::iterator image = input.images.begin() ;
@@ -95,9 +93,6 @@ ia_usage ( const string command )
     "               The resulting values will be given with respect to\n"
     "               this number.\n"
     "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
-    "-C | --camera  The camera id.\n"
-    "-c | --camera_id\n"
-    "               Should specify the camera id. Default is 0.\n"
     "OBJECTIVES\n"
     "-D | --video_demo\n"
     "               Demostrates the ability of the command with video\n"
@@ -125,7 +120,6 @@ ia_init_input ( int argc, char **argv)
       {"help",          no_argument,          0, 'h'},
       {"image_adjust",  no_argument,          0, 'a'},
       {"video_demo",    no_argument,          0, 'D'},
-      {"camera_id",     required_argument,    0, 'c'},
       {"video",         required_argument,    0, 'v'},
       {"ch",            required_argument,    0, 'H'},
       {"cw",            required_argument,    0, 'W'},
@@ -140,7 +134,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "hDab:s:v:c:", long_options,
+    c = getopt_long ( argc, argv, "hDab:s:v:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -185,14 +179,6 @@ ia_init_input ( int argc, char **argv)
           }
           break;
 
-        case 'c':
-          if ( sscanf(optarg, "%d", &(input.camera_id)) != 1 )
-          {
-            std::cerr << "Bad value for camera id. Using 0" << endl;
-            input.camera_id = 0;
-          }
-          break;
-
         case 's':
           if ( sscanf(optarg, "%f", &(input.squareSize)) != 1 )
           {
@@ -232,15 +218,6 @@ ia_init_input ( int argc, char **argv)
   if ( input.images.size() < 1 )
   {
     std::cerr << "You must provide a list of images" << endl;
-    return input;
-  }
-
-  /* We error out if there are no additional images and no capture method. */
-  if ( optind >= argc && input.camera_id == -1 && input.vid_file == "" )
-  {
-    // The option indicator is at the last argument and there are no images...
-    std::cerr << "You must provide a list of images" << endl;
-    ia_usage(argv[0]);
     return input;
   }
 
