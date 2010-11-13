@@ -48,8 +48,6 @@ ia_init_input_struct ( ia_input& input )
 
   input.images = vector<string>(0);
 
-  input.num_in_img = 20;
-
   /* default command objective will be to create a config file */
   input.objective = NONE;
 
@@ -75,8 +73,7 @@ ia_print_input_struct ( ia_input& input )
     <<"BoardSize (w,h): "<<input.b_size.width<<", "<<input.b_size.height<<endl
     << "SquareSize: " << input.squareSize << endl
     << "Video File: " << input.vid_file << endl
-    << "Camera id: " << input.camera_id << endl
-    << "Num images for intrinsic: " << input.num_in_img << endl;
+    << "Camera id: " << input.camera_id << endl;
 
   std::cout << "Image List: ";
   for ( vector<string>::iterator image = input.images.begin() ;
@@ -99,8 +96,6 @@ ia_usage ( const string command )
     "               this number.\n"
     "-v | --video   Use a video file. Supporst whatever opencv supports.\n"
     "-C | --camera  The camera id.\n"
-    "-I | --num_int The number of images to calculate intrinsic data.\n"
-    "               Defaults to 20. -1 means use all images/frames.\n"
     "-c | --camera_id\n"
     "               Should specify the camera id. Default is 0.\n"
     "OBJECTIVES\n"
@@ -131,7 +126,6 @@ ia_init_input ( int argc, char **argv)
       {"image_adjust",  no_argument,          0, 'a'},
       {"video_demo",    no_argument,          0, 'D'},
       {"camera_id",     required_argument,    0, 'c'},
-      {"num_int",       required_argument,    0, 'I'},
       {"video",         required_argument,    0, 'v'},
       {"ch",            required_argument,    0, 'H'},
       {"cw",            required_argument,    0, 'W'},
@@ -146,7 +140,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "hDab:s:v:c:I:", long_options,
+    c = getopt_long ( argc, argv, "hDab:s:v:c:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -211,15 +205,6 @@ ia_init_input ( int argc, char **argv)
         case 'v':
           input.vid_file = (char*)optarg;
 
-          break;
-
-        case 'I':
-          if ( sscanf(optarg, "%d", &(input.num_in_img)) != 1 )
-          {
-            std::cerr << "Could not use the specified value for the -I "
-                         "argument.  Using the default: 20" << endl;
-            input.num_in_img = 20;
-          }
           break;
 
         case 'a':

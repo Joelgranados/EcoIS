@@ -36,8 +36,6 @@ struct ia_input
 
   float squareSize; //Chessboard square size
 
-  int num_in_img; // Number of images to calculate intrinsics.
-
   /* These will be the command objectives */
   ia_obj objective;
 
