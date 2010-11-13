@@ -25,30 +25,6 @@
 
 using namespace cv;
 
-/*
- * Input specific functions.
- */
-static void
-ia_init_input_struct ( ia_input& input )
-{
-  /*
-   * Chessboard default size will be 0,0.  If the user does not specify the
-   * sizes, the intrinsics cannot be calculated.
-   */
-  input.b_size.height = (unsigned int)0;
-  input.b_size.width = (unsigned int)0;
-
-  input.squareSize = 1;
-
-  input.images = vector<string>(0);
-
-  /* default command objective will be to create a config file */
-  input.objective = NONE;
-
-  input.checked = false;
-  return;
-}
-
 void
 ia_print_input_struct ( ia_input& input )
 {
@@ -70,8 +46,8 @@ ia_usage ( const string command )
   std::cout << command << " [OPTIONS] IMAGES" << endl;
     "OPTIONS:\n"
     "-h | --help    Print this help message.\n"
-    "-W | --cw      Chessboard width in inner squares\n"
-    "-H | --ch      Chessboard height in inner squares\n"
+    "-w | --cw      Chessboard width in inner squares\n"
+    "-h | --ch      Chessboard height in inner squares\n"
     "-s | --squaresize\n"
     "               The size of the chessboard square.  1 by default\n"
     "               The resulting values will be given with respect to\n"
@@ -79,6 +55,27 @@ ia_usage ( const string command )
     "OBJECTIVES\n"
     "-a | --image_adjust\n"
     "               This will only accept a list of images.\n\n";
+}
+
+static void
+ia_init_input_struct ( ia_input& input )
+{
+  /*
+   * Chessboard default size will be 0,0.  If the user does not specify the
+   * sizes, the intrinsics cannot be calculated.
+   */
+  input.b_size.height = (unsigned int)0;
+  input.b_size.width = (unsigned int)0;
+
+  input.squareSize = 1;
+
+  input.images = vector<string>(0);
+
+  /* default command objective will be to create a config file */
+  input.objective = NONE;
+
+  input.checked = false;
+  return;
 }
 
 /*
@@ -99,8 +96,8 @@ ia_init_input ( int argc, char **argv)
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'h'},
       {"image_adjust",  no_argument,          0, 'a'},
-      {"ch",            required_argument,    0, 'H'},
-      {"cw",            required_argument,    0, 'W'},
+      {"ch",            required_argument,    0, 'h'},
+      {"cw",            required_argument,    0, 'w'},
       {"squaresize",    required_argument,    0, 's'},
       {0, 0, 0, 0}
     };
@@ -139,7 +136,7 @@ ia_init_input ( int argc, char **argv)
           ia_usage(argv[0]);
           return input;
 
-        case 'H':
+        case 'h':
           if ( sscanf(optarg, "%u", &(input.b_size.height)) != 1 )
           {
             std::cerr << "Remember to give --ch an argument" << endl;
@@ -148,7 +145,7 @@ ia_init_input ( int argc, char **argv)
           }
           break;
 
-        case 'W':
+        case 'w':
           if ( sscanf(optarg, "%u", &(input.b_size.width)) != 1 )
           {
             std::cerr << "Remember to give --cw an argument" << endl;
