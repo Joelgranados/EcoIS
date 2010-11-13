@@ -1,12 +1,7 @@
 If you have the opencv library and a starndard linux installation `make` should
 work.
 
-`make test` will probably fail as you might not have the test.avi file in the
-current directory. And even if you did you might not have filmed the same
-chessboard that I have.  It is a good starting point for the use of the command
-though.
-
 BUGS:
-Checkou the TODO file for any outstanding issues.
+Checkou the BUGS file for any outstanding issues.
 Report any bugs to jogr@itu.dk or joel.granados@gmail.com
 
