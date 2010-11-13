@@ -139,6 +139,7 @@ IA_Square::calculate_rgb ()
                    + (i*ca_angle) )/(i+1);
       std::cout << "|" <<(float)*(h_subimg->data + h_subimg->cols * row + col1 + i);
     }
+    std::cout << "---" << endl;
       //ca_angle = ((*h_subimg).at<float>(col1+1, row) + (i*ca_angle))/(i+1);
   }
   std::cout <<  "<=" << ca_angle << "|" << endl;
