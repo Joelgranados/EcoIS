@@ -78,8 +78,8 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
 
   /* We fill in the square lines */
   for ( int i = 0 ; i <= 3 ; i++ )
-    sqr.ls[i]->lref =  new IA_Line ( &sqr.ls[i]->lps[0]->pref,
-                                     &sqr.ls[i]->lps[1]->pref );
+    sqr.ls[i]->lref =  new IA_Line ( sqr.ls[i]->lps[0]->pref,
+                                     sqr.ls[i]->lps[1]->pref );
 
   calculate_rgb();
 }
@@ -230,49 +230,49 @@ IA_Square::get_values ()
   return rgb;
 }
 
-IA_Line::IA_Line ( Point2f *p1, Point2f *p2 )
+IA_Line::IA_Line ( Point2f p1, Point2f p2 )
 {
   this->p1 = p1;
   this->p2 = p2;
 
   horizontal = vertical = false;
-  if ( p2->y - p1->y == 0 ) /* We have a horizontal line */
+  if ( p2.y - p1.y == 0 ) /* We have a horizontal line */
     horizontal = true;
 
-  else if ( p2->x - p1->x == 0 ) /* We have a vertical line */
+  else if ( p2.x - p1.x == 0 ) /* We have a vertical line */
     vertical = true;
 
   else
     /* We have a "normal" line. */
-    slope = ( p2->y - p1->y )/( p2->x - p1->x );
+    slope = ( p2.y - p1.y )/( p2.x - p1.x );
 }
 
 int
-IA_Line::resolve_width ( int height )
+IA_Line::resolve_width ( const int& height )
 {
   /* it's an error to ask for width of a horizontal line */
   if ( horizontal )
     return -1;
 
   else if ( vertical )
-    return p1->x; /* == to p2->x */
+    return p1.x; /* == to p2.x */
 
   else
-    return floor ( (height - p1->y)/slope + p1->x );
+    return floor ( (height - p1.y)/slope + p1.x );
 }
 
 int
-IA_Line::resolve_height ( int width )
+IA_Line::resolve_height ( const int& width )
 {
   if ( horizontal )
-    return p1->y; /*== to p2->y*/
+    return p1.y; /*== to p2.y*/
 
   /* it's an error to ask for height of a vertical line */
   else if ( vertical )
     return -1;
 
   else
-    return floor ( slope * (width - p1->x) + p1->y );
+    return floor ( slope * (width - p1.x) + p1.y );
 }
 
 

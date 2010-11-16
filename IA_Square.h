@@ -88,13 +88,13 @@ private:
 
 class IA_Line{
 public:
-  IA_Line ( Point2f*, Point2f* );
-  int resolve_width ( int );
-  int resolve_height ( int );
+  IA_Line ( Point2f, Point2f );
+  int resolve_width ( const int& );
+  int resolve_height ( const int& );
 
 private:
-  Point2f *p1;
-  Point2f *p2;
+  Point2f p1;
+  Point2f p2;
   float slope;
   bool vertical;
   bool horizontal;
