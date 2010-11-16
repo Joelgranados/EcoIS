@@ -38,6 +38,6 @@ struct ia_input
   bool checked;
 };
 
-void ia_usage (const string);
+void ia_usage (const string&);
 ia_input ia_init_input (int, char**);
 void ia_print_input_struct (ia_input&);

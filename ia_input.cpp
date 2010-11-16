@@ -42,7 +42,7 @@ ia_print_input_struct ( ia_input& input )
 }
 
 void
-ia_usage ( const string command )
+ia_usage ( const string& command )
 {
   std::cout << command << " [OPTIONS] IMAGES" << endl;
     "OPTIONS:\n"
