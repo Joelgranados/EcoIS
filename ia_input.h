@@ -29,8 +29,6 @@ struct ia_input
 
   cv::Size b_size; //chessboard size. height x width
 
-  float squareSize; //Chessboard square size
-
   /* These will be the command objectives */
   ia_obj objective;
 

@@ -30,9 +30,7 @@ void
 ia_print_input_struct ( ia_input& input )
 {
   std::cout << "Arguments used for input:" << endl
-
-    <<"BoardSize (w,h): "<<input.b_size.width<<", "<<input.b_size.height<<endl
-    << "SquareSize: " << input.squareSize << endl;
+    <<"BoardSize (w,h): "<<input.b_size.width<<", "<<input.b_size.height<<endl;
 
   std::cout << "Image List: ";
   for ( vector<string>::iterator image = input.images.begin() ;
@@ -48,11 +46,7 @@ ia_usage ( const string& command )
     "OPTIONS:\n"
     "-H | --help    Print this help message.\n"
     "-w | --cw      Chessboard width in inner squares\n"
-    "-h | --ch      Chessboard height in inner squares\n"
-    "-s | --squaresize\n"
-    "               The size of the chessboard square.  1 by default\n"
-    "               The resulting values will be given with respect to\n"
-    "               this number.\n"
+    "-h | --ch      Chessboard height in inner squares\n\n"
     "OBJECTIVES\n"
     "-a | --image_adjust\n"
     "               This will only accept a list of images.\n\n";
@@ -67,8 +61,6 @@ ia_init_input_struct ( ia_input& input )
    */
   input.b_size.height = (unsigned int)0;
   input.b_size.width = (unsigned int)0;
-
-  input.squareSize = 1;
 
   input.images = vector<string>(0);
 
@@ -99,7 +91,6 @@ ia_init_input ( int argc, char **argv)
       {"image_adjust",  no_argument,          0, 'a'},
       {"ch",            required_argument,    0, 'h'},
       {"cw",            required_argument,    0, 'w'},
-      {"squaresize",    required_argument,    0, 's'},
       {0, 0, 0, 0}
     };
 
@@ -110,7 +101,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "hab:s:", long_options,
+    c = getopt_long ( argc, argv, "Hab:h:w:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -152,15 +143,6 @@ ia_init_input ( int argc, char **argv)
             std::cerr << "Remember to give --cw an argument" << endl;
             ia_usage(argv[0]);
             return input;
-          }
-          break;
-
-        case 's':
-          if ( sscanf(optarg, "%f", &(input.squareSize)) != 1 )
-          {
-            std::cerr << "Could not use specified squareSize: " << optarg
-                      << ". Using default: 1." << endl;
-            input.squareSize = (float)1.0;
           }
           break;
 
