@@ -191,20 +191,15 @@ ia_init_input ( int argc, char **argv)
     return input;
   }
 
-  // Check to see if the relation between arguments is ok.
-  /*
-   * Minimum chessboard check.  FIXME: we could do better by checking the
-   * relation between sides.  I'll leave it for later.
-   */
+  /* Minimum chessboard check. */
   if (  input.b_size.height <= 0 || input.b_size.width <= 0 )
   {
-    std::cerr << "To calculate the camera intrinsics you need to provide "
-              << "positive chessboard height and width values." << endl;
+    std::cerr << "Possitive chessboard values are needed to detect the corners." << endl;
     ia_usage(argv[0]);
     return input;
   }
 
-  // We print the values so the user can see them
+  /* We print the values so the user can see them */
   ia_print_input_struct(input);
 
   input.checked = true;
