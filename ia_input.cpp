@@ -45,7 +45,7 @@ ia_usage ( const string command )
 {
   std::cout << command << " [OPTIONS] IMAGES" << endl;
     "OPTIONS:\n"
-    "-h | --help    Print this help message.\n"
+    "-H | --help    Print this help message.\n"
     "-w | --cw      Chessboard width in inner squares\n"
     "-h | --ch      Chessboard height in inner squares\n"
     "-s | --squaresize\n"
@@ -94,7 +94,7 @@ ia_init_input ( int argc, char **argv)
     {
       /* These options don't set a flag.
       *                   We distinguish them by their indices. */
-      {"help",          no_argument,          0, 'h'},
+      {"help",          no_argument,          0, 'H'},
       {"image_adjust",  no_argument,          0, 'a'},
       {"ch",            required_argument,    0, 'h'},
       {"cw",            required_argument,    0, 'w'},
@@ -132,7 +132,7 @@ ia_init_input ( int argc, char **argv)
           /* getopt_long already printed an error message. */
           break;
 
-        case 'h':
+        case 'H':
           ia_usage(argv[0]);
           return input;
 
