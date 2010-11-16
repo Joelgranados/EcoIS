@@ -181,6 +181,11 @@ ia_init_input ( int argc, char **argv)
     return input;
   }
 
+  /* We default to IMAGE_ADJUST */
+  if ( input.objective == NONE )
+    input.objective = IMAGE_ADJUST;
+
+
   /* We print the values so the user can see them */
   ia_print_input_struct(input);
 
