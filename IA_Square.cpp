@@ -23,8 +23,15 @@
 #include <stdio.h>
 
 //using namespace cv;
+IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
+                       Point2f lower_left, Point2f lower_right,
+                       const Mat& img )
+{
+  Point2f p[4] = {upper_left, upper_right, lower_left, lower_right};
+  IA_Square::IA_Square( p, img );
+}
 
-IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
+IA_Square::IA_Square ( Point2f p[4], const Mat& img )
 {
   /* Initialize the array that will hold the bits. */
   rgb[0]=rgb[1]=rgb[2]=0;
@@ -35,7 +42,7 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
     Y_MIN (p[0], p[1], p[2], p[3]),
     O_S_WIDTH(p[0],p[1],p[2],p[3]), O_S_HEIGHT(p[0],p[1],p[2],p[3])
   );
-  hsv_subimg = Mat( *img, t_rect );
+  hsv_subimg = Mat( img, t_rect );
 
   /* We separate hsv into its different dimensions */
   vector<Mat> tmp_dim;
@@ -71,10 +78,10 @@ IA_Square::IA_Square ( Point2f *p[4], const Mat *img )
     sqr.ps[ (i+1)%4 ]->pls[1] = sqr.ls[i];
   }
 
-  /* We fill in the point pointers */
+  /* subtract with rect.* because we need the coordinate of the sub-square.*/
   for ( int i = 0 ; i <= 3 ; i++ ) /* dim 0 and 1 will never be negative */
-    sqr.ps[i]->pref = Point2f ( floor(p[i]->x-t_rect.x),
-                                floor(p[i]->y-t_rect.y) );
+    sqr.ps[i]->pref = Point2f ( floor(p[i].x-t_rect.x),
+                                floor(p[i].y-t_rect.y) );
 
   /* We fill in the square lines */
   for ( int i = 0 ; i <= 3 ; i++ )
@@ -310,21 +317,15 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
     bool isBlack = true;
     for ( int r = 0 ; r < boardSize.height-1 ; r++ )
       for ( int c = 0 ; c < boardSize.width-1 ; c++ )
-      {
-        Point2f *ordered_points[4];
-        ordered_points[0] = &pointbuf[ (r*boardSize.width)+c ];
-        ordered_points[1] = &pointbuf[ (r*boardSize.width)+c+1 ];
-        ordered_points[2] = &pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ];
-        ordered_points[3] = &pointbuf[ (r*boardSize.width)+boardSize.width+c ];
-
         if ( !isBlack )
-        {
-          squares.push_back( IA_Square( ordered_points, &hsv_img ) );
-          isBlack = !isBlack;
-        }
-        else
-          isBlack = !isBlack;
-      }
+          squares.push_back(
+            IA_Square(
+              pointbuf[ (r*boardSize.width)+c ], /* upper left */
+              pointbuf[ (r*boardSize.width)+c+1 ], /* upper right */
+              pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ],/*lower left*/
+              pointbuf[ (r*boardSize.width)+boardSize.width+c ], /*lower right*/
+              hsv_img ) );
+        isBlack = !isBlack;
   }
 }
 
