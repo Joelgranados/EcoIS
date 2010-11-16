@@ -73,7 +73,7 @@ public:
   int get_red_value ();
   int get_green_value ();
   int get_blue_value ();
-  int* get_values();
+  int& get_values();
 
 private:
   Mat hsv_subimg; /* minimal subimage that contains the 4 points. */

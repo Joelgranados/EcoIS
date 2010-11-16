@@ -231,10 +231,10 @@ IA_Square::get_blue_value ()
   return rgb[2];
 }
 
-int*
+int&
 IA_Square::get_values ()
 {
-  return rgb;
+  return *rgb;
 }
 
 IA_Line::IA_Line ( Point2f p1, Point2f p2 )
