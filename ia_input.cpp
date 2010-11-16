@@ -18,6 +18,7 @@
  */
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
 #include "ia_input.h"
 #include <opencv/cv.h>
 #include <getopt.h>
@@ -176,8 +177,12 @@ ia_init_input ( int argc, char **argv)
   if ( optind < argc )
   {
     temp_images = &argv[optind];
+    struct stat stat_temp;
     for ( int i = 0 ; temp_images[i] != '\0' ; i++ )
-      input.images.push_back( temp_images[i] );
+      if ( stat ( temp_images[i], &stat_temp ) == 0 )
+        input.images.push_back( temp_images[i] );
+      else
+        std::cout << "Could not read filename: " << temp_images[i] << endl;
   }
 
   if ( input.images.size() < 1 )
