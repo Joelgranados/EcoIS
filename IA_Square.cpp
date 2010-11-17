@@ -37,7 +37,8 @@ IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
     Y_MIN (p[0], p[1], p[2], p[3]),
     O_S_WIDTH(p[0],p[1],p[2],p[3]), O_S_HEIGHT(p[0],p[1],p[2],p[3])
   );
-  hsv_subimg = Mat( img, t_rect );
+  /* transform the subimage into hsv and put in hsv_subimg */
+  cvtColor ( Mat( img, t_rect ), hsv_subimg, CV_BGR2HSV_FULL );
 
   /* We separate hsv into its different dimensions */
   vector<Mat> tmp_dim;
@@ -277,11 +278,9 @@ IA_Line::resolve_height ( const int& width )
     return floor ( slope * (width - p1.x) + p1.y );
 }
 
-
 IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
 {
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
-  Mat hsv_img; //temp image
   vector<Point2f> pointbuf;
   has_chessboard = true;
 
@@ -308,8 +307,6 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
 
   if (has_chessboard)
   {
-    cvtColor ( a_image, hsv_img, CV_BGR2HSV_FULL );
-
     bool isBlack = true;
     for ( int r = 0 ; r < boardSize.height-1 ; r++ )
       for ( int c = 0 ; c < boardSize.width-1 ; c++ )
@@ -321,7 +318,7 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
               pointbuf[ (r*boardSize.width)+c+1 ], /* upper right */
               pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ],/*lower left*/
               pointbuf[ (r*boardSize.width)+boardSize.width+c ], /*lower right*/
-              hsv_img ) );
+              a_image ) );
         isBlack = !isBlack;
       }
   }
