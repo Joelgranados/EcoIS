@@ -1,5 +1,6 @@
-If you have the opencv library and a starndard linux installation `make` should
-work.
+Notice that I am using opencv r3899.  This is because I use the full HSV
+conversion.  So if you don't have that opencv version (or greater), this will
+probably not compile.
 
 BUGS:
 Checkou the BUGS file for any outstanding issues.
