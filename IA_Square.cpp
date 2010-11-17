@@ -28,11 +28,6 @@ IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
                        const Mat& img )
 {
   Point2f p[4] = {upper_left, upper_right, lower_left, lower_right};
-  IA_Square::IA_Square( p, img );
-}
-
-IA_Square::IA_Square ( Point2f p[4], const Mat& img )
-{
   /* Initialize the array that will hold the bits. */
   rgb[0]=rgb[1]=rgb[2]=0;
 

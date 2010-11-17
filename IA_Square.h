@@ -68,7 +68,6 @@ struct ia_square_square
 
 class IA_Square{
 public:
-  IA_Square ( Point2f[4], const Mat& );
   IA_Square ( Point2f, Point2f, Point2f, Point2f, const Mat& );
   int get_red_value ();
   int get_green_value ();
