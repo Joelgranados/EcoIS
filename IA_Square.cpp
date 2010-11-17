@@ -144,30 +144,15 @@ IA_Square::calculate_rgb ()
     {
       angle_temp = *(h_subimg->data + h_subimg->cols * row + col1 + i);
       /*
-       * We calculate rgb array from ca_angle with the folloing table.
-       *  red                 -> (234.66,256] || [0,21.33]
-       *  yellow (red-green)  -> (21.33,64]
-       *  green               -> (64,106.66]
-       *  cyan (green-blue)   -> (106.66,149.33]
-       *  blue                -> (149.33,192]
-       *  magenta (red-blue)  -> (192,234.66]
-       *  This is dependant on RBGtoHSV transformation in IAChessboardImage.
+       * We calculate rgb array from ca_angle based on the following table.
+       * red->(234.66,256]||[0,21.33]  yellow->(21.33,64]  green->(64,106.66]
+       * cyan->(106.66,149.33]         blue->(149.33,192]  magenta->(192,234.66]
+       *
+       * (int)(fmod(angle_temp+21.333,256)/42.667) -> we add 21.333 to angle and
+       * then modulus with 256 so the red hue begins at 0.  Finally we devide by
+       * 42.667 to get the offset.
        */
-      if ( (angle_temp > 234.66 && angle_temp <= 256)
-           || (angle_temp >= 0 && angle_temp <= 21.66) )
-        c_accum[0]++;
-      else if ( angle_temp > 21.66 && angle_temp <= 64 )
-        c_accum[1]++;
-      else if ( angle_temp > 64 && angle_temp <= 106.66 )
-        c_accum[2]++;
-      else if ( angle_temp > 106.66 && angle_temp <= 149.33 )
-        c_accum[3]++;
-      else if ( angle_temp > 149.33 && angle_temp <= 192 )
-        c_accum[4]++;
-      else if ( angle_temp > 192 && angle_temp <= 234.66 )
-        c_accum[5]++;
-      else
-        ;/* It should not get here */
+      c_accum[ (int)(fmod(angle_temp+21.333,256)/42.667) ]++;
     }
   }
 
