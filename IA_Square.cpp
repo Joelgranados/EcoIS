@@ -135,8 +135,14 @@ IA_Square::calculate_rgb ()
 
     /* At this point we are sure that line1 and line2 intersect.  We now
      * calculate col1 (left) and col2 (right).*/
-    col1=min(line1->lref->resolve_width(row), line2->lref->resolve_width(row));
-    col2=max(line1->lref->resolve_width(row), line2->lref->resolve_width(row));
+    col1 = line1->lref->resolve_width(row);
+    col2 = line2->lref->resolve_width(row);
+    if ( col1 > col2 )
+    {
+      int temp_col = col1;
+      col1 = col2;
+      col2 = temp_col;
+    }
 
     /* Step 2: We traverse all of 'row' from col1 (left) to col2 (right) and do
      * a cumulative average*/
