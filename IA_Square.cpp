@@ -150,7 +150,7 @@ IA_Square::calculate_rgb ()
        *
        * (int)(fmod(angle_temp+21.333,256)/42.667) -> we add 21.333 to angle and
        * then modulus with 256 so the red hue begins at 0.  Finally we devide by
-       * 42.667 to get the offset.
+       * 42.667 to get the offset that needs to be increased.
        */
       c_accum[ (int)(fmod(angle_temp+21.333,256)/42.667) ]++;
     }
@@ -162,20 +162,12 @@ IA_Square::calculate_rgb ()
     if ( c_accum[max_offset] < c_accum[i] )
       max_offset = i;
 
-  if ( max_offset == 0 )
+  if ( (max_offset+1)%6 >= 0 && (max_offset+1)%6 <=2 )
     rgb[0] = 1;
-  else if ( max_offset == 1 )
-    rgb[0] = rgb[1] = 1;
-  else if ( max_offset == 2 )
+  if ( max_offset >= 1 && max_offset <= 3 )
     rgb[1] = 1;
-  else if ( max_offset == 3 )
-    rgb[1] = rgb[2] = 1;
-  else if ( max_offset == 4 )
+  if ( max_offset >= 3 && max_offset <= 5 )
     rgb[2] = 1;
-  else if ( max_offset == 5 )
-    rgb[0] = rgb[2] = 1;
-  else
-    ; /* should not get here */
 }
 
 inline bool
