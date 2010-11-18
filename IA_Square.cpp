@@ -184,12 +184,24 @@ IA_Square::row_between_lines ( const unsigned int row,
   /* The row (horizontal line) is between the lines only if the maximum of the
    * lines starting point is less than row and if the minimum of the lines
    * ending points is greater than row.*/
-  if ( max( min(line1->lps[0]->pref.y,line1->lps[1]->pref.y),
-            min(line2->lps[0]->pref.y,line2->lps[1]->pref.y) ) <= row
-      && min ( max(line1->lps[0]->pref.y,line1->lps[1]->pref.y),
-               max(line2->lps[0]->pref.y,line2->lps[1]->pref.y) ) >= row )
-    return true;
-  return false;
+  float line1max, line1min, line2max, line2min;
+  line1max = line1->lps[0]->pref.y;
+  line1min = line1->lps[1]->pref.y;
+  line2max = line2->lps[0]->pref.y;
+  line2min = line2->lps[1]->pref.y;
+
+  if ( line1max < line1min )
+  {
+    line1max = line1->lps[1]->pref.y;
+    line1min = line1->lps[0]->pref.y;
+  }
+  if ( line2max < line2min )
+  {
+    line2max = line2->lps[1]->pref.y;
+    line2min = line2->lps[0]->pref.y;
+  }
+
+  return max(line1min, line2min) <= row && min(line1max, line2max) >= row;
 }
 
 int
