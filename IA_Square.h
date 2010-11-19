@@ -96,8 +96,11 @@ private:
   Point2f p1;
   Point2f p2;
   float slope;
-  bool vertical;
-  bool horizontal;
+  enum line_t {
+    VERTICAL    = 0x01,
+    HORIZONTAL  = 0x02,
+    NORMAL      = 0x04};
+  line_t l_type;
 };
 
 class IA_ChessboardImage{

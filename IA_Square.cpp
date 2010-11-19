@@ -233,15 +233,14 @@ IA_Line::IA_Line ( Point2f p1, Point2f p2 )
   this->p1 = p1;
   this->p2 = p2;
 
-  horizontal = vertical = false;
+  l_type = NORMAL;
   if ( p2.y - p1.y == 0 ) /* We have a horizontal line */
-    horizontal = true;
+    l_type = HORIZONTAL;
 
   else if ( p2.x - p1.x == 0 ) /* We have a vertical line */
-    vertical = true;
+    l_type = VERTICAL;
 
-  else
-    /* We have a "normal" line. */
+  else /* We have a "normal" line. */
     slope = ( p2.y - p1.y )/( p2.x - p1.x );
 }
 
@@ -249,28 +248,23 @@ int
 IA_Line::resolve_width ( const int& height )
 {
   /* it's an error to ask for width of a horizontal line */
-  if ( horizontal )
-    return -1;
-
-  else if ( vertical )
-    return p1.x; /* == to p2.x */
-
-  else
+  if ( l_type == NORMAL )
     return floor ( (height - p1.y)/slope + p1.x );
+  else if ( l_type == HORIZONTAL )
+    return -1;
+  else if ( l_type == VERTICAL )
+    return p1.x; /* == to p2.x */
 }
 
 int
 IA_Line::resolve_height ( const int& width )
 {
-  if ( horizontal )
-    return p1.y; /*== to p2.y*/
-
-  /* it's an error to ask for height of a vertical line */
-  else if ( vertical )
-    return -1;
-
-  else
+  if ( l_type == NORMAL )
     return floor ( slope * (width - p1.x) + p1.y );
+  else if ( l_type == HORIZONTAL )
+    return p1.y; /*== to p2.y*/
+  else if ( l_type == VERTICAL )
+    return -1;
 }
 
 IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
