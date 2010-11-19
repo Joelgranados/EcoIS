@@ -41,11 +41,10 @@ IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
   cvtColor ( Mat( img, t_rect ), hsv_subimg, CV_BGR2HSV_FULL );
 
   /* We separate hsv into its different dimensions */
+  //FIXME: try using the mixchannels so we can avoid s and v
   vector<Mat> tmp_dim;
   split( hsv_subimg, tmp_dim );
-  h_subimg = &tmp_dim[0];
-  s_subimg = &tmp_dim[1];
-  v_subimg = &tmp_dim[2];
+  h_subimg = tmp_dim[0];
 
   /* Initialize the square struct */
   for ( int i = 0 ; i <= 3 ; i++ )
@@ -83,9 +82,6 @@ IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
   for ( int i = 0 ; i <= 3 ; i++ )
     sqr.ls[i]->lref =  new IA_Line ( sqr.ls[i]->lps[0]->pref,
                                      sqr.ls[i]->lps[1]->pref );
-
-  int unsigned color_range[8] = {0, 21, 64, 106, 149, 192, 234, 256};
-  calculate_rgb(color_range);
 }
 
 /* FIXME: describe range here */
@@ -106,7 +102,7 @@ IA_Square::calculate_rgb ( const unsigned int range[7] )
    * cumulative average.*/
   line1 = sqr.ls[0]; /* select random lines to begin */
   line2 = sqr.ls[1];
-  for ( unsigned int row = 0 ; row <= h_subimg->rows ; row++ )
+  for ( unsigned int row = 0 ; row <= h_subimg.rows ; row++ )
   {
     /* Step 1: We don't change the lines if row intersects them.  If row
      * does not intersect at leaset one, we use row_between_lines to find new
@@ -150,7 +146,7 @@ IA_Square::calculate_rgb ( const unsigned int range[7] )
      * results into 6 bins.
      * We calculate the position in c_accum based on the received range.
      */
-    uchar *data_ptr = h_subimg->data + h_subimg->cols * row + col1;
+    uchar *data_ptr = h_subimg.data + h_subimg.cols * row + col1;
     for ( int i = 0 ; col1 + i < col2 ; i++ )
     {
       for ( int j = 0 ; j < 8 ; j++ )
@@ -310,8 +306,12 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
               a_image ) );
         isBlack = !isBlack;
       }
-
   }
+
+  int unsigned color_range[8] = {0, 21, 64, 106, 149, 192, 234, 256};
+  for ( vector<IA_Square>::iterator square = squares.begin() ;
+        square != squares.end() ; ++square )
+    square->calculate_rgb(color_range);
 }
 
 void

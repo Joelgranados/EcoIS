@@ -77,9 +77,7 @@ public:
 
 private:
   Mat hsv_subimg; /* minimal subimage that contains the 4 points. */
-  Mat *h_subimg; /* subimage for the hue dimension */
-  Mat *s_subimg; /* subimage for the saturation dimension */
-  Mat *v_subimg; /* subimage for the value dimension */
+  Mat h_subimg; /* subimage for the hue dimension */
   int rgb[3]; // Representation of the values in the square.
   struct ia_square_square sqr;
   inline bool row_between_lines ( const unsigned int,
