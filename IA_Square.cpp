@@ -144,22 +144,19 @@ IA_Square::calculate_rgb ()
       col2 = temp_col;
     }
 
-    /* Step 2: We traverse all of 'row' from col1 (left) to col2 (right) and do
-     * a cumulative average*/
+    /* Step 2: We traverse all of 'row' from col1 (left) to col2 (right) and put
+     * results into 6 bins.
+     * We calculate rgb array from ca_angle based on the following table.
+     * red->(234.66,256]||[0,21.33]  yellow->(21.33,64]  green->(64,106.66]
+     * cyan->(106.66,149.33]         blue->(149.33,192]  magenta->(192,234.66]
+     *
+     * (int)(fmod(angle_temp+21.333,256)/42.667) -> we add 21.333 to angle and
+     * then modulus with 256 so the red hue begins at 0.  Finally we devide by
+     * 42.667 to get the offset that needs to be increased.
+     */
+    uchar *data_ptr = h_subimg->data + h_subimg->cols * row + col1;
     for ( int i = 0 ; col1 + i < col2 ; i++ )
-    {
-      angle_temp = *(h_subimg->data + h_subimg->cols * row + col1 + i);
-      /*
-       * We calculate rgb array from ca_angle based on the following table.
-       * red->(234.66,256]||[0,21.33]  yellow->(21.33,64]  green->(64,106.66]
-       * cyan->(106.66,149.33]         blue->(149.33,192]  magenta->(192,234.66]
-       *
-       * (int)(fmod(angle_temp+21.333,256)/42.667) -> we add 21.333 to angle and
-       * then modulus with 256 so the red hue begins at 0.  Finally we devide by
-       * 42.667 to get the offset that needs to be increased.
-       */
-      c_accum[ (int)(fmod(angle_temp+21.333,256)/42.667) ]++;
-    }
+     c_accum[ (int)( fmod( *(data_ptr+i) + 21.333,256 ) / 42.667 ) ]++;
   }
 
   /* find where the maximum offset is*/
