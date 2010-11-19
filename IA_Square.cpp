@@ -122,13 +122,13 @@ IA_Square::calculate_rgb ()
         }
       if ( ! found )
       {
-        if ( row_between_lines ( row, sqr.ls[0], sqr.ls[2] ) )
+        if ( row_between_lines ( row, sqr.ls[1], sqr.ls[3] ) )
         {
-          line1 = sqr.ls[0];
-          line2 = sqr.ls[2];
-        } else {
           line1 = sqr.ls[1];
           line2 = sqr.ls[3];
+        } else {
+          line1 = sqr.ls[0];
+          line2 = sqr.ls[2];
         }
       }
     }
