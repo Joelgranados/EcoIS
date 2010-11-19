@@ -17,17 +17,17 @@
 
 CXXFLAGS += `pkg-config --cflags opencv`
 LIBS += `pkg-config --libs opencv`
-SRCS = imageadjust.cpp ia_input.cpp IA_Square.cpp
+SRCS = imagelabel.cpp ia_input.cpp IA_Square.cpp
 DEBUGFLAGS += -pg -fprofile-arcs -ftest-coverage
 
 all: ctag
-	$(CXX) $(LIBS) $(CXXFLAGS) $(SRCS) -o imageadjust
+	$(CXX) $(LIBS) $(CXXFLAGS) $(SRCS) -o imagelabel
 
 debug: ctag
-	$(CXX) $(LIBS) $(CXXFLAGS) $(DEBUGFLAGS) -g $(SRCS) -o imageadjust
+	$(CXX) $(LIBS) $(CXXFLAGS) $(DEBUGFLAGS) -g $(SRCS) -o imagelabel
 
 ctag:
 	ctags -R *
 
 clean:
-	rm -rf imageadjust imageadjust.tar.gz
+	rm -rf imagelabel imagelabel.tar.gz
