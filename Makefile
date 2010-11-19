@@ -15,11 +15,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-CFLAGS=`pkg-config --cflags opencv`
-LIBS=`pkg-config --libs opencv`
+CXXFLAGS += `pkg-config --cflags opencv`
+LIBS += `pkg-config --libs opencv`
+SRCS = imageadjust.cpp ia_input.cpp IA_Square.cpp
+DEBUGFLAGS += -pg -fprofile-arcs -ftest-coverage
 
 all: ctag
-	g++ ${CFLAGS} ${LIBS} -g imageadjust.cpp ia_input.cpp IA_Square.cpp -o imageadjust
+	$(CXX) $(LIBS) $(CXXFLAGS) $(SRCS) -o imageadjust
+
+debug: ctag
+	$(CXX) $(LIBS) $(CXXFLAGS) $(DEBUGFLAGS) -g $(SRCS) -o imageadjust
 
 ctag:
 	ctags -R *
