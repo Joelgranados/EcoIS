@@ -69,6 +69,7 @@ struct ia_square_square
 class IA_Square{
 public:
   IA_Square ( Point2f, Point2f, Point2f, Point2f, const Mat& );
+  void calculate_rgb ( const unsigned int [8] );
   int get_red_value ();
   int get_green_value ();
   int get_blue_value ();
@@ -81,7 +82,6 @@ private:
   Mat *v_subimg; /* subimage for the value dimension */
   int rgb[3]; // Representation of the values in the square.
   struct ia_square_square sqr;
-  void calculate_rgb ();
   inline bool row_between_lines ( const unsigned int,
       const struct ia_square_line*, const struct ia_square_line* );
 };

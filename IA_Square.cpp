@@ -84,11 +84,13 @@ IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
     sqr.ls[i]->lref =  new IA_Line ( sqr.ls[i]->lps[0]->pref,
                                      sqr.ls[i]->lps[1]->pref );
 
-  calculate_rgb();
+  int unsigned color_range[8] = {0, 21, 64, 106, 149, 192, 234, 256};
+  calculate_rgb(color_range);
 }
 
+/* FIXME: describe range here */
 void
-IA_Square::calculate_rgb ()
+IA_Square::calculate_rgb ( const unsigned int range[7] )
 {
   /* Each accumulator offset will represent a color.
    * c_accum[0] -> red,  c_accum[1] -> yellow, c_accum[2] -> green,
@@ -146,17 +148,18 @@ IA_Square::calculate_rgb ()
 
     /* Step 2: We traverse all of 'row' from col1 (left) to col2 (right) and put
      * results into 6 bins.
-     * We calculate rgb array from ca_angle based on the following table.
-     * red->(234.66,256]||[0,21.33]  yellow->(21.33,64]  green->(64,106.66]
-     * cyan->(106.66,149.33]         blue->(149.33,192]  magenta->(192,234.66]
-     *
-     * (int)(fmod(angle_temp+21.333,256)/42.667) -> we add 21.333 to angle and
-     * then modulus with 256 so the red hue begins at 0.  Finally we devide by
-     * 42.667 to get the offset that needs to be increased.
+     * We calculate the position in c_accum based on the received range.
      */
     uchar *data_ptr = h_subimg->data + h_subimg->cols * row + col1;
     for ( int i = 0 ; col1 + i < col2 ; i++ )
-     c_accum[ (int)( fmod( *(data_ptr+i) + 21.333,256 ) / 42.667 ) ]++;
+    {
+      for ( int j = 0 ; j < 8 ; j++ )
+        if ( range[j] > *(data_ptr+i) )
+        {
+          c_accum[j-1]++;
+          break;
+        }
+    }
   }
 
   /* find where the maximum offset is*/
@@ -307,6 +310,7 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
               a_image ) );
         isBlack = !isBlack;
       }
+
   }
 }
 
