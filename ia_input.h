@@ -27,7 +27,8 @@ struct ia_input
 {
   vector<string> images; // a list of image file names.
 
-  cv::Size b_size; //chessboard size. height x width
+  cv::Size b_size;  //chessboard size. height x width
+                    //width >= height
 
   /* These will be the command objectives */
   ia_obj objective;

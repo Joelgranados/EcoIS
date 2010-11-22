@@ -45,8 +45,8 @@ ia_usage ( const string& command )
   std::cout << command << " [OPTIONS] IMAGES" << endl;
     "OPTIONS:\n"
     "-H | --help    Print this help message.\n"
-    "-w | --cw      Chessboard width in inner squares\n"
-    "-h | --ch      Chessboard height in inner squares\n\n"
+    "-s | --cs      The minimum of the two sizes.\n"
+    "-S | --cS      The maximum of the two sizes.\n\n"
     "OBJECTIVES\n"
     "-a | --image_adjust\n"
     "               This will only accept a list of images.\n\n";
@@ -89,8 +89,8 @@ ia_init_input ( int argc, char **argv)
       *                   We distinguish them by their indices. */
       {"help",          no_argument,          0, 'H'},
       {"image_adjust",  no_argument,          0, 'a'},
-      {"ch",            required_argument,    0, 'h'},
-      {"cw",            required_argument,    0, 'w'},
+      {"cs",            required_argument,    0, 's'},
+      {"cS",            required_argument,    0, 'S'},
       {0, 0, 0, 0}
     };
 
@@ -101,7 +101,7 @@ ia_init_input ( int argc, char **argv)
   {
     /* getopt_long stores the option index here. */
     int option_index = 0;
-    c = getopt_long ( argc, argv, "Hab:h:w:", long_options,
+    c = getopt_long ( argc, argv, "Hab:s:S:", long_options,
                       &option_index );
 
     /* Detect the end of the options. */
@@ -128,19 +128,19 @@ ia_init_input ( int argc, char **argv)
           ia_usage(argv[0]);
           return input;
 
-        case 'h':
+        case 's':
           if ( sscanf(optarg, "%u", &(input.b_size.height)) != 1 )
           {
-            std::cerr << "Remember to give --ch an argument" << endl;
+            std::cerr << "Remember to give --cs an argument" << endl;
             ia_usage(argv[0]);
             return input;
           }
           break;
 
-        case 'w':
+        case 'S':
           if ( sscanf(optarg, "%u", &(input.b_size.width)) != 1 )
           {
-            std::cerr << "Remember to give --cw an argument" << endl;
+            std::cerr << "Remember to give --cS an argument" << endl;
             ia_usage(argv[0]);
             return input;
           }
@@ -174,9 +174,32 @@ ia_init_input ( int argc, char **argv)
   }
 
   /* Minimum chessboard check. */
-  if (  input.b_size.height <= 0 || input.b_size.width <= 0 )
+  if ( input.b_size.height <= 0 || input.b_size.width <= 0 )
   {
-    std::cerr << "Possitive chessboard values are needed to detect the corners." << endl;
+    std::cerr << "Positive chessboard needed to detect corners." << endl;
+    ia_usage(argv[0]);
+    return input;
+  }
+
+  if ( input.b_size.height > input.b_size.width )
+  {
+    std::cerr << "WARNING: For consistency purposes the width always " << endl
+              << "\tneeds to be greater than the height.  I'm going to " << endl
+              << "\tinvert the values you gave me: height=" << input.b_size.width
+              << " and width=" << input.b_size.height << endl << endl;
+    unsigned int temp = input.b_size.width;
+    input.b_size.width = input.b_size.height;
+    input.b_size.height = temp;
+  }
+
+  /* We need a chessboard of odd dimensions (5,6 for example).  This gives us
+   * a chessboard with only one symmetry axis.  We use this in order to identify
+   * a unique origin. <ISBN 978-0-596-51613-0 Learning Opencv page 382> */
+  if ( input.b_size.height % 2 == input.b_size.width % 2 )
+  {
+    std::cerr << "ERROR: The dimensions must be odd. (5,6 for example). "<< endl
+              << "\tPlease change your chessboard and try again. Refer " << endl
+              << "\tto \"Learning Opencv page\" page 382." << endl << endl;
     ia_usage(argv[0]);
     return input;
   }
