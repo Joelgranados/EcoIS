@@ -62,6 +62,33 @@ IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
   rgb[0]=rgb[1]=rgb[2]=0;
 }
 
+int
+IA_Square::calc_exact_median ()
+{
+  uchar *data_ptr;
+  unsigned long c_accum[256] = {0};
+  for ( unsigned int row = 0 ; row <= h_subimg.rows ; row++ )
+    for ( unsigned int col = 0 ; col <= h_subimg.cols ; col++ )
+    {
+      data_ptr = h_subimg.data + (row*h_subimg.cols) + col;
+      c_accum[ *data_ptr ]++;
+    }
+
+  /* The median is the offset in c_accum where we cross the middle of the data
+   * set. */
+  unsigned long hp_size = h_subimg.rows * h_subimg.cols; //half population size
+  unsigned long accum_size = 0;
+  int median = 0;
+  for ( ; median <= 256 ; median++ )
+  {
+    if ( accum_size > hp_size )
+      break;// We have found the median
+    accum_size = accum_size + c_accum[median];
+  }
+
+  return median;
+}
+
 /* FIXME: describe range here */
 void
 IA_Square::calc_rgb ( const unsigned int range[8] )
@@ -189,5 +216,13 @@ IA_ChessboardImage::debug_print ()
   for ( int i = 0; i < squares.size() ; i++ )
     std::cout << squares[i].get_blue_value();
 
+  std::cout << endl;
+}
+
+void
+IA_ChessboardImage::median_print ()
+{
+  for ( int i = 0 ; i < squares.size() ; i++ )
+    std::cout << squares[i].calc_exact_median() << "\t";
   std::cout << endl;
 }

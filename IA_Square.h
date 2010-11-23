@@ -48,6 +48,7 @@ class IA_Square{
 public:
   IA_Square ( Point2f, Point2f, Point2f, Point2f, const Mat& );
   void calc_rgb ( const unsigned int [8] );
+  int calc_exact_median ();
   int get_red_value ();
   int get_green_value ();
   int get_blue_value ();
@@ -63,6 +64,7 @@ class IA_ChessboardImage{
 public:
   IA_ChessboardImage ( string&, Size& );
   void debug_print ();
+  void median_print ();
 private:
   vector<IA_Square> squares;
   bool has_chessboard;

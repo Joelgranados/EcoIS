@@ -35,7 +35,6 @@ main ( int argc, char** argv ) {
           image != input.images.end() ; image++ )
     {
       IA_ChessboardImage cb = IA_ChessboardImage ( *image, input.b_size );
-      cb.debug_print();
     }
   else
     std::cerr << "You did not specify any valid objective " << endl;
