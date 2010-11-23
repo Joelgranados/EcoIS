@@ -64,7 +64,7 @@ IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
 
 /* FIXME: describe range here */
 void
-IA_Square::calc_rgb ( const unsigned int range[7] )
+IA_Square::calc_rgb ( const unsigned int range[8] )
 {
   uchar *data_ptr;
   /* Each accumulator offset will represent a color.
@@ -80,7 +80,7 @@ IA_Square::calc_rgb ( const unsigned int range[7] )
       for ( int j = 0 ; j < 8 ; j++ )
         if ( range[j] > *data_ptr )
         {
-          c_accum[j-1]++;
+          c_accum[(j-1)%6]++;
           break;
         }
     }
