@@ -44,32 +44,10 @@ using namespace cv;
 #define O_S_HEIGHT(p1, p2, p3, p4) \
   Y_MAX( p1, p2, p3, p4 ) - Y_MIN ( p1, p2, p3, p4 )
 
-class IA_Line;
-
-struct ia_square_line
-{
-  IA_Line *lref;
-  struct ia_square_point *lps[2];
-  struct ia_square_line *ladjs[2];
-};
-
-struct ia_square_point
-{
-  Point2f pref;
-  struct ia_square_point *padjs[2];
-  struct ia_square_line *pls[2];
-};
-
-struct ia_square_square
-{
-  struct ia_square_point *ps[4];
-  struct ia_square_line *ls[4];
-};
-
 class IA_Square{
 public:
   IA_Square ( Point2f, Point2f, Point2f, Point2f, const Mat& );
-  void calculate_rgb ( const unsigned int [8] );
+  void calc_rgb ( const unsigned int [8] );
   int get_red_value ();
   int get_green_value ();
   int get_blue_value ();
@@ -79,26 +57,6 @@ private:
   Mat hsv_subimg; /* minimal subimage that contains the 4 points. */
   Mat h_subimg; /* subimage for the hue dimension */
   int rgb[3]; // Representation of the values in the square.
-  struct ia_square_square sqr;
-  inline bool row_between_lines ( const unsigned int,
-      const struct ia_square_line*, const struct ia_square_line* );
-};
-
-class IA_Line{
-public:
-  IA_Line ( Point2f, Point2f );
-  int resolve_width ( const int& );
-  int resolve_height ( const int& );
-
-private:
-  Point2f p1;
-  Point2f p2;
-  float slope;
-  enum line_t {
-    VERTICAL    = 0x01,
-    HORIZONTAL  = 0x02,
-    NORMAL      = 0x04};
-  line_t l_type;
 };
 
 class IA_ChessboardImage{
