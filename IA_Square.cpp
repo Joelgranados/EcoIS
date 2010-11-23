@@ -72,7 +72,7 @@ IA_Square::calc_rgb ( const unsigned int range[8] )
    * c_accum[3] -> cyan, c_accum[4] -> Blue,   c_accum[5] -> magenta
    * These values are related to the range argument.
    * The color with more hits is the one that is chosen.*/
-  unsigned long c_accum[6] = {0,0,0,0,0,0};
+  unsigned long c_accum[6] = {0};
   for ( unsigned int row = 0 ; row <= h_subimg.rows ; row++ )
     for ( unsigned int col = 0 ; col <= h_subimg.cols ; col++ )
     {
