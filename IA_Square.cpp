@@ -209,18 +209,45 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
       isBlack = !isBlack;
     }
 
-  /* create range */
-  alcolor_t known_colors[8] = {RED, YELLOW, GREEN, CYAN,
-                               BLUE, MAGENTA, RED, NO_COLOR};
-  int known_maxs[8] = {0, 21, 64, 106, 149, 192, 234, 256};
+  /* Create range */
   vector<color_hue> range;
   for ( int i = 0 ; i < 8 ; i++ )
   {
-    color_hue ch_temp;
-    ch_temp.hue = known_maxs[i];
-    ch_temp.color = known_colors[i];
-    range.push_back( ch_temp );
+    color_hue temp;
+    temp.hue = 0;
+    temp.color = NO_COLOR;
+    range.push_back ( temp );
   }
+
+  /* Known Colors. */
+  alcolor_t kc[8] = {RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA, RED, NO_COLOR};
+
+  /* Fill the range with colors and medians. Inserted in order */
+  for ( int i = 1 ; i < 7 ; i++ )
+  {
+    range[i].hue = squares[i-1].calc_exact_median();
+    range[i].color = kc[i-1];
+    for ( int j = i ; j > 1 && range[j].hue < range[j-1].hue ; j-- )
+      swap( range[j], range[j-1] );
+  }
+
+  /* Calculate the max ranges */
+  for ( int i = 1 ; i < 7 ; i++ )
+    range[i].hue = (((range[i+1].hue-range[i].hue)/2)+range[i].hue)%256;
+
+  /* There is a possibility that things are not in order. */
+  for ( int i = 1 ; i < 7 ; i++ )
+    for ( int j = i ; j > 1 && range[j].hue < range[j-1].hue ; j-- )
+      swap( range[j], range[j-1] );
+
+  /* We polish the ends. */
+  range[0].hue = 0;
+  range[0].color = range[6].color;
+  range[7].hue = 256;
+  range[7].color = NO_COLOR;
+
+  /* There is no information in the calibration squares. */
+  squares.erase(squares.begin(), squares.begin()+6);
 
   for ( vector<IA_Square>::iterator square = squares.begin() ;
         square != squares.end() ; ++square )
