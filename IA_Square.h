@@ -19,6 +19,7 @@
 
 #include <opencv/cv.h>
 #include <math.h>
+#include <exception>
 
 using namespace cv;
 
@@ -69,3 +70,8 @@ private:
   vector<IA_Square> squares;
   bool has_chessboard;
 };
+
+class IACIExNoChessboardFound:public std::exception{
+  virtual const char* what() const throw(){return "No Chessboard found";}
+};
+

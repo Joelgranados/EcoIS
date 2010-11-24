@@ -33,9 +33,12 @@ main ( int argc, char** argv ) {
   if (input.objective == IMAGE_ADJUST )
     for ( vector<string>::iterator image = input.images.begin() ;
           image != input.images.end() ; image++ )
-    {
-      IA_ChessboardImage cb = IA_ChessboardImage ( *image, input.b_size );
-    }
+      try{
+        IA_ChessboardImage cb = IA_ChessboardImage ( *image, input.b_size );
+      }catch(exception& iacie){
+        std::cerr << "ERROR: " << iacie.what() << endl;
+      }
+
   else
     std::cerr << "You did not specify any valid objective " << endl;
 }

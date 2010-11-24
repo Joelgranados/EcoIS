@@ -154,7 +154,6 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
 {
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
   vector<Point2f> pointbuf;
-  has_chessboard = true;
 
   /* get next image*/
   a_image = imread ( image );
@@ -169,31 +168,29 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
     /* find the chessboard points in the image and put them in pointbuf.*/
     if ( !findChessboardCorners(g_img, boardSize, (pointbuf),
                                 CV_CALIB_CB_ADAPTIVE_THRESH) )
-      has_chessboard = false;
+      throw IACIExNoChessboardFound();
 
     else
       /* improve the found corners' coordinate accuracy */
       cornerSubPix ( g_img, (pointbuf), Size(11,11), Size(-1,-1),
                      TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1) );
-  }catch (cv::Exception){has_chessboard = false;}
+  }catch (cv::Exception){throw IACIExNoChessboardFound();}
 
-  if (has_chessboard)
-  {
-    bool isBlack = true;
-    for ( int r = 0 ; r < boardSize.height-1 ; r++ )
-      for ( int c = 0 ; c < boardSize.width-1 ; c++ )
-      {
-        if ( !isBlack )
-          squares.push_back(
-            IA_Square(
-              pointbuf[ (r*boardSize.width)+c ], /* upper left */
-              pointbuf[ (r*boardSize.width)+c+1 ], /* upper right */
-              pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ],/*lower right*/
-              pointbuf[ (r*boardSize.width)+boardSize.width+c ], /*lower left*/
-              a_image ) );
-        isBlack = !isBlack;
-      }
-  }
+  //FIXME: Can we do the same without the isBlack flag?
+  bool isBlack = true;
+  for ( int r = 0 ; r < boardSize.height-1 ; r++ )
+    for ( int c = 0 ; c < boardSize.width-1 ; c++ )
+    {
+      if ( !isBlack )
+        squares.push_back(
+          IA_Square(
+            pointbuf[ (r*boardSize.width)+c ], /* upper left */
+            pointbuf[ (r*boardSize.width)+c+1 ], /* upper right */
+            pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ],/*lower right*/
+            pointbuf[ (r*boardSize.width)+boardSize.width+c ], /*lower left*/
+            a_image ) );
+      isBlack = !isBlack;
+    }
 
   int unsigned color_range[8] = {0, 21, 64, 106, 149, 192, 234, 256};
   for ( vector<IA_Square>::iterator square = squares.begin() ;
