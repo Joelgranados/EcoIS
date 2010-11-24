@@ -91,7 +91,7 @@ IA_Square::calc_exact_median ()
 
 /* FIXME: describe range here */
 void
-IA_Square::calc_rgb ( const unsigned int range[8] )
+IA_Square::calc_rgb ( vector<color_hue> range )
 {
   uchar *data_ptr;
   /* Each accumulator offset will represent a color.
@@ -105,7 +105,7 @@ IA_Square::calc_rgb ( const unsigned int range[8] )
     {
       data_ptr = h_subimg.data + (row*h_subimg.cols) + col;
       for ( int j = 0 ; j < 8 ; j++ )
-        if ( range[j] > *data_ptr )
+        if ( range[j].hue > *data_ptr )
         {
           c_accum[(j-1)%6]++;
           break;
@@ -118,12 +118,29 @@ IA_Square::calc_rgb ( const unsigned int range[8] )
     if ( c_accum[max_offset] < c_accum[i] )
       max_offset = i;
 
-  if ( (max_offset+1)%6 >= 0 && (max_offset+1)%6 <=2 )
-    rgb[0] = 1;
-  if ( max_offset >= 1 && max_offset <= 3 )
-    rgb[1] = 1;
-  if ( max_offset >= 3 && max_offset <= 5 )
-    rgb[2] = 1;
+  switch ( range[max_offset].color ){
+    case RED:
+      rgb[0]=1;
+      break;
+    case YELLOW:
+      rgb[0]=rgb[1]=1;
+      break;
+    case GREEN:
+      rgb[1]=1;
+      break;
+    case CYAN:
+      rgb[1]=rgb[2]=1;
+      break;
+    case BLUE:
+      rgb[2]=1;
+      break;
+    case MAGENTA:
+      rgb[1]=rgb[2]=1;
+      break;
+    default:
+      // should not get here
+      ;
+  }
 }
 
 int
@@ -192,10 +209,22 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
       isBlack = !isBlack;
     }
 
-  int unsigned color_range[8] = {0, 21, 64, 106, 149, 192, 234, 256};
+  /* create range */
+  alcolor_t known_colors[8] = {RED, YELLOW, GREEN, CYAN,
+                               BLUE, MAGENTA, RED, NO_COLOR};
+  int known_maxs[8] = {0, 21, 64, 106, 149, 192, 234, 256};
+  vector<color_hue> range;
+  for ( int i = 0 ; i < 8 ; i++ )
+  {
+    color_hue ch_temp;
+    ch_temp.hue = known_maxs[i];
+    ch_temp.color = known_colors[i];
+    range.push_back( ch_temp );
+  }
+
   for ( vector<IA_Square>::iterator square = squares.begin() ;
         square != squares.end() ; ++square )
-    square->calc_rgb(color_range);
+    square->calc_rgb(range);
 }
 
 void
