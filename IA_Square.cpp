@@ -227,7 +227,7 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
   {
     range[i].hue = squares[i].calc_exact_median();
     range[i].color = kc[i];
-    for ( int j = i ; j > 1 && range[j].hue < range[j-1].hue ; j-- )
+    for ( int j = i ; j > 0 && range[j].hue < range[j-1].hue ; j-- )
       swap( range[j], range[j-1] );
   }
 
