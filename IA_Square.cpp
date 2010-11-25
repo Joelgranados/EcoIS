@@ -76,7 +76,7 @@ IA_Square::calc_exact_median ()
 
   /* The median is the offset in c_accum where we cross the middle of the data
    * set. */
-  unsigned long hp_size = h_subimg.rows * h_subimg.cols; //half population size
+  unsigned long hp_size = (h_subimg.rows * h_subimg.cols)/2; //half population size
   unsigned long accum_size = 0;
   int median = 0;
   for ( ; median <= 256 ; median++ )
