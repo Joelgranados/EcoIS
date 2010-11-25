@@ -135,7 +135,7 @@ IA_Square::calc_rgb ( vector<color_hue> range )
       rgb[2]=1;
       break;
     case MAGENTA:
-      rgb[1]=rgb[2]=1;
+      rgb[0]=rgb[2]=1;
       break;
     default:
       // should not get here
