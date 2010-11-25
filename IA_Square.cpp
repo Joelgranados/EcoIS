@@ -223,17 +223,19 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
   alcolor_t kc[8] = {RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA, RED, NO_COLOR};
 
   /* Fill the range with colors and medians. Inserted in order */
-  for ( int i = 1 ; i < 7 ; i++ )
+  for ( int i = 0 ; i < 6 ; i++ )
   {
-    range[i].hue = squares[i-1].calc_exact_median();
-    range[i].color = kc[i-1];
+    range[i].hue = squares[i].calc_exact_median();
+    range[i].color = kc[i];
     for ( int j = i ; j > 1 && range[j].hue < range[j-1].hue ; j-- )
       swap( range[j], range[j-1] );
   }
 
   /* Calculate the max ranges */
-  for ( int i = 1 ; i < 7 ; i++ )
-    range[i].hue = (((range[i+1].hue-range[i].hue)/2)+range[i].hue)%256;
+  range[6].hue = 256+range[0].hue;
+  range[6].color = range[0].color;
+  for ( int i = 6 ; i > 0 ; i-- )
+    range[i].hue = (((range[i].hue-range[i-1].hue)/2)+range[i-1].hue)%256;
 
   /* There is a possibility that things are not in order. */
   for ( int i = 1 ; i < 7 ; i++ )
