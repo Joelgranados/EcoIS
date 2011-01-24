@@ -42,14 +42,14 @@ ia_print_input_struct ( ia_input& input )
 void
 ia_usage ( const string& command )
 {
-  std::cout << command << " [OPTIONS] IMAGES" << endl;
+  std::cout << command << " [OPTIONS] IMAGES"
     "OPTIONS:\n"
     "-H | --help    Print this help message.\n"
     "-s | --cs      The minimum of the two sizes.\n"
     "-S | --cS      The maximum of the two sizes.\n\n"
     "OBJECTIVES\n"
     "-a | --image_adjust\n"
-    "               This will only accept a list of images.\n\n";
+    "               This will only accept a list of images.\n" << endl;
 }
 
 static void
