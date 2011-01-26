@@ -35,6 +35,7 @@ main ( int argc, char** argv ) {
           image != input.images.end() ; image++ )
       try{
         IA_ChessboardImage cb = IA_ChessboardImage ( *image, input.b_size );
+        cb.debug_print();
       }catch(exception& iacie){
         std::cerr << "ERROR: " << iacie.what() << endl;
       }
