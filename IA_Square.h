@@ -74,7 +74,6 @@ public:
   void median_print ();
 private:
   vector<IA_Square> squares;
-  bool has_chessboard;
 };
 
 class IACIExNoChessboardFound:public std::exception{
