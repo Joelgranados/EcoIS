@@ -251,9 +251,60 @@ IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
   /* There is no information in the calibration squares. */
   squares.erase(squares.begin(), squares.begin()+6);
 
+  /* Assing "binary" values to the rgb variable */
   for ( vector<IA_Square>::iterator square = squares.begin() ;
         square != squares.end() ; ++square )
     square->calc_rgb(range);
+
+  /* Calculate the id array. This will represent the chesboard value */
+  calculate_image_id ();
+}
+
+void
+IA_ChessboardImage::calculate_image_id ()
+{
+  int short_size = 8*sizeof(unsigned short); //assume short is a factor of 8
+  int id_offset;
+
+  /* We need to make sure that all the values are zero */
+  for ( int i = 0 ; i < id_size ; i++ )
+    id[i] = 0;
+
+  for ( int i = 0 ; i < squares.size() ; i++ )
+  {
+    /* we will move to the next position in id when i exceeds
+     * a multiple of short_size*/
+    id_offset = (int)(i/short_size);
+
+    /* All the colored squares should have red bit on.*/
+    //if ( squares[i].get_red_value() != 1 )
+    //  throw IACIExNoneRedSquare();
+
+    /* bit shift for green and blue */
+    id[id_offset] = id[id_offset]<<2;
+
+    /* modify the blue bit */
+    if ( squares[i].get_blue_value() )
+      id[id_offset] = id[id_offset] | (unsigned short)1;
+
+    /* modify the green bit */
+    if ( squares[i].get_green_value() )
+      id[id_offset] = id[id_offset] | (unsigned short)2;
+  }
+}
+
+unsigned short*
+IA_ChessboardImage::get_image_id ()
+{
+  return id;
+}
+
+void
+IA_ChessboardImage::print_image_id ()
+{
+  for ( int i = 0 ; i < id_size ; i++ )
+    std::cout << id[i];
+  std::cout << endl;
 }
 
 void

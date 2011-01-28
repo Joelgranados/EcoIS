@@ -72,11 +72,19 @@ public:
   IA_ChessboardImage ( string&, Size& );
   void debug_print ();
   void median_print ();
+  void print_image_id ();
+  unsigned short* get_image_id ();
 private:
   vector<IA_Square> squares;
+  static const int id_size = 14;
+  unsigned short id[id_size];
+  void calculate_image_id ();
 };
 
 class IACIExNoChessboardFound:public std::exception{
   virtual const char* what() const throw(){return "No Chessboard found";}
 };
 
+class IACIExNoneRedSquare:public std::exception{
+  virtual const char* what() const throw(){return "None red square found";}
+};
