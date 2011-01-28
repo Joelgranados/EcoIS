@@ -129,7 +129,7 @@ IA_Square::calc_rgb ( vector<color_hue> range )
       rgb[1]=1;
       break;
     case CYAN:
-      rgb[1]=rgb[2]=1;
+      rgb[0]=rgb[1]=rgb[2]=1;
       break;
     case BLUE:
       rgb[2]=1;
