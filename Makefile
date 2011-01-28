@@ -30,4 +30,4 @@ ctag:
 	ctags -R *
 
 clean:
-	rm -rf imagelabel imagelabel.tar.gz *.gcda *.gcno
+	rm -rf imagelabel imagelabel.tar.gz *.gcda *.gcno *.out
