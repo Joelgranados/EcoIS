@@ -69,7 +69,7 @@ private:
 
 class IA_ChessboardImage{
 public:
-  IA_ChessboardImage ( string&, Size& );
+  IA_ChessboardImage ( const string&, const Size& );
   void debug_print ();
   void median_print ();
   void print_image_id ();

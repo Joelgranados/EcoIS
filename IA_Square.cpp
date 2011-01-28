@@ -167,7 +167,8 @@ IA_Square::get_values ()
   return *rgb;
 }
 
-IA_ChessboardImage::IA_ChessboardImage ( string &image, Size &boardSize )
+IA_ChessboardImage::IA_ChessboardImage ( const string &image,
+                                         const Size &boardSize )
 {
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
   vector<Point2f> pointbuf;
