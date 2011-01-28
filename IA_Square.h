@@ -73,11 +73,10 @@ public:
   void debug_print ();
   void median_print ();
   void print_image_id ();
-  unsigned short* get_image_id ();
+  vector<unsigned short> get_image_id ();
 private:
   vector<IA_Square> squares;
-  static const int id_size = 14;
-  unsigned short id[id_size];
+  vector<unsigned short> id;
   void calculate_image_id ();
 };
 

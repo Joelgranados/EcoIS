@@ -264,17 +264,21 @@ void
 IA_ChessboardImage::calculate_image_id ()
 {
   int short_size = 8*sizeof(unsigned short); //assume short is a factor of 8
+  id.clear(); // make sure we don't have any info.
   int id_offset;
 
-  /* We need to make sure that all the values are zero */
-  for ( int i = 0 ; i < id_size ; i++ )
-    id[i] = 0;
-
+  /* We create the id vector as we go along.*/
   for ( int i = 0 ; i < squares.size() ; i++ )
   {
-    /* we will move to the next position in id when i exceeds
-     * a multiple of short_size*/
-    id_offset = (int)(i/short_size);
+    if ( i % short_size == 0 )
+    {
+      /* we will move to the next position in id when i exceeds
+       * a multiple of short_size*/
+      id_offset = (int)(i/short_size);
+
+      /* We need to make sure that the value is 0 */
+      id.push_back ( (unsigned short)0 );
+    }
 
     /* All the colored squares should have red bit on.*/
     if ( squares[i].get_red_value() != 1 )
@@ -293,7 +297,7 @@ IA_ChessboardImage::calculate_image_id ()
   }
 }
 
-unsigned short*
+vector<unsigned short>
 IA_ChessboardImage::get_image_id ()
 {
   return id;
@@ -302,7 +306,7 @@ IA_ChessboardImage::get_image_id ()
 void
 IA_ChessboardImage::print_image_id ()
 {
-  for ( int i = 0 ; i < id_size ; i++ )
+  for ( int i = 0 ; i < id.size() ; i++ )
     std::cout << id[i];
   std::cout << endl;
 }
