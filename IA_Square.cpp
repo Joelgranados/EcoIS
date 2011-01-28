@@ -277,8 +277,8 @@ IA_ChessboardImage::calculate_image_id ()
     id_offset = (int)(i/short_size);
 
     /* All the colored squares should have red bit on.*/
-    //if ( squares[i].get_red_value() != 1 )
-    //  throw IACIExNoneRedSquare();
+    if ( squares[i].get_red_value() != 1 )
+      throw IACIExNoneRedSquare();
 
     /* bit shift for green and blue */
     id[id_offset] = id[id_offset]<<2;
