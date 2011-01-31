@@ -1,6 +1,6 @@
 /*
- * image adjust.  Automatic image normalization.
- * Copyright (C) 2010 Joel Granados <joel.granados@gmail.com>
+ * ILAC: Image labeling and Classifying
+ * Copyright (C) 2011 Joel Granados <joel.granados@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 #include <opencv/cv.h>
 #include <math.h>
 #include <exception>
@@ -51,15 +50,14 @@ struct color_hue {
   int hue;
 };
 
-class IA_Square{
+class ILAC_Square{
 public:
-  IA_Square ( Point2f, Point2f, Point2f, Point2f, const Mat& );
+  ILAC_Square ( Point2f, Point2f, Point2f, Point2f, const Mat& );
   void calc_rgb ( const vector<color_hue> );
   int calc_exact_median ();
   int get_red_value ();
   int get_green_value ();
   int get_blue_value ();
-  int& get_values();
 
 private:
   Mat hsv_subimg; /* minimal subimage that contains the 4 points. */
@@ -67,23 +65,41 @@ private:
   int rgb[3]; // Representation of the values in the square.
 };
 
-class IA_ChessboardImage{
+class ILAC_ChessboardImage{
 public:
-  IA_ChessboardImage ( const string&, const Size& );
-  void debug_print ();
-  void median_print ();
-  void print_image_id ();
+  ILAC_ChessboardImage ( const string&, Size& );
+  ILAC_ChessboardImage ( const string&, const unsigned int,
+                         const unsigned int );
   vector<unsigned short> get_image_id ();
 private:
-  vector<IA_Square> squares;
+  vector<ILAC_Square> squares;
   vector<unsigned short> id;
   void calculate_image_id ();
+  void check_input ( const string&, Size& );
+  void init_chessboard ( const string&, const Size& );
 };
 
-class IACIExNoChessboardFound:public std::exception{
+class ILACExNoChessboardFound:public std::exception{
   virtual const char* what() const throw(){return "No Chessboard found";}
 };
 
-class IACIExNoneRedSquare:public std::exception{
+class ILACExNoneRedSquare:public std::exception{
   virtual const char* what() const throw(){return "None red square found";}
+};
+
+class ILACExSymmetricalChessboard:public std::exception{
+  virtual const char* what() const throw()
+  {
+    return "Chessboard parity sizes are equal.  The dimenstions of the "
+      "chessboard must be odd (5.6 for example). Refer to Learning Opencv "
+      "page 382.";
+  }
+};
+
+class ILACExFileError:public std::exception{
+  virtual const char* what() const throw(){return "Image file error.";}
+};
+
+class ILACExSizeFormatError:public std::exception{
+  virtual const char* what() const throw(){return "Invalid size format";}
 };

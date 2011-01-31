@@ -1,6 +1,6 @@
 /*
- * image adjust.  Automatic image normalization.
- * Copyright (C) 2010 Joel Granados <joel.granados@gmail.com>
+ * ILAC: Image labeling and Classifying
+ * Copyright (C) 2011 Joel Granados <joel.granados@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include "IA_Square.h"
+#include "ilacSquare.h"
 #include <iostream>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
-IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
+ILAC_Square::ILAC_Square ( Point2f upper_left, Point2f upper_right,
                        Point2f lower_right, Point2f lower_left,
                        const Mat& img )
 {
@@ -63,7 +64,7 @@ IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
 }
 
 int
-IA_Square::calc_exact_median ()
+ILAC_Square::calc_exact_median ()
 {
   uchar *data_ptr;
   unsigned long c_accum[256] = {0};
@@ -91,7 +92,7 @@ IA_Square::calc_exact_median ()
 
 /* FIXME: describe range here */
 void
-IA_Square::calc_rgb ( vector<color_hue> range )
+ILAC_Square::calc_rgb ( vector<color_hue> range )
 {
   uchar *data_ptr;
   /* Each accumulator offset will represent a color.
@@ -144,31 +145,72 @@ IA_Square::calc_rgb ( vector<color_hue> range )
 }
 
 int
-IA_Square::get_red_value ()
+ILAC_Square::get_red_value ()
 {
   return rgb[0];
 }
 
 int
-IA_Square::get_green_value ()
+ILAC_Square::get_green_value ()
 {
   return rgb[1];
 }
 
 int
-IA_Square::get_blue_value ()
+ILAC_Square::get_blue_value ()
 {
   return rgb[2];
 }
 
-int&
-IA_Square::get_values ()
+ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
+                                             const unsigned int size1,
+                                             const unsigned int size2 )
 {
-  return *rgb;
+  Size boardSize;
+  boardSize.width = max ( size1, size2 );
+  boardSize.height = min ( size1, size2 );
+
+  check_input ( image, boardSize );
+  init_chessboard ( image, boardSize );
 }
 
-IA_ChessboardImage::IA_ChessboardImage ( const string &image,
-                                         const Size &boardSize )
+ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
+                                             Size &boardSize )
+{
+  check_input ( image, boardSize );
+  init_chessboard ( image, boardSize );
+}
+
+void
+ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize )
+{
+  // Check that file exists.
+  struct stat file_stat;
+  if ( stat ( image.data(), &file_stat ) != 0 )
+    throw ILACExFileError();
+
+  // Check to see if sizes are possitive.
+  if ( boardSize.height < 0 || boardSize.width < 0 )
+      throw ILACExSizeFormatError();
+
+  // Check for width > height
+  if ( boardSize.height > boardSize.width )
+  {
+    unsigned int temp = boardSize.height;
+    boardSize.height = boardSize.width;
+    boardSize.width = temp;
+  }
+
+  /* We need a chessboard of odd dimensions (6,5 for example).  This gives us
+   * a chessboard with only one symmetry axis.  We use this in order to identify
+   * a unique origin. <ISBN 978-0-596-51613-0 Learning Opencv page 382> */
+  if ( boardSize.height % 2 == boardSize.width % 2 )
+    throw ILACExSymmetricalChessboard();
+}
+
+void
+ILAC_ChessboardImage::init_chessboard ( const string &image,
+                                        const Size &boardSize )
 {
   Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
   vector<Point2f> pointbuf;
@@ -186,13 +228,13 @@ IA_ChessboardImage::IA_ChessboardImage ( const string &image,
     /* find the chessboard points in the image and put them in pointbuf.*/
     if ( !findChessboardCorners(g_img, boardSize, (pointbuf),
                                 CV_CALIB_CB_ADAPTIVE_THRESH) )
-      throw IACIExNoChessboardFound();
+      throw ILACExNoChessboardFound();
 
     else
       /* improve the found corners' coordinate accuracy */
       cornerSubPix ( g_img, (pointbuf), Size(11,11), Size(-1,-1),
                      TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1) );
-  }catch (cv::Exception){throw IACIExNoChessboardFound();}
+  }catch (cv::Exception){throw ILACExNoChessboardFound();}
 
   //FIXME: Can we do the same without the isBlack flag?
   bool isBlack = true;
@@ -201,7 +243,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const string &image,
     {
       if ( !isBlack )
         squares.push_back(
-          IA_Square(
+          ILAC_Square(
             pointbuf[ (r*boardSize.width)+c ], /* upper left */
             pointbuf[ (r*boardSize.width)+c+1 ], /* upper right */
             pointbuf[ (r*boardSize.width)+boardSize.width+c+1 ],/*lower right*/
@@ -253,7 +295,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const string &image,
   squares.erase(squares.begin(), squares.begin()+6);
 
   /* Assing "binary" values to the rgb variable */
-  for ( vector<IA_Square>::iterator square = squares.begin() ;
+  for ( vector<ILAC_Square>::iterator square = squares.begin() ;
         square != squares.end() ; ++square )
     square->calc_rgb(range);
 
@@ -262,7 +304,7 @@ IA_ChessboardImage::IA_ChessboardImage ( const string &image,
 }
 
 void
-IA_ChessboardImage::calculate_image_id ()
+ILAC_ChessboardImage::calculate_image_id ()
 {
   int short_size = 8*sizeof(unsigned short); //assume short is a factor of 8
   id.clear(); // make sure we don't have any info.
@@ -283,7 +325,7 @@ IA_ChessboardImage::calculate_image_id ()
 
     /* All the colored squares should have red bit on.*/
     if ( squares[i].get_red_value() != 1 )
-      throw IACIExNoneRedSquare();
+      throw ILACExNoneRedSquare();
 
     /* bit shift for green and blue */
     id[id_offset] = id[id_offset]<<2;
@@ -299,41 +341,7 @@ IA_ChessboardImage::calculate_image_id ()
 }
 
 vector<unsigned short>
-IA_ChessboardImage::get_image_id ()
+ILAC_ChessboardImage::get_image_id ()
 {
   return id;
-}
-
-void
-IA_ChessboardImage::print_image_id ()
-{
-  for ( int i = 0 ; i < id.size() ; i++ )
-    std::cout << id[i];
-  std::cout << endl;
-}
-
-void
-IA_ChessboardImage::debug_print ()
-{
-  std::cout << endl << "Printing red\t";
-  for ( int i = 0; i < squares.size() ; i++ )
-    std::cout << squares[i].get_red_value();
-
-  std::cout << endl << "Printing green\t";
-  for ( int i = 0; i < squares.size() ; i++ )
-    std::cout << squares[i].get_green_value();
-
-  std::cout << endl << "Printing blue\t";
-  for ( int i = 0; i < squares.size() ; i++ )
-    std::cout << squares[i].get_blue_value();
-
-  std::cout << endl;
-}
-
-void
-IA_ChessboardImage::median_print ()
-{
-  for ( int i = 0 ; i < squares.size() ; i++ )
-    std::cout << squares[i].calc_exact_median() << "\t";
-  std::cout << endl;
 }
