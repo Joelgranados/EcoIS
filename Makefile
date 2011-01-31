@@ -1,5 +1,6 @@
-# image adjust.  Automatic image normalization.
-# Copyright (C) 2010 Joel Granados <joel.granados@gmail.com>
+#
+# ILAC: Image labeling and Classifying
+# Copyright (C) 2011 Joel Granados <joel.granados@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,20 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+PYVER  := $(shell python -c 'import sys; print sys.version[0:3]')
+PYTHON = python$(PYVER)
+PYTHONINCLUDE = /usr/include/$(PYTHON)
 
 CXXFLAGS += `pkg-config --cflags opencv`
+CXXFLAGS += -I$(PYTHONINCLUDE)
+
 LIBS += `pkg-config --libs opencv`
-SRCS = imagelabel.cpp ia_input.cpp IA_Square.cpp
+LIBS += -shared -fPIC
+SRCS = ilacSquare.cpp _ilac.cpp
 DEBUGFLAGS += -pg -fprofile-arcs -ftest-coverage
 
 all: ctag
-	$(CXX) $(LIBS) $(CXXFLAGS) $(SRCS) -o imagelabel
+	$(CXX) $(LIBS) $(CXXFLAGS) $(SRCS) -o _ilac.so
 
 debug: ctag
-	$(CXX) $(LIBS) $(CXXFLAGS) $(DEBUGFLAGS) -g $(SRCS) -o imagelabel
+	$(CXX) $(LIBS) $(CXXFLAGS) $(DEBUGFLAGS) -g $(SRCS) -o _ilac.so
 
 ctag:
 	ctags -R *
 
 clean:
-	rm -rf imagelabel imagelabel.tar.gz *.gcda *.gcno *.out
+	rm -rf *.gcda *.gcno *.out *.so *.pyc
