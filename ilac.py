@@ -29,6 +29,10 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir ):
     size2 = The smallest size
     to_dir = Full path of the destination dir
     """
+    # tell the user when we start.
+    ilaclog.debug( "ilac_classify_file, from_file:%s, to_dir:%s" \
+            % (from_file_name, to_dir) )
+
     # Let the exception go to the caller.
     image_id = _ilac.get_image_id( from_file_name, size1, size2 )
 
