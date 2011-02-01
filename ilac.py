@@ -59,7 +59,11 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2 ):
     size1 = The largest size.
     size2 = The smallest size.
     """
-    #FIXME: Check that the two dirs exist.
+    #Check that the two dirs exist.
+    for dir in [from_dir, to_dir]:
+        if not os.path.isdir(dir):
+            raise ILACDirException(dir)
+
     # classify file for all the /root/files
     for root, dirs, files in os.walk(from_dir):
         for file in files:
@@ -67,6 +71,15 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2 ):
                 ilac_classify_file(os.path.join(root,file), size1, size2, to_dir)
             except Exception, err:
                 ilaclog.err( err )
+
+class ILACException(Exception):
+    def __init__(self):
+        pass
+    def __str__(self):
+        return ("ILAC_ERROR: %s" % self.message)
+class ILACDirException(ILACException):
+    def __init__(self, dir_name):
+        self.message = "The directory %s was not found." % dir_name )
 
 def initLogger():
     Logger = logging.getLogger("ilac")
