@@ -22,22 +22,22 @@
 #include <opencv/highgui.h>
 #include <stdio.h>
 
-IA_Square::IA_Square ( Point2f upper_left, Point2f upper_right,
-                       Point2f lower_right, Point2f lower_left,
+/* Notice ul:UpperLeft, ur:UpperRight, lr:LowerRight, ll:LowerLeft*/
+IA_Square::IA_Square ( const Point2f ul, const Point2f ur,
+                       const Point2f lr, const Point2f ll,
                        const Mat& img )
 {
-  /* Remember upper_left and its brothers refer to the possition with respect to
-   * the chessboard, not the image. */
-  Point2f s[4] = {upper_left, upper_right, lower_right, lower_left};
-
   /* Calculate the enclosing rectangle. referenced to the original image */
   Rect t_rect = Rect( /* helper rectangle (x, y, width, height) */
-    X_MIN (s[0], s[1], s[2], s[3]), Y_MIN (s[0], s[1], s[2], s[3]),
-    O_S_WIDTH(s[0],s[1],s[2],s[3]), O_S_HEIGHT(s[0],s[1],s[2],s[3]) );
+    FLOOR_MIN (ul.x, ur.x, lr.x, ll.x), FLOOR_MIN (ul.y, ur.y, lr.y, ll.y),
+    CEIL_DIST (ul.x, ur.x, lr.x, ll.x), CEIL_DIST (ul.y, ur.y, lr.y, ll.y) );
 
   /* Calculate source and destination points for the perspective transform.*/
+  Point2f s[4] = {ul, ur, lr, ll};
   for ( int i = 0 ; i < 4 ; i++ )
   {
+    /* Remember that ul and its brothers refer to the position with respect to
+     * the chessboard, not the image. */
     s[i].x = floor(s[i].x - t_rect.x);
     s[i].y = floor(s[i].y - t_rect.y);
   }
@@ -189,9 +189,13 @@ IA_ChessboardImage::IA_ChessboardImage ( const string &image,
       throw IACIExNoChessboardFound();
 
     else
-      /* improve the found corners' coordinate accuracy */
+      /* improve the found corners' coordinate accuracy.  I ran some tests and
+       * found that though cornerSubPix does increase corner calculation accuracy,
+       * its absence did not decrease the id calculation accuracy.  This is a
+       * good candidate for removal.*/
       cornerSubPix ( g_img, (pointbuf), Size(11,11), Size(-1,-1),
                      TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1) );
+
   }catch (cv::Exception){throw IACIExNoChessboardFound();}
 
   //FIXME: Can we do the same without the isBlack flag?
