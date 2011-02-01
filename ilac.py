@@ -23,6 +23,12 @@ import sys
 import logging
 
 def ilac_classify_file( from_file_name, size1, size2, to_dir ):
+    """
+    from_file_name = Full path of the image file
+    size1 = The largets size
+    size2 = The smallest size
+    to_dir = Full path of the destination dir
+    """
     # Let the exception go to the caller.
     image_id = _ilac.get_image_id( from_file_name, size1, size2 )
 
@@ -47,6 +53,12 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir ):
 
 
 def ilac_classify_dir( from_dir, to_dir, size1, size2 ):
+    """
+    from_dir = Full path of the source dir.
+    to_dir = Full path of the destination dir.
+    size1 = The largest size.
+    size2 = The smallest size.
+    """
     #FIXME: Check that the two dirs exist.
     # classify file for all the /root/files
     for root, dirs, files in os.walk(from_dir):
