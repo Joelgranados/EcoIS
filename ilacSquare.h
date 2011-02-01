@@ -22,27 +22,12 @@
 
 using namespace cv;
 
-/* Returns the angle between the two vectos in radians */
-#define MIN_4(v1, v2, v3, v4) \
-  min ( min (v1,v2), min(v3,v4) )
+#define FLOOR_MIN(p1, p2, p3, p4) \
+  floor ( min ( min(p1,p2), min(p3,p4) ) )
 
-#define X_MIN(p1, p2, p3, p4) \
-  min ( min (p1.x, p2.x), min (p3.x, p4.x) )
-
-#define X_MAX(p1, p2, p3, p4) \
- max ( max (p1.x, p2.x), max (p3.x, p4.x) )
-
-#define Y_MIN(p1, p2, p3, p4) \
- min ( min (p1.y, p2.y), min (p3.y, p4.y) )
-
-#define Y_MAX(p1, p2, p3, p4) \
- max ( max (p1.y, p2.y), max (p3.y, p4.y) )
-
-#define O_S_WIDTH(p1, p2, p3, p4) \
-  X_MAX ( p1, p2, p3, p4 ) - X_MIN ( p1, p2, p3, p4 )
-
-#define O_S_HEIGHT(p1, p2, p3, p4) \
-  Y_MAX( p1, p2, p3, p4 ) - Y_MIN ( p1, p2, p3, p4 )
+#define CEIL_DIST(p1, p2, p3, p4) \
+  ceil ( max ( max(p1,p2), max(p3,p4) ) ) \
+  - floor ( min ( min(p1,p2), min(p3,p4) ) )
 
 enum alcolor_t { NO_COLOR, RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA };
 struct color_hue {
@@ -52,7 +37,8 @@ struct color_hue {
 
 class ILAC_Square{
 public:
-  ILAC_Square ( Point2f, Point2f, Point2f, Point2f, const Mat& );
+  ILAC_Square ( const Point2f, const Point2f, const Point2f, const Point2f,
+              const Mat& );
   void calc_rgb ( const vector<color_hue> );
   int calc_exact_median ();
   int get_red_value ();
