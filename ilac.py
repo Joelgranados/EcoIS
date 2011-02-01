@@ -19,6 +19,8 @@ import _ilac
 import os
 import os.path
 import shutil
+import sys
+import logging
 
 def ilac_classify_file( from_file_name, size1, size2, to_dir ):
     # Let the exception go to the caller.
@@ -40,9 +42,8 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir ):
     # shutil uses rename if on the same fielsystem (python doc), copy2 otherwise
     shutil.move( from_file_name, to_file_name )
 
-    #FIXME: should have some sort of log here to tell the user.
     # tell the user about the move
-    print ( "Moved %s to %s" % (from_file_name, to_file_name) )
+    ilaclog.debug( "Moved %s to %s" % (from_file_name, to_file_name) )
 
 
 def ilac_classify_dir( from_dir, to_dir, size1, size2 ):
@@ -53,5 +54,19 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2 ):
             try:
                 ilac_classify_file(os.path.join(root,file), size1, size2, to_dir)
             except Exception, err:
-                print (err)
+                ilaclog.err( err )
 
+def initLogger():
+    Logger = logging.getLogger("ilac")
+    Logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler(sys.stdout)
+
+    #FIXME: Add a file log when we add the config file.
+    #handler = logging.FileHandler(config.log.filename)
+
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    Logger.addHandler(handler)
+
+initLogger()
+ilaclog = logging.getLogger("ilac")
