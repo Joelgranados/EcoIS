@@ -83,7 +83,7 @@ class ILACException(Exception):
         return ("ILAC_ERROR: %s" % self.message)
 class ILACDirException(ILACException):
     def __init__(self, dir_name):
-        self.message = "The directory %s was not found." % dir_name )
+        self.message = "The directory %s was not found." % dir_name
 
 def initLogger():
     Logger = logging.getLogger("ilac")
