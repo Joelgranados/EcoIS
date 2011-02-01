@@ -74,7 +74,7 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2 ):
             try:
                 ilac_classify_file(os.path.join(root,file), size1, size2, to_dir)
             except Exception, err:
-                ilaclog.err( err )
+                ilaclog.error( err )
 
 class ILACException(Exception):
     def __init__(self):
