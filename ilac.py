@@ -20,7 +20,7 @@ import os
 import os.path
 import shutil
 
-def ilac_clasify_file( from_file_name, size1, size2, to_dir ):
+def ilac_classify_file( from_file_name, size1, size2, to_dir ):
     # Let the exception go to the caller.
     image_id = _ilac.get_image_id( from_file_name, size1, size2 )
 
@@ -45,13 +45,13 @@ def ilac_clasify_file( from_file_name, size1, size2, to_dir ):
     print ( "Moved %s to %s" % (from_file_name, to_file_name) )
 
 
-def ilac_clasify_dir( from_dir, to_dir, size1, size2 ):
+def ilac_classify_dir( from_dir, to_dir, size1, size2 ):
     #FIXME: Check that the two dirs exist.
-    # clasify file for all the /root/files
+    # classify file for all the /root/files
     for root, dirs, files in os.walk(from_dir):
         for file in files:
             try:
-                ilac_clasify_file(os.path.join(root,file), size1, size2, to_dir)
+                ilac_classify_file(os.path.join(root,file), size1, size2, to_dir)
             except Exception, err:
                 print (err)
 
