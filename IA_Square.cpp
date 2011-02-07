@@ -22,6 +22,8 @@
 #include <opencv/highgui.h>
 #include <stdio.h>
 
+#define IA_DEBUG 0
+
 /* Notice ul:UpperLeft, ur:UpperRight, lr:LowerRight, ll:LowerLeft*/
 IA_Square::IA_Square ( const Point2f ul, const Point2f ur,
                        const Point2f lr, const Point2f ll,
@@ -195,6 +197,14 @@ IA_ChessboardImage::IA_ChessboardImage ( const string &image,
        * good candidate for removal.*/
       cornerSubPix ( g_img, (pointbuf), Size(11,11), Size(-1,-1),
                      TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1) );
+
+//FIXME: create a IA_DEBUG function so as to call IA_DEBUG(image)
+#ifdef IA_DEBUG
+      namedWindow ( "ia_debug", CV_WINDOW_NORMAL);
+      drawChessboardCorners ( a_image, boardSize, Mat(pointbuf), true);
+      imshow ( "ia_debug", a_image );
+      waitKey ( 10000 );
+#endif
 
   }catch (cv::Exception){throw IACIExNoChessboardFound();}
 
