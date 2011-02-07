@@ -231,11 +231,11 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
       throw ILACExNoChessboardFound();
 
     else
-      /* improve the found corners' coordinate accuracy.  I ran some tests and
-       * found that though cornerSubPix does increase corner calculation accuracy,
-       * its absence did not decrease the id calculation accuracy.  This is a
-       * good candidate for removal.*/
-      cornerSubPix ( g_img, (pointbuf), Size(11,11), Size(-1,-1),
+      /* The 3rd argument is of interest.  It defines the size of the subpix
+       * window.  window_size = NUM*2+1.  This means that with 5,5 we have a
+       * window of 11x11 pixels.  If the window is too big it will mess up the
+       * original corner calculations for small chessboards. */
+      cornerSubPix ( g_img, (pointbuf), Size(5,5), Size(-1,-1),
                      TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1) );
   }catch (cv::Exception){throw ILACExNoChessboardFound();}
 
