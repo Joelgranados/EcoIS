@@ -16,13 +16,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+
+#include "ia_config.h"
+#include "ia_input.h"
+
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h>
-#include "ia_input.h"
 #include <opencv/cv.h>
 #include <getopt.h>
 #include <stdio.h>
+
 
 using namespace cv;
 
@@ -42,14 +46,16 @@ ia_print_input_struct ( ia_input& input )
 void
 ia_usage ( const string& command )
 {
-  std::cout << command << " [OPTIONS] IMAGES"
-    "OPTIONS:\n"
+  std::cout << command << " OBJECTIVE OPTIONS IMAGES \n"
+    << "Current Version: " << IL_VER_MAJOR << "." << IL_VER_MINOR <<
+    "\nOPTIONS:\n"
     "-H | --help    Print this help message.\n"
     "-s | --cs      The minimum of the two sizes.\n"
     "-S | --cS      The maximum of the two sizes.\n\n"
-    "OBJECTIVES\n"
+    "OBJECTIVE\n"
     "-a | --image_adjust\n"
-    "               This will only accept a list of images.\n" << endl;
+    "               This will only accept a list of images.\n"
+    "IMAGES         List of images\n" << endl;
 }
 
 static void

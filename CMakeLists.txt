@@ -1,5 +1,5 @@
 # image adjust.  Automatic image normalization.
-# Copyright (C) 2010 Joel Granados <joel.granados@gmail.com>
+# Copyright (C) 2011 Joel Granados <joel.granados@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,19 +15,27 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-CXXFLAGS += `pkg-config --cflags opencv`
-LIBS += `pkg-config --libs opencv`
-SRCS = imagelabel.cpp ia_input.cpp IA_Square.cpp
-DEBUGFLAGS += -pg -fprofile-arcs -ftest-coverage
+cmake_minimum_required (VERSION 2.8)
 
-all: ctag
-	$(CXX) $(LIBS) $(CXXFLAGS) $(SRCS) -o imagelabel
+project (ImageLabel)
 
-debug: ctag
-	$(CXX) $(LIBS) $(CXXFLAGS) $(DEBUGFLAGS) -g $(SRCS) -o imagelabel
+# Set the version number
+set (IL_VER_MAJOR 1)
+set (IL_VER_MINOR 0)
 
-ctag:
-	ctags -R *
+# Create the ia_config.h file.  Copy <from> <to> and make the modifications
+configure_file (
+    "${PROJECT_SOURCE_DIR}/ia_config.h.in"
+    "${PROJECT_BINARY_DIR}/ia_config.h"
+    )
 
-clean:
-	rm -rf imagelabel imagelabel.tar.gz *.gcda *.gcno *.out
+# Add the binary tree so we can find the include files.
+include_directories("${PROJECT_BINARY_DIR}")
+
+# Try to find the opencv stuff
+find_package (OpenCV REQUIRED)
+
+add_executable (imagelabel imagelabel.cpp ia_input.cpp IA_Square.cpp)
+
+# Make sure we link to the found opencv stuff.
+target_link_libraries (imagelabel ${OpenCV_LIBS})
