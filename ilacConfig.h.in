@@ -1,4 +1,5 @@
-/* image adjust.  Automatic image normalization.
+/*
+ * ILAC: Image labeling and Classifying
  * Copyright (C) 2011 Joel Granados <joel.granados@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#define IL_VER_MAJOR @IL_VER_MAJOR@
-#define IL_VER_MINOR @IL_VER_MINOR@
+#define ILAC_VER_MAJOR @ILAC_VER_MAJOR@
+#define ILAC_VER_MINOR @ILAC_VER_MINOR@
+#define ILAC_NAME @ILAC_NAME@
 

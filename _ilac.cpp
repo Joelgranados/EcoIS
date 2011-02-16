@@ -19,6 +19,16 @@
 
 #include <Python.h>
 #include "ilacSquare.h"
+#include "ilacConfig.h"
+
+static PyObject*
+ilac_get_version ( PyObject *self, PyObject *args )
+{
+    PyObject *ver_mes;
+    ver_mes = PyString_FromFormat (
+            "%s, Version: %d.%d.", ILAC_NAME, ILAC_VER_MAJOR, ILAC_VER_MINOR );
+    return ver_mes;
+}
 
 static PyObject*
 ilac_get_image_id ( PyObject *self, PyObject *args )
@@ -69,6 +79,9 @@ static struct PyMethodDef ilac_methods [] =
     (PyCFunction)ilac_get_image_id,
     METH_VARARGS, "Analyzes the image file and returns an ide if a valid"
       "chessboard was found." },
+  { "version",
+    (PyCFunction)ilac_get_version,
+    METH_NOARGS, "Return the version of the library." },
   {NULL, NULL, 0, NULL}
 };
 
