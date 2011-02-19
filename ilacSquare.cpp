@@ -231,17 +231,14 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
                                            0 ) );
 
   /* 2. CALCULATE CHESSBOARD POINTS.*/
-  Mat a_image = Mat::zeros(1,1,CV_64F); //adjusted image
-
-  /* get next image*/
-  a_image = imread ( image );
+  orig_img = imread ( image );
 
   try
   {
     /* Initialize gray image here so the scope takes care of it for us */
     Mat g_img; //temp gray image
     /* transform to grayscale */
-    cvtColor ( a_image, g_img, CV_BGR2GRAY );
+    cvtColor ( orig_img, g_img, CV_BGR2GRAY );
 
     /* find the chessboard points in the image and put them in imageCBpoints.*/
     if ( !findChessboardCorners(g_img, boardSize, (imageCBpoints),
@@ -270,7 +267,7 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
             imageCBpoints[ (r*boardSize.width)+c+1 ], /* upper right */
             imageCBpoints[ (r*boardSize.width)+boardSize.width+c+1 ],/*lower right*/
             imageCBpoints[ (r*boardSize.width)+boardSize.width+c ], /*lower left*/
-            a_image ) );
+            orig_img ) );
       isBlack = !isBlack;
     }
 
@@ -350,6 +347,40 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
     if ( squares[i].get_green_value() )/* modify the green bit */
       id[id_offset] = id[id_offset] | (unsigned short)2;
   }
+}
+
+/*
+ * These are the possible actions.
+ * 1. CALCULATE TVEC AND RVEC
+ * 2. NORMALIZE DISTANCE
+ * 3. NORMALIZE ROTATION
+ * 4. CORRECT DISTORTION
+ */
+void
+ILAC_ChessboardImage::process_image ( const int action,
+                                      const Mat &camMat, const Mat &disMat,
+                                      const int distNorm )
+{
+  Mat rvec, tvec;
+  Mat final_img;
+
+  /*1. CALCULATE TVEC AND RVEC */
+  solvePnP ( (Mat)perfectCBpoints, (Mat)imageCBpoints, camMat, disMat,
+             rvec, tvec );
+
+  /*2. NORMALIZE DISTANCE */
+  if ( action | ILAC_DO_DISTNORM )
+    if ( 0 > distNorm && tvec.at<double>(0,2) < distNorm )
+      resize ( orig_img, final_img, Size(0,0),
+               tvec.at<double>(0,2)/distNorm, tvec.at<double>(0,2)/distNorm );
+
+  /* 3. NORMALIZE ROTATION */
+  if ( action | ILAC_DO_ANGLENORM )
+    ;
+
+  /* 4. CORRECT DISTORTION */
+  if ( action | ILAC_DO_UNDISTORT )
+    ;
 }
 
 vector<unsigned short>

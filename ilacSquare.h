@@ -57,13 +57,19 @@ public:
   ILAC_ChessboardImage ( const string&, const unsigned int,
                          const unsigned int );
   vector<unsigned short> get_image_id ();
+  void process_image ( const int, const Mat&, const Mat&, const int );
 private:
   vector<Point3f> perfectCBpoints;
   vector<Point2f> imageCBpoints;
   vector<unsigned short> id;
   vector<ILAC_Square> squares;
+  Mat orig_img;
+
   void check_input ( const string&, Size& );
   void init_chessboard ( const string&, const Size& );
+
+  /* define the argument for the process_image function */
+  enum {ILAC_DO_DISTNORM=1, ILAC_DO_ANGLENORM=2, ILAC_DO_UNDISTORT=4};
 };
 
 class ILACExNoChessboardFound:public std::exception{
