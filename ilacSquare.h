@@ -58,9 +58,10 @@ public:
                          const unsigned int );
   vector<unsigned short> get_image_id ();
 private:
-  vector<ILAC_Square> squares;
+  vector<Point3f> perfectCBpoints;
+  vector<Point2f> imageCBpoints;
   vector<unsigned short> id;
-  void calculate_image_id ();
+  vector<ILAC_Square> squares;
   void check_input ( const string&, Size& );
   void init_chessboard ( const string&, const Size& );
 };
