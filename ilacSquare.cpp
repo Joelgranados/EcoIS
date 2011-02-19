@@ -349,6 +349,14 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
   }
 }
 
+/* Helper function for process_image. */
+double
+ILAC_ChessboardImage::rad2deg ( const double Angle )
+{
+    static double ratio = 180.0 / 3.141592653589793238;
+      return Angle * ratio;
+}
+
 /*
  * These are the possible actions.
  * 1. CALCULATE TVEC AND RVEC
@@ -361,6 +369,7 @@ ILAC_ChessboardImage::process_image ( const int action,
                                       const Mat &camMat, const Mat &disMat,
                                       const int distNorm )
 {
+  Mat trans_mat, mid_img; /*temporal Mats*/
   Mat rvec, tvec;
   Mat final_img;
 
@@ -370,13 +379,25 @@ ILAC_ChessboardImage::process_image ( const int action,
 
   /*2. NORMALIZE DISTANCE */
   if ( action | ILAC_DO_DISTNORM )
+  {
     if ( 0 > distNorm && tvec.at<double>(0,2) < distNorm )
-      resize ( orig_img, final_img, Size(0,0),
+      resize ( orig_img, mid_img, Size(0,0),
                tvec.at<double>(0,2)/distNorm, tvec.at<double>(0,2)/distNorm );
+    //final_img = mid_img;
+  }
 
   /* 3. NORMALIZE ROTATION */
   if ( action | ILAC_DO_ANGLENORM )
-    ;
+  {
+    /* Calc rotation transformation matrix. First arg is center */
+    trans_mat = getRotationMatrix2D ( Point( mid_img.size().width/2,
+                                             mid_img.size().height/2),
+                                      rad2deg(rvec.at<double>(0,2)),
+                                      1 );
+
+    /* Perform the rotation and put it in a_img */
+    warpAffine ( mid_img, final_img, trans_mat, mid_img.size() );
+  }
 
   /* 4. CORRECT DISTORTION */
   if ( action | ILAC_DO_UNDISTORT )

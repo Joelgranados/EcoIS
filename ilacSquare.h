@@ -67,6 +67,7 @@ private:
 
   void check_input ( const string&, Size& );
   void init_chessboard ( const string&, const Size& );
+  double rad2deg ( const double );
 
   /* define the argument for the process_image function */
   enum {ILAC_DO_DISTNORM=1, ILAC_DO_ANGLENORM=2, ILAC_DO_UNDISTORT=4};
