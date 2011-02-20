@@ -67,6 +67,7 @@ private:
 
   void check_input ( const string&, Size& );
   void init_chessboard ( const string&, const Size& );
+  void calc_img_intrinsics ( vector<string>, const Size&, Mat&, Mat& );
   double rad2deg ( const double );
 
   /* define the argument for the process_image function */

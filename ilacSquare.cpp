@@ -404,6 +404,58 @@ ILAC_ChessboardImage::process_image ( const int action,
     ;
 }
 
+void
+ILAC_ChessboardImage::calc_img_intrinsics ( vector<string> images, const Size &boardSize,
+                                            Mat &disMat, Mat &camMat )
+{
+  Mat tmp_img = Mat::zeros(1,1,CV_64F);
+  vector<Point2f> pointbuf;
+  vector<Point3f> tmp_corners;
+  vector< vector<Point2f> > imagePoints;
+  vector< vector<Point3f> > objectPoints;
+  vector<Mat> rvecs, tvecs;
+
+  //FIXME: Check for the validity of the images argument.  Throw an exception if
+  //not.
+
+  for ( vector<string>::iterator img = images.begin() ;
+        img != images.end() ; ++img )
+  {
+    cvtColor ( imread ( (*img) ), tmp_img, CV_BGR2GRAY );
+
+    if ( !findChessboardCorners(tmp_img, boardSize, pointbuf,
+                                CV_CALIB_CB_ADAPTIVE_THRESH) )
+      continue;
+    else
+      //FIXME: We might have a problem here with exceptions.
+      cornerSubPix ( tmp_img, pointbuf, Size(5,5), Size(-1,-1),
+                     TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+
+    /*keep the image points */
+    imagePoints.push_back(pointbuf);
+
+  }
+
+  //FIXME: Need to check if the imagePoints size is ok.
+
+  //FIXME: we need to put the squareSize in somehow;
+  /*create the objectPoints */
+  int squareSize = 1;
+  for ( int i = 0 ; i < boardSize.height ; i++ )
+    for ( int j = 0; j < boardSize.width ; j++ )
+      tmp_corners.push_back( Point3f( double(j*squareSize),
+                                      double(i*squareSize),
+                                      0 ) );
+  /* replicate that element imagePoints.size() times */
+  for ( int i = 0 ; i < imagePoints.size() ; i++ )
+    objectPoints.push_back(tmp_corners);
+
+
+  /* find camMat, disMat */
+  calibrateCamera( objectPoints, imagePoints, tmp_img.size(),
+                   camMat, disMat, rvecs, tvecs, 0 );
+}
+
 vector<unsigned short>
 ILAC_ChessboardImage::get_image_id ()
 {
