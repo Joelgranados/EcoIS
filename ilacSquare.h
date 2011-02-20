@@ -53,9 +53,10 @@ private:
 
 class ILAC_ChessboardImage{
 public:
-  ILAC_ChessboardImage ( const string&, Size& );
-  ILAC_ChessboardImage ( const string&, const unsigned int,
-                         const unsigned int );
+  ILAC_ChessboardImage ( const string&, Size&, const unsigned int = 1 );
+  ILAC_ChessboardImage ( const string&,
+                         const unsigned int, const unsigned int,
+                         const unsigned int = 1 );
   vector<unsigned short> get_image_id ();
   void process_image ( const int, const Mat&, const Mat&, const int );
 private:
@@ -64,9 +65,10 @@ private:
   vector<unsigned short> id;
   vector<ILAC_Square> squares;
   Mat orig_img;
+  unsigned int sqr_size;
 
-  void check_input ( const string&, Size& );
-  void init_chessboard ( const string&, const Size& );
+  void check_input ( const string&, Size&, const unsigned int = 1 );
+  void init_chessboard ( const string&, const Size&, const unsigned int = 1 );
   void calc_img_intrinsics ( vector<string>, const Size&, Mat&, Mat& );
   double rad2deg ( const double );
 

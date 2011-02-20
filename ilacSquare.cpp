@@ -90,7 +90,7 @@ ILAC_Square::calc_exact_median ()
   return median;
 }
 
-/* FIXME: describe range here */
+/* FIXME: describe range anywhere */
 void
 ILAC_Square::calc_rgb ( vector<color_hue> range )
 {
@@ -164,25 +164,29 @@ ILAC_Square::get_blue_value ()
 
 ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
                                              const unsigned int size1,
-                                             const unsigned int size2 )
+                                             const unsigned int size2,
+                                             const unsigned int sqr_size )
 {
   Size boardSize;
   boardSize.width = max ( size1, size2 );
   boardSize.height = min ( size1, size2 );
 
-  check_input ( image, boardSize );
-  init_chessboard ( image, boardSize );
+  check_input ( image, boardSize, sqr_size );
+  init_chessboard ( image, boardSize, sqr_size );
 }
 
 ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
-                                             Size &boardSize )
+                                             Size &boardSize,
+                                             const unsigned int sqr_size )
 {
-  check_input ( image, boardSize );
-  init_chessboard ( image, boardSize );
+  check_input ( image, boardSize, sqr_size );
+  init_chessboard ( image, boardSize, sqr_size );
 }
 
+//FIXME: think of some checks for sqr_size.
 void
-ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize )
+ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize,
+                                    const unsigned int sqr_size )
 {
   // Check that file exists.
   struct stat file_stat;
@@ -218,16 +222,16 @@ ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize )
  */
 void
 ILAC_ChessboardImage::init_chessboard ( const string &image,
-                                        const Size &boardSize )
+                                        const Size &boardSize,
+                                        const unsigned int sqr_size )
 {
   /* 1. CALCULATE PERFECT CHESSBOARD POINTS */
-  //FIXME: I need to ask for the square size somewhere
-  int squareSize = 1;
+  this->sqr_size = sqr_size; /* class sqr_size var */
   perfectCBpoints.clear();
   for ( int i = 0 ; i < boardSize.height ; i++ )
     for ( int j = 0; j < boardSize.width ; j++ )
-      perfectCBpoints.push_back( Point3f( double(j*squareSize),
-                                           double(i*squareSize),
+      perfectCBpoints.push_back( Point3f( double(j*sqr_size),
+                                           double(i*sqr_size),
                                            0 ) );
 
   /* 2. CALCULATE CHESSBOARD POINTS.*/
@@ -438,13 +442,11 @@ ILAC_ChessboardImage::calc_img_intrinsics ( vector<string> images, const Size &b
 
   //FIXME: Need to check if the imagePoints size is ok.
 
-  //FIXME: we need to put the squareSize in somehow;
   /*create the objectPoints */
-  int squareSize = 1;
   for ( int i = 0 ; i < boardSize.height ; i++ )
     for ( int j = 0; j < boardSize.width ; j++ )
-      tmp_corners.push_back( Point3f( double(j*squareSize),
-                                      double(i*squareSize),
+      tmp_corners.push_back( Point3f( double(j*sqr_size),
+                                      double(i*sqr_size),
                                       0 ) );
   /* replicate that element imagePoints.size() times */
   for ( int i = 0 ; i < imagePoints.size() ; i++ )
