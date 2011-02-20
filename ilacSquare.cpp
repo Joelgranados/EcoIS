@@ -183,7 +183,6 @@ ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
   init_chessboard ( image, boardSize, sqr_size );
 }
 
-//FIXME: think of some checks for sqr_size.
 void
 ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize,
                                     const unsigned int sqr_size )
@@ -194,7 +193,7 @@ ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize,
     throw ILACExFileError();
 
   // Check to see if sizes are possitive.
-  if ( boardSize.height < 0 || boardSize.width < 0 )
+  if ( boardSize.height < 0 || boardSize.width < 0 || sqr_size < 0 )
       throw ILACExSizeFormatError();
 
   // Check for width > height
@@ -231,8 +230,8 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
   for ( int i = 0 ; i < boardSize.height ; i++ )
     for ( int j = 0; j < boardSize.width ; j++ )
       perfectCBpoints.push_back( Point3f( double(j*sqr_size),
-                                           double(i*sqr_size),
-                                           0 ) );
+                                          double(i*sqr_size),
+                                          0 ) );
 
   /* 2. CALCULATE CHESSBOARD POINTS.*/
   orig_img = imread ( image );
@@ -419,12 +418,14 @@ ILAC_ChessboardImage::calc_img_intrinsics ( vector<string> images, const Size &b
   vector< vector<Point3f> > objectPoints;
   vector<Mat> rvecs, tvecs;
 
-  //FIXME: Check for the validity of the images argument.  Throw an exception if
-  //not.
-
   for ( vector<string>::iterator img = images.begin() ;
         img != images.end() ; ++img )
   {
+
+    try {/* validate arguments */
+      check_input ( image, boarSize, sqr_size );
+    }catch(ILACExFileError){continue;}
+
     cvtColor ( imread ( (*img) ), tmp_img, CV_BGR2GRAY );
 
     if ( !findChessboardCorners(tmp_img, boardSize, pointbuf,
@@ -440,7 +441,9 @@ ILAC_ChessboardImage::calc_img_intrinsics ( vector<string> images, const Size &b
 
   }
 
-  //FIXME: Need to check if the imagePoints size is ok.
+  /* At least one element in imagePoints */
+  if ( imagePoints.size() <= 0 )
+    throw ILACExNoChessboardFound();
 
   /*create the objectPoints */
   for ( int i = 0 ; i < boardSize.height ; i++ )

@@ -93,6 +93,7 @@ class ILACExSymmetricalChessboard:public std::exception{
   }
 };
 
+//FIXME: put the filename in the exception some how.
 class ILACExFileError:public std::exception{
   virtual const char* what() const throw(){return "Image file error.";}
 };
