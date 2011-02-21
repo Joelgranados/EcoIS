@@ -167,20 +167,27 @@ ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
                                              const unsigned int size2,
                                              const unsigned int sqr_size )
 {
-  Size boardSize;
-  boardSize.width = max ( size1, size2 );
-  boardSize.height = min ( size1, size2 );
-
+  Size boardSize = ILAC_ChessboardImage::get_size ( size1, size2 );
   check_input ( image, boardSize, sqr_size );
   init_chessboard ( image, boardSize, sqr_size );
 }
 
 ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
-                                             Size &boardSize,
+                                             const Size &boardsize,
                                              const unsigned int sqr_size )
 {
+  Size boardSize = boardsize; /* we cant have a const in check_input*/
   check_input ( image, boardSize, sqr_size );
   init_chessboard ( image, boardSize, sqr_size );
+}
+
+Size
+ILAC_ChessboardImage::get_size ( unsigned int size1, unsigned int size2 )
+{
+  Size boardSize;
+  boardSize.width = max ( size1, size2 );
+  boardSize.height = min ( size1, size2 );
+  return boardSize;
 }
 
 void
@@ -407,9 +414,12 @@ ILAC_ChessboardImage::process_image ( const int action,
     ;
 }
 
-void
-ILAC_ChessboardImage::calc_img_intrinsics ( vector<string> images, const Size &boardSize,
-                                            Mat &disMat, Mat &camMat )
+void //static method.
+ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
+                                            const unsigned int size1,
+                                            const unsigned int size2,
+                                            const unsigned int sqr_size,
+                                            Mat &camMat, Mat &disMat )
 {
   Mat tmp_img = Mat::zeros(1,1,CV_64F);
   vector<Point2f> pointbuf;
@@ -417,19 +427,22 @@ ILAC_ChessboardImage::calc_img_intrinsics ( vector<string> images, const Size &b
   vector< vector<Point2f> > imagePoints;
   vector< vector<Point3f> > objectPoints;
   vector<Mat> rvecs, tvecs;
+  Size boardSize;
 
-  for ( vector<string>::iterator img = images.begin() ;
+  boardSize = ILAC_ChessboardImage::get_size ( size1, size2 );
+
+  for ( vector<string>::const_iterator img = images.begin() ;
         img != images.end() ; ++img )
   {
 
     try {/* validate arguments */
-      check_input ( image, boarSize, sqr_size );
+      check_input ( (*img), boardSize, sqr_size );
     }catch(ILACExFileError){continue;}
 
     cvtColor ( imread ( (*img) ), tmp_img, CV_BGR2GRAY );
 
-    if ( !findChessboardCorners(tmp_img, boardSize, pointbuf,
-                                CV_CALIB_CB_ADAPTIVE_THRESH) )
+    if ( !findChessboardCorners ( tmp_img, boardSize, pointbuf,
+                                  CV_CALIB_CB_ADAPTIVE_THRESH ) )
       continue;
     else
       //FIXME: We might have a problem here with exceptions.
@@ -438,7 +451,6 @@ ILAC_ChessboardImage::calc_img_intrinsics ( vector<string> images, const Size &b
 
     /*keep the image points */
     imagePoints.push_back(pointbuf);
-
   }
 
   /* At least one element in imagePoints */
@@ -451,10 +463,10 @@ ILAC_ChessboardImage::calc_img_intrinsics ( vector<string> images, const Size &b
       tmp_corners.push_back( Point3f( double(j*sqr_size),
                                       double(i*sqr_size),
                                       0 ) );
+
   /* replicate that element imagePoints.size() times */
   for ( int i = 0 ; i < imagePoints.size() ; i++ )
     objectPoints.push_back(tmp_corners);
-
 
   /* find camMat, disMat */
   calibrateCamera( objectPoints, imagePoints, tmp_img.size(),

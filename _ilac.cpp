@@ -18,6 +18,8 @@
  */
 
 #include <Python.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 #include "ilacSquare.h"
 #include "ilacConfig.h"
 
@@ -39,6 +41,7 @@ ilac_get_image_id ( PyObject *self, PyObject *args )
   vector<unsigned short> image_id;
 
   /* parse incoming arguments. */
+  //FIXME: set the python error.
   if ( !PyArg_ParseTuple ( args, "sII", &image_file, &size1, &size2 ) )
     return NULL;
 
@@ -73,12 +76,82 @@ ilac_get_image_id ( PyObject *self, PyObject *args )
   return list_image_id;
 }
 
+static PyObject*
+ilac_calc_intrinsics ( PyObject *self, PyObject *args )
+{
+  PyObject *py_file_list, *ret_list, *tmp_list;
+  vector<string> images;
+  int size1, size2, sqr_size;
+  Mat camMat, disMat;
+
+  if ( !PyArg_ParseTuple ( args, "OIII", &py_file_list, size1, size2, sqr_size )
+       || !PyList_Check ( py_file_list ) )
+  {
+    PyErr_SetString ( PyExc_TypeError, "Argument should be a string list." );
+    return NULL;
+  }
+
+  char* temp;
+  for ( int i = 0 ; i < PyList_Size( py_file_list ) ; i++ )
+  {
+    if ( NULL == (temp = PyString_AsString ( PyList_GetItem(py_file_list, i) )) )
+      return NULL; /* it has already set the pyerror.*/
+    images.push_back ( (string)temp );
+  }
+
+  ILAC_ChessboardImage::calc_img_intrinsics ( images, size1, size2, sqr_size,
+                                              camMat, disMat );
+
+  /* create the return list
+   * [camMat[[x,x,x],[x,x,x],[x,x,x]], disMat[x,x,x,x,x,x,x,x]]
+   */
+  if ( NULL == (ret_list = PyList_New ( 2 ))
+       || PyList_SetItem ( ret_list, 0, PyList_New ( 3 ) ) == -1
+       || PyList_SetItem ( ret_list, 1, PyList_New ( 8 ) ) == -1 )
+  {
+    PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
+    return NULL;
+  }
+
+  /* create the camMat rows */
+  for ( int row = 0 ; row < 3 ; row++ )
+  {
+    if ( NULL == (tmp_list = PyList_New ( 3 )) )
+    {
+      PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
+      return NULL;
+    }
+
+    for ( int col = 0 ; col < 3 ; col++ )
+      PyList_SetItem ( tmp_list, col,
+                        Py_BuildValue ( "d", camMat.at<double>(row,col) ) );
+
+    if ( PyList_SetItem ( PyList_GetItem (ret_list, 0), row, tmp_list ) == -1 )
+    {
+      PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
+      return NULL;
+    }
+  }
+
+  for ( int col = 0 ; col < disMat.size().width ; col++ )
+    if ( PyList_SetItem ( PyList_GetItem (ret_list, 1), col,
+                          Py_BuildValue ( "d", disMat.at<double>(0,col) ) ) 
+         == -1 )
+    {
+      PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
+      return NULL;
+    }
+}
+
 static struct PyMethodDef ilac_methods [] =
 {
   { "get_image_id",
     (PyCFunction)ilac_get_image_id,
     METH_VARARGS, "Analyzes the image file and returns an ide if a valid"
       "chessboard was found." },
+  { "calc_intrinsics",
+    (PyCFunction)ilac_calc_intrinsics,
+    METH_VARARGS, "Returns the camera matrix and distortion vector"},
   { "version",
     (PyCFunction)ilac_get_version,
     METH_NOARGS, "Return the version of the library." },
