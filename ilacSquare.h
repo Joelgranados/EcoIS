@@ -61,8 +61,13 @@ public:
                          const unsigned int = 1 );
 
   vector<unsigned short> get_image_id ();
-  void process_image ( const int, const Mat&, const Mat&, const int );
-  static void calc_img_intrinsics ( const vector<string>,
+  void process_image ( const int, //action int
+                       const Mat&, //camMat
+                       const Mat&, //disMat
+                       const int, // Normalization distance.
+                       const string ); //output filename
+
+  static void calc_img_intrinsics ( const vector<string>, //image
                                     const unsigned int, //size1
                                     const unsigned int, //size2
                                     const unsigned int, //square size

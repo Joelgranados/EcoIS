@@ -87,7 +87,8 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
   if ( !PyArg_ParseTuple ( args, "OIII", &py_file_list, size1, size2, sqr_size )
        || !PyList_Check ( py_file_list ) )
   {
-    PyErr_SetString ( PyExc_TypeError, "Argument should be a string list." );
+    //FIXME: edit the error message.
+    PyErr_SetString ( PyExc_TypeError, "FIXME: change the error message" );
     return NULL;
   }
 
@@ -143,15 +144,82 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
     }
 }
 
+//FIXME: check for error in all the python transform calls.
+static PyObject*
+ilac_calc_process_image ( PyObject *self, PyObject *args )
+{
+  PyObject *camMat_pylist, *disMat_pylist;
+  int action, normdist, size1, size2;
+  Mat camMat_cvmat, disMat_cvmat;
+  char* outfile, infile;
+  vector<unsigned short> image_id;
+  PyObject *list_image_id;
+
+  //FIXME: comment on how the pyobjects should look like.
+  if ( !PyArg_ParseTuple ( args, "IIIOOIss", &size1, &size2, &action,
+                           camMat_pylist, disMat_pylist,
+                           &normdist, &infile, &outfile ) )
+  {
+    //FIXME: change the error message.
+    PyErr_SetString ( PyExc_TypeError, "FIXME: Change the error message" );
+    return NULL;
+  }
+
+  //FIXME we should export the class to a python type!!!!!! in next cycle
+  /* create the ILAC_ChessboardImage object */
+  /* Calculate the image id vector */
+  //FIXME: put inside a try catch
+  ILAC_ChessboardImage cb = ILAC_ChessboardImage ( (const char*)infile, size1, size2 );
+  image_id = cb.get_image_id ();
+
+  /*Construct python list that will hold the image id*/
+  list_image_id = PyList_New ( image_id.size() );
+  if ( list_image_id == NULL )
+  {
+    PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
+    return NULL;
+  }
+
+  for ( int i = 0 ; i < image_id.size() ; i++ )
+    if ( PyList_SetItem ( list_image_id, i, Py_BuildValue("H", image_id[i]) )
+         == -1 )
+    {
+      PyErr_SetString ( PyExc_StandardError, "Error creating id list elem." );
+      return NULL;
+    }
+
+  /* Lets create the disMat_cvmat var from the disMat_pylist */
+  disMat_cvmat = Mat::zeros( 1, 8, CV_64F );
+  for ( int i = 0 ; i < 9 ; i++ )
+    *(disMat_cvmat.data + i) = PyFloat_AsDouble (
+      PyList_GetItem (disMat_pylist, i) );
+
+  camMat_cvmat = Mat::zeros( 3, 3, CV_64F );
+  for ( int i = 0 ; i < 10 ; i++ )
+    *(camMat_cvmat.data + i) = PyFloat_AsDouble (
+        PyList_GetItem ( PyList_GetItem ( camMat_pylist, floor(i/3) ), i%3 ) );
+
+  //FIXME check for error.
+  /* call the image process method. */
+  cb.process_image ( action, camMat_cvmat, disMat_cvmat,
+                     normdist, outfile );
+
+  return list_image_id;
+}
+
 static struct PyMethodDef ilac_methods [] =
 {
   { "get_image_id",
     (PyCFunction)ilac_get_image_id,
-    METH_VARARGS, "Analyzes the image file and returns an ide if a valid"
+    METH_VARARGS, "Analyzes the image file and returns an id if a valid"
       "chessboard was found." },
   { "calc_intrinsics",
     (PyCFunction)ilac_calc_intrinsics,
     METH_VARARGS, "Returns the camera matrix and distortion vector"},
+  { "process_image",
+    (PyCFunction)ilac_calc_process_image,
+    METH_VARARGS, "Returns image id and the file where the processed image"
+      "is located." },
   { "version",
     (PyCFunction)ilac_get_version,
     METH_NOARGS, "Return the version of the library." },

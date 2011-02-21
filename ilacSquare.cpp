@@ -377,7 +377,8 @@ ILAC_ChessboardImage::rad2deg ( const double Angle )
 void
 ILAC_ChessboardImage::process_image ( const int action,
                                       const Mat &camMat, const Mat &disMat,
-                                      const int distNorm )
+                                      const int distNorm,
+                                      const string filename_output )
 {
   Mat trans_mat, mid_img; /*temporal Mats*/
   Mat rvec, tvec;
@@ -412,6 +413,10 @@ ILAC_ChessboardImage::process_image ( const int action,
   /* 4. CORRECT DISTORTION */
   if ( action | ILAC_DO_UNDISTORT )
     ;
+
+  //FIXME: this shouldn't really be here. fix it someday :)
+  /* 5. We write the image to a file */
+  imwrite ( filename_output, final_img );
 }
 
 void //static method.
