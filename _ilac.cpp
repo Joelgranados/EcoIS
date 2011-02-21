@@ -84,8 +84,7 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
   int size1, size2, sqr_size;
   Mat camMat, disMat;
 
-  if ( !PyArg_ParseTuple ( args, "OIII", &py_file_list, size1, size2, sqr_size )
-       || !PyList_Check ( py_file_list ) )
+  if ( !PyArg_ParseTuple ( args, "Oiii", &py_file_list, &size1, &size2, &sqr_size ) )
   {
     //FIXME: edit the error message.
     PyErr_SetString ( PyExc_TypeError, "FIXME: change the error message" );
@@ -95,8 +94,7 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
   char* temp;
   for ( int i = 0 ; i < PyList_Size( py_file_list ) ; i++ )
   {
-    if ( NULL == (temp = PyString_AsString ( PyList_GetItem(py_file_list, i) )) )
-      return NULL; /* it has already set the pyerror.*/
+    temp = PyString_AsString ( PyList_GetItem(py_file_list, i) );
     images.push_back ( (string)temp );
   }
 
@@ -106,42 +104,33 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
   /* create the return list
    * [camMat[[x,x,x],[x,x,x],[x,x,x]], disMat[x,x,x,x,x,x,x,x]]
    */
-  if ( NULL == (ret_list = PyList_New ( 2 ))
-       || PyList_SetItem ( ret_list, 0, PyList_New ( 3 ) ) == -1
-       || PyList_SetItem ( ret_list, 1, PyList_New ( 8 ) ) == -1 )
-  {
-    PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
-    return NULL;
-  }
+  ret_list = PyList_New( 0 );
 
   /* create the camMat rows */
+  PyObject *camMat_list;
+  camMat_list = PyList_New ( 0 ); //FIXME: put in an if.
   for ( int row = 0 ; row < 3 ; row++ )
   {
-    if ( NULL == (tmp_list = PyList_New ( 3 )) )
-    {
-      PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
-      return NULL;
-    }
+    tmp_list = PyList_New ( 0 );
 
     for ( int col = 0 ; col < 3 ; col++ )
-      PyList_SetItem ( tmp_list, col,
-                        Py_BuildValue ( "d", camMat.at<double>(row,col) ) );
+      PyList_Append ( tmp_list,
+                      Py_BuildValue ( "d", camMat.at<double>(row,col) ) );
 
-    if ( PyList_SetItem ( PyList_GetItem (ret_list, 0), row, tmp_list ) == -1 )
-    {
-      PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
-      return NULL;
-    }
+    PyList_Append ( camMat_list, tmp_list );
   }
 
+  /* create disMat */
+  PyObject *disMat_list;
+  disMat_list = PyList_New( 0 );
   for ( int col = 0 ; col < disMat.size().width ; col++ )
-    if ( PyList_SetItem ( PyList_GetItem (ret_list, 1), col,
-                          Py_BuildValue ( "d", disMat.at<double>(0,col) ) ) 
-         == -1 )
-    {
-      PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
-      return NULL;
-    }
+    PyList_Append ( disMat_list,
+        Py_BuildValue ( "d", disMat.at<double>(0,col) ) );
+
+  PyList_Append ( ret_list, camMat_list );
+  PyList_Append ( ret_list, disMat_list );
+
+  return ret_list;
 }
 
 //FIXME: check for error in all the python transform calls.
@@ -156,8 +145,8 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
   PyObject *list_image_id;
 
   //FIXME: comment on how the pyobjects should look like.
-  if ( !PyArg_ParseTuple ( args, "IIIOOIss", &size1, &size2, &action,
-                           camMat_pylist, disMat_pylist,
+  if ( !PyArg_ParseTuple ( args, "iiiOOiss", &size1, &size2, &action,
+                           &camMat_pylist, &disMat_pylist,
                            &normdist, &infile, &outfile ) )
   {
     //FIXME: change the error message.
@@ -213,13 +202,20 @@ static struct PyMethodDef ilac_methods [] =
     (PyCFunction)ilac_get_image_id,
     METH_VARARGS, "Analyzes the image file and returns an id if a valid"
       "chessboard was found." },
+
   { "calc_intrinsics",
     (PyCFunction)ilac_calc_intrinsics,
-    METH_VARARGS, "Returns the camera matrix and distortion vector"},
+    METH_VARARGS, "Returns the camera matrix and distortion vector."
+    " Arguments: (list filenames, int sizeofchessboard1,"
+    " int sizeofchessboard2, int squaresize)"},
+
   { "process_image",
     (PyCFunction)ilac_calc_process_image,
     METH_VARARGS, "Returns image id and the file where the processed image"
-      "is located." },
+      "is located. Arguments: (int sizeofchessboard1, int sizeofchessboard2,"
+      " int actionint, list camMat, list disMat, int normalizationdistance,"
+      " string outputfilename)" },
+
   { "version",
     (PyCFunction)ilac_get_version,
     METH_NOARGS, "Return the version of the library." },

@@ -439,7 +439,6 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
   for ( vector<string>::const_iterator img = images.begin() ;
         img != images.end() ; ++img )
   {
-
     try {/* validate arguments */
       check_input ( (*img), boardSize, sqr_size );
     }catch(ILACExFileError){continue;}
