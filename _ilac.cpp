@@ -138,14 +138,14 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
   PyObject *camMat_pylist, *disMat_pylist;
   int action, normdist, size1, size2;
   Mat camMat_cvmat, disMat_cvmat;
-  char* outfile, infile;
+  char *outfile, *infile;
   vector<unsigned short> image_id;
   PyObject *list_image_id;
 
   //FIXME: comment on how the pyobjects should look like.
-  if ( !PyArg_ParseTuple ( args, "iiiOOiss", &size1, &size2, &action,
-                           &camMat_pylist, &disMat_pylist,
-                           &normdist, &infile, &outfile ) )
+  if ( !PyArg_ParseTuple ( args, "iiiiOOss", &action, &size1, &size2,
+                           &normdist, &camMat_pylist, &disMat_pylist,
+                           &infile, &outfile ) )
   {
     //FIXME: change the error message.
     PyErr_SetString ( PyExc_TypeError, "FIXME: Change the error message" );
@@ -156,7 +156,7 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
   /* create the ILAC_ChessboardImage object */
   /* Calculate the image id vector */
   //FIXME: put inside a try catch
-  ILAC_ChessboardImage cb = ILAC_ChessboardImage ( (const char*)infile, size1, size2 );
+  ILAC_ChessboardImage cb = ILAC_ChessboardImage ( infile, size1, size2 );
   image_id = cb.get_image_id ();
 
   /*Construct python list that will hold the image id*/
@@ -210,9 +210,8 @@ static struct PyMethodDef ilac_methods [] =
   { "process_image",
     (PyCFunction)ilac_calc_process_image,
     METH_VARARGS, "Returns image id and the file where the processed image"
-      "is located. Arguments: (int sizeofchessboard1, int sizeofchessboard2,"
-      " int actionint, list camMat, list disMat, int normalizationdistance,"
-      " string outputfilename)" },
+      " is located. Arguments: (action, size1, size2, distnorm,"
+      " camMat, disMat, inputfile, outputfile." },
 
   { "version",
     (PyCFunction)ilac_get_version,
