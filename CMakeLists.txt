@@ -37,7 +37,16 @@ include_directories("${PROJECT_BINARY_DIR}")
 find_package (OpenCV REQUIRED)
 find_package (PythonLibs REQUIRED)
 
+# for including python
 include_directories(${PYTHON_INCLUDE_PATH})
+
+# add an option for debug.
+option(DEFINE_DEBUG "Build using debugging flags." OFF)
+if(DEFINE_DEBUG)
+    message("Adding Debug flags...")
+    set(CMAKE_BUILD_TYPE Debug)
+    message("Build type is " ${CMAKE_BUILD_TYPE})
+endif(DEFINE_DEBUG)
 
 add_library (_ilac SHARED ilacSquare.cpp _ilac.cpp)
 set_target_properties (_ilac PROPERTIES PREFIX "") #get rid of the lib*
