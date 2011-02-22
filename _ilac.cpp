@@ -177,13 +177,13 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
 
   /* Lets create the disMat_cvmat var from the disMat_pylist */
   disMat_cvmat = Mat::zeros( 1, 8, CV_64F );
-  for ( int i = 0 ; i < 9 ; i++ )
-    *(disMat_cvmat.data + i) = PyFloat_AsDouble (
+  for ( int i = 0 ; i < 8 ; i++ )
+    disMat_cvmat.at<double>(0,i) = PyFloat_AsDouble (
       PyList_GetItem (disMat_pylist, i) );
 
   camMat_cvmat = Mat::zeros( 3, 3, CV_64F );
-  for ( int i = 0 ; i < 10 ; i++ )
-    *(camMat_cvmat.data + i) = PyFloat_AsDouble (
+  for ( int i = 0 ; i < 9 ; i++ )
+    camMat_cvmat.at<double>(floor(i/3), i%3) = PyFloat_AsDouble (
         PyList_GetItem ( PyList_GetItem ( camMat_pylist, floor(i/3) ), i%3 ) );
 
   //FIXME check for error.
