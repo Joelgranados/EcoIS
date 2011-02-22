@@ -367,7 +367,7 @@ ILAC_ChessboardImage::rad2deg ( const double Angle )
 }
 
 /*
- * These are the possible actions.
+ * There are the possible actions.
  * 1. CALCULATE TVEC AND RVEC
  * 2. NORMALIZE DISTANCE
  * 3. NORMALIZE ROTATION
@@ -418,6 +418,11 @@ ILAC_ChessboardImage::process_image ( const int action,
   imwrite ( filename_output, final_img );
 }
 
+/*
+ * 1. CREATE IMAGEPOINTS.
+ * 2. CREATE OBJECTPOINTS.
+ * 3. CALL CALIBRATE CAMERA.
+ */
 void //static method.
 ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
                                             const unsigned int size1,
@@ -433,11 +438,10 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
   vector<Mat> rvecs, tvecs;
   Size boardSize;
 
+  /* 1. CREATE IMAGEPOINTS.*/
   boardSize = ILAC_ChessboardImage::get_size ( size1, size2 );
-
   for ( vector<string>::const_iterator img = images.begin() ;
         img != images.end() ; ++img )
-  {
     try {
       check_input ( (*img), boardSize, sqr_size );/*validate args*/
       cvtColor ( imread ( (*img) ), tmp_img, CV_BGR2GRAY );/*to grayscale*/
@@ -451,12 +455,11 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
       imagePoints.push_back(pointbuf); /*keep image points */
     }catch(ILACExFileError){continue;}
      catch(cv::Exception){continue;}
-  }
-  /* At least one element in imagePoints */
-  if ( imagePoints.size() <= 0 )
+
+  if ( imagePoints.size() <= 0 )/* Need at least one element */
     throw ILACExNoChessboardFound();
 
-  /*create the objectPoints */
+  /* 2. CREATE OBJECTPOINTS.*/
   for ( int i = 0 ; i < boardSize.height ; i++ )
     for ( int j = 0; j < boardSize.width ; j++ )
       corners.push_back( Point3f( double(j*sqr_size),
@@ -467,7 +470,7 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
   for ( int i = 0 ; i < imagePoints.size() ; i++ )
     objectPoints.push_back(corners);
 
-  /* find camMat, disMat */
+  /* 3. CALL CALIBRATE CAMERA. find camMat, disMat */
   calibrateCamera( objectPoints, imagePoints, tmp_img.size(),
                    camMat, disMat, rvecs, tvecs, 0 );
 }
