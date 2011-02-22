@@ -393,7 +393,7 @@ ILAC_ChessboardImage::process_image ( const int action,
   {
     if ( 0 < distNorm && tvec.at<double>(0,2) > distNorm )
       try{
-        resize ( orig_img, mid_img, Size(0,0),
+        resize ( orig_img, final_img, Size(0,0),
                  tvec.at<double>(0,2)/distNorm,
                  tvec.at<double>(0,2)/distNorm );
       }catch (cv::Exception cve){
@@ -409,6 +409,7 @@ ILAC_ChessboardImage::process_image ( const int action,
   /* 3. NORMALIZE ROTATION */
   if ( action & ILAC_DO_ANGLENORM )
   {
+    final_img.copyTo ( mid_img );
     /* Calc rotation transformation matrix. First arg is center */
     trans_mat = getRotationMatrix2D ( Point( mid_img.size().width/2,
                                              mid_img.size().height/2),
@@ -425,7 +426,7 @@ ILAC_ChessboardImage::process_image ( const int action,
 
   //FIXME: this shouldn't really be here. fix it someday :)
   /* 5. We write the image to a file */
-  imwrite ( filename_output, mid_img );
+  imwrite ( filename_output, final_img );
 }
 
 /*
