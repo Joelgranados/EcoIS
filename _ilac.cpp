@@ -86,8 +86,8 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
 
   if ( !PyArg_ParseTuple ( args, "Oiii", &py_file_list, &size1, &size2, &sqr_size ) )
   {
-    //FIXME: edit the error message.
-    PyErr_SetString ( PyExc_TypeError, "FIXME: change the error message" );
+    PyErr_SetString ( PyExc_TypeError,
+                      "ArgError: should be (list, int, int, int)." );
     return NULL;
   }
 
@@ -108,7 +108,7 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
 
   /* create the camMat rows */
   PyObject *camMat_list;
-  camMat_list = PyList_New ( 0 ); //FIXME: put in an if.
+  camMat_list = PyList_New ( 0 );
   for ( int row = 0 ; row < 3 ; row++ )
   {
     tmp_list = PyList_New ( 0 );

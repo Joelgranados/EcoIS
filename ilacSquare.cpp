@@ -20,7 +20,6 @@
 #include <iostream>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include <stdio.h>
 #include <sys/stat.h>
 
 /* Notice ul:UpperLeft, ur:UpperRight, lr:LowerRight, ll:LowerLeft*/
@@ -426,9 +425,9 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
                                             const unsigned int sqr_size,
                                             Mat &camMat, Mat &disMat )
 {
-  Mat tmp_img = Mat::zeros(1,1,CV_64F);
+  Mat tmp_img;
   vector<Point2f> pointbuf;
-  vector<Point3f> tmp_corners;
+  vector<Point3f> corners;
   vector< vector<Point2f> > imagePoints;
   vector< vector<Point3f> > objectPoints;
   vector<Mat> rvecs, tvecs;
@@ -439,24 +438,20 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
   for ( vector<string>::const_iterator img = images.begin() ;
         img != images.end() ; ++img )
   {
-    try {/* validate arguments */
-      check_input ( (*img), boardSize, sqr_size );
+    try {
+      check_input ( (*img), boardSize, sqr_size );/*validate args*/
+      cvtColor ( imread ( (*img) ), tmp_img, CV_BGR2GRAY );/*to grayscale*/
+      if ( !findChessboardCorners ( tmp_img, boardSize, pointbuf,
+                                    CV_CALIB_CB_ADAPTIVE_THRESH ) )
+        continue;
+      else
+        cornerSubPix ( tmp_img, pointbuf, Size(5,5), Size(-1,-1),
+                    TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
+
+      imagePoints.push_back(pointbuf); /*keep image points */
     }catch(ILACExFileError){continue;}
-
-    cvtColor ( imread ( (*img) ), tmp_img, CV_BGR2GRAY );
-
-    if ( !findChessboardCorners ( tmp_img, boardSize, pointbuf,
-                                  CV_CALIB_CB_ADAPTIVE_THRESH ) )
-      continue;
-    else
-      //FIXME: We might have a problem here with exceptions.
-      cornerSubPix ( tmp_img, pointbuf, Size(5,5), Size(-1,-1),
-                     TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ) );
-
-    /*keep the image points */
-    imagePoints.push_back(pointbuf);
+     catch(cv::Exception){continue;}
   }
-
   /* At least one element in imagePoints */
   if ( imagePoints.size() <= 0 )
     throw ILACExNoChessboardFound();
@@ -464,13 +459,13 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
   /*create the objectPoints */
   for ( int i = 0 ; i < boardSize.height ; i++ )
     for ( int j = 0; j < boardSize.width ; j++ )
-      tmp_corners.push_back( Point3f( double(j*sqr_size),
-                                      double(i*sqr_size),
-                                      0 ) );
+      corners.push_back( Point3f( double(j*sqr_size),
+                                  double(i*sqr_size),
+                                  0 ) );
 
   /* replicate that element imagePoints.size() times */
   for ( int i = 0 ; i < imagePoints.size() ; i++ )
-    objectPoints.push_back(tmp_corners);
+    objectPoints.push_back(corners);
 
   /* find camMat, disMat */
   calibrateCamera( objectPoints, imagePoints, tmp_img.size(),
