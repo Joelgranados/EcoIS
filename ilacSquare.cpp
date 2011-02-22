@@ -379,25 +379,35 @@ ILAC_ChessboardImage::process_image ( const int action,
                                       const int distNorm,
                                       const string filename_output )
 {
-  Mat trans_mat, mid_img; /*temporal Mats*/
+  Mat trans_mat; /*temporal Mats*/
   Mat rvec, tvec;
   Mat final_img;
+  Mat mid_img = Mat::zeros( 1, 1, CV_32F );
 
   /*1. CALCULATE TVEC AND RVEC */
   solvePnP ( (Mat)perfectCBpoints, (Mat)imageCBpoints, camMat, disMat,
              rvec, tvec );
 
   /*2. NORMALIZE DISTANCE */
-  if ( action | ILAC_DO_DISTNORM )
+  if ( action & ILAC_DO_DISTNORM )
   {
-    if ( 0 > distNorm && tvec.at<double>(0,2) < distNorm )
-      resize ( orig_img, mid_img, Size(0,0),
-               tvec.at<double>(0,2)/distNorm, tvec.at<double>(0,2)/distNorm );
-    //final_img = mid_img;
+    if ( 0 < distNorm && tvec.at<double>(0,2) > distNorm )
+      try{
+        resize ( orig_img, mid_img, Size(0,0),
+                 tvec.at<double>(0,2)/distNorm,
+                 tvec.at<double>(0,2)/distNorm );
+      }catch (cv::Exception cve){
+        /* if the scale factor tvec.at<double>(0,2)/distNorm is too big, the
+         * resized image will be too big and there will not be enough memory.*/
+        if ( cve.func == "OutOfMemoryError" )
+          throw ILACExInvalidResizeScale();
+        else
+          throw ILACExUnknownError();
+      }
   }
 
   /* 3. NORMALIZE ROTATION */
-  if ( action | ILAC_DO_ANGLENORM )
+  if ( action & ILAC_DO_ANGLENORM )
   {
     /* Calc rotation transformation matrix. First arg is center */
     trans_mat = getRotationMatrix2D ( Point( mid_img.size().width/2,
@@ -410,12 +420,12 @@ ILAC_ChessboardImage::process_image ( const int action,
   }
 
   /* 4. CORRECT DISTORTION */
-  if ( action | ILAC_DO_UNDISTORT )
+  if ( action & ILAC_DO_UNDISTORT )
     ;
 
   //FIXME: this shouldn't really be here. fix it someday :)
   /* 5. We write the image to a file */
-  imwrite ( filename_output, final_img );
+  imwrite ( filename_output, mid_img );
 }
 
 /*

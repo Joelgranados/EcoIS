@@ -91,6 +91,17 @@ private:
   enum {ILAC_DO_DISTNORM=1, ILAC_DO_ANGLENORM=2, ILAC_DO_UNDISTORT=4};
 };
 
+class ILACExInvalidResizeScale:public std::exception{
+  virtual const char* what() const throw()
+  {
+    return "Resulting resize scale factor is non-manageable";
+  }
+};
+
+class ILACExUnknownError:public std::exception{
+  virtual const char* what() const throw(){return "Unknown error encountered";}
+};
+
 class ILACExNoChessboardFound:public std::exception{
   virtual const char* what() const throw(){return "No Chessboard found";}
 };
@@ -102,7 +113,7 @@ class ILACExNoneRedSquare:public std::exception{
 class ILACExSymmetricalChessboard:public std::exception{
   virtual const char* what() const throw()
   {
-    return "Chessboard parity sizes are equal.  The dimenstions of the "
+    return "Chessboard parity sizes are equal.  The dimensions of the "
       "chessboard must be odd (5.6 for example). Refer to Learning Opencv "
       "page 382.";
   }
