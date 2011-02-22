@@ -76,14 +76,20 @@ ilac_get_image_id ( PyObject *self, PyObject *args )
   return list_image_id;
 }
 
+/*
+ * 1. PARSE ARGS
+ * 2. CALL CALC_IMG_INTRINSICS
+ * 3. CREATE RETURN LIST
+ */
 static PyObject*
 ilac_calc_intrinsics ( PyObject *self, PyObject *args )
 {
-  PyObject *py_file_list, *ret_list, *tmp_list;
+  PyObject *py_file_list, *ret_list, *tmp_list, *camMat_list, *disMat_list;
   vector<string> images;
   int size1, size2, sqr_size;
   Mat camMat, disMat;
 
+  /* 1. PARSE ARGS */
   if ( !PyArg_ParseTuple ( args, "Oiii", &py_file_list, &size1, &size2, &sqr_size ) )
   {
     PyErr_SetString ( PyExc_TypeError,
@@ -91,44 +97,36 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
     return NULL;
   }
 
-  char* temp;
   for ( int i = 0 ; i < PyList_Size( py_file_list ) ; i++ )
-  {
-    temp = PyString_AsString ( PyList_GetItem(py_file_list, i) );
-    images.push_back ( (string)temp );
-  }
+    images.push_back (
+        (string)PyString_AsString ( PyList_GetItem(py_file_list, i) ) );
 
+  /* 2. CALL CALC_IMG_INTRINSICS */
   ILAC_ChessboardImage::calc_img_intrinsics ( images, size1, size2, sqr_size,
                                               camMat, disMat );
 
-  /* create the return list
-   * [camMat[[x,x,x],[x,x,x],[x,x,x]], disMat[x,x,x,x,x,x,x,x]]
+  /*
+   * 3. CREATE RETURN LIST
+   * ret_list[camMat[[x,x,x],[x,x,x],[x,x,x]], disMat[x,x ... x,x]]
    */
-  ret_list = PyList_New( 0 );
+  ret_list = PyList_New(0);
+  camMat_list = PyList_New (0);
+  disMat_list = PyList_New(0);
+  PyList_Append ( ret_list, camMat_list );
+  PyList_Append ( ret_list, disMat_list );
 
-  /* create the camMat rows */
-  PyObject *camMat_list;
-  camMat_list = PyList_New ( 0 );
-  for ( int row = 0 ; row < 3 ; row++ )
+  for ( int row = 0 ; row < 3 ; row++ )/* create the camMat rows */
   {
-    tmp_list = PyList_New ( 0 );
-
+    tmp_list = PyList_New (0);
     for ( int col = 0 ; col < 3 ; col++ )
       PyList_Append ( tmp_list,
                       Py_BuildValue ( "d", camMat.at<double>(row,col) ) );
-
     PyList_Append ( camMat_list, tmp_list );
   }
 
-  /* create disMat */
-  PyObject *disMat_list;
-  disMat_list = PyList_New( 0 );
-  for ( int col = 0 ; col < disMat.size().width ; col++ )
+  for ( int col = 0 ; col < disMat.size().width ; col++ )/* create disMat */
     PyList_Append ( disMat_list,
         Py_BuildValue ( "d", disMat.at<double>(0,col) ) );
-
-  PyList_Append ( ret_list, camMat_list );
-  PyList_Append ( ret_list, disMat_list );
 
   return ret_list;
 }
@@ -206,8 +204,8 @@ static struct PyMethodDef ilac_methods [] =
   { "calc_intrinsics",
     (PyCFunction)ilac_calc_intrinsics,
     METH_VARARGS, "Returns the camera matrix and distortion vector."
-    " Arguments: (list filenames, int sizeofchessboard1,"
-    " int sizeofchessboard2, int squaresize)"},
+    " [[x,x,x],[x,x,x],[x,x,x]],[x,x,...x] <- (list filenames, int "
+    " sizeofchessboard1, int sizeofchessboard2, int squaresize)"},
 
   { "process_image",
     (PyCFunction)ilac_calc_process_image,
