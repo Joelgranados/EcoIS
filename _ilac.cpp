@@ -140,6 +140,7 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
   Mat camMat_cvmat, disMat_cvmat;
   char *outfile, *infile;
   vector<unsigned short> image_id;
+  ILAC_ChessboardImage cb;
   PyObject *list_image_id;
 
   //FIXME: comment on how the pyobjects should look like.
@@ -152,12 +153,17 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
     return NULL;
   }
 
-  //FIXME we should export the class to a python type!!!!!! in next cycle
+  //FIXME we should export the class to a python type!!!!!!
   /* create the ILAC_ChessboardImage object */
   /* Calculate the image id vector */
-  //FIXME: put inside a try catch
-  ILAC_ChessboardImage cb = ILAC_ChessboardImage ( infile, size1, size2 );
-  image_id = cb.get_image_id ();
+  try
+  {
+    cb = ILAC_ChessboardImage ( infile, size1, size2 );
+    image_id = cb.get_image_id ();
+  }catch(ILACExNoChessboardFound){
+    PyErr_SetString ( PyExc_StandardError, "Chessboard not found." );
+    return NULL;
+  }
 
   /*Construct python list that will hold the image id*/
   list_image_id = PyList_New ( image_id.size() );

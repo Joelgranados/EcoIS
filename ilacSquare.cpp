@@ -161,6 +161,8 @@ ILAC_Square::get_blue_value ()
   return rgb[2];
 }
 
+ILAC_ChessboardImage::ILAC_ChessboardImage (){}/*Used to initialize.*/
+
 ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
                                              const unsigned int size1,
                                              const unsigned int size2,

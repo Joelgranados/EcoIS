@@ -53,6 +53,7 @@ private:
 
 class ILAC_ChessboardImage{
 public:
+  ILAC_ChessboardImage ();
   ILAC_ChessboardImage ( const string&,
                          const Size&,
                          const unsigned int = 1 );
