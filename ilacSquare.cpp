@@ -422,7 +422,10 @@ ILAC_ChessboardImage::process_image ( const int action,
 
   /* 4. CORRECT DISTORTION */
   if ( action & ILAC_DO_UNDISTORT )
-    ;
+  {
+    final_img.copyTo ( mid_img );
+    undistort ( mid_img, final_img, camMat, disMat );
+  }
 
   //FIXME: this shouldn't really be here. fix it someday :)
   /* 5. We write the image to a file */
