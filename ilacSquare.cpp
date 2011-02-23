@@ -404,6 +404,8 @@ ILAC_ChessboardImage::process_image ( const int action,
         else
           throw ILACExUnknownError();
       }
+    else
+      orig_img.copyTo ( final_img );
   }
 
   /* 3. NORMALIZE ROTATION */
