@@ -109,6 +109,9 @@ def ilac_process_classify_dir ( from_dir, to_dir, action, \
             # We need the full to_file_name path
             to_file_name = os.path.join(to_file_dir, f )
 
+            # We need the full from_file_name path
+            from_file_name = os.path.join(from_dir, "%s-new"%filename)
+
             # shutil uses rename if on the same fielsystem.
             shutil.move( from_file_name, to_file_name )
 
