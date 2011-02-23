@@ -95,6 +95,7 @@ def ilac_process_classify_dir ( from_dir, to_dir, action, \
 
             except Exception, err:
                 ilaclog.error( err )
+                continue;
 
             # Create id string that will be the dir name.
             id_dir = ""
