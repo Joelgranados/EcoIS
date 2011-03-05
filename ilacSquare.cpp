@@ -372,9 +372,9 @@ ILAC_ChessboardImage::rad2deg ( const double Angle )
 /*
  * There are the possible actions.
  * 1. CALCULATE TVEC AND RVEC
- * 2. NORMALIZE DISTANCE
- * 3. NORMALIZE ROTATION
- * 4. CORRECT DISTORTION
+ * 2. CORRECT DISTORTION
+ * 3. NORMALIZE DISTANCE
+ * 4. NORMALIZE ROTATION
  */
 void
 ILAC_ChessboardImage::process_image ( const int action,
@@ -391,14 +391,18 @@ ILAC_ChessboardImage::process_image ( const int action,
   solvePnP ( (Mat)perfectCBpoints, (Mat)imageCBpoints, camMat, disMat,
              rvec, tvec );
 
-  /*2. NORMALIZE DISTANCE */
+  /* 2. CORRECT DISTORTION */
+  if ( action & ILAC_DO_UNDISTORT )
+    undistort ( orig_img, final_img, camMat, disMat );
+
+  /*3. NORMALIZE DISTANCE */
   if ( action & ILAC_DO_DISTNORM )
-  {
     if ( 0 < distNorm && tvec.at<double>(0,2) > distNorm )
       try{
-        resize ( orig_img, final_img, Size(0,0),
+        resize ( final_img, mid_img, Size(0,0),
                  tvec.at<double>(0,2)/distNorm,
                  tvec.at<double>(0,2)/distNorm );
+        mid_img.copyTo ( final_img );
       }catch (cv::Exception cve){
         /* if the scale factor tvec.at<double>(0,2)/distNorm is too big, the
          * resized image will be too big and there will not be enough memory.*/
@@ -407,11 +411,8 @@ ILAC_ChessboardImage::process_image ( const int action,
         else
           throw ILACExUnknownError();
       }
-    else
-      orig_img.copyTo ( final_img );
-  }
 
-  /* 3. NORMALIZE ROTATION */
+  /* 4. NORMALIZE ROTATION */
   if ( action & ILAC_DO_ANGLENORM )
   {
     /* pad image.  Enough for the rotation to fit. */
@@ -428,13 +429,6 @@ ILAC_ChessboardImage::process_image ( const int action,
 
     /* Perform the rotation and put it in a_img */
     warpAffine ( mid_img, final_img, trans_mat, mid_img.size() );
-  }
-
-  /* 4. CORRECT DISTORTION */
-  if ( action & ILAC_DO_UNDISTORT )
-  {
-    final_img.copyTo ( mid_img );
-    undistort ( mid_img, final_img, camMat, disMat );
   }
 
   //FIXME: this shouldn't really be here. fix it someday :)
