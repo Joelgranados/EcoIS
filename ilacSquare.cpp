@@ -18,6 +18,7 @@
  */
 #include "ilacSquare.h"
 #include <iostream>
+#include <math.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <sys/stat.h>
@@ -413,7 +414,12 @@ ILAC_ChessboardImage::process_image ( const int action,
   /* 3. NORMALIZE ROTATION */
   if ( action & ILAC_DO_ANGLENORM )
   {
-    final_img.copyTo ( mid_img );
+    /* pad image.  Enough for the rotation to fit. */
+    int pad = ( sqrt ( pow ( final_img.size().width, 2 )
+                       + pow ( final_img.size().height, 2 ) )
+                - max(final_img.size().width, final_img.size().height) ) / 2;
+    copyMakeBorder ( final_img, mid_img, pad, pad, pad, pad, BORDER_CONSTANT );
+
     /* Calc rotation transformation matrix. First arg is center */
     trans_mat = getRotationMatrix2D ( Point( mid_img.size().width/2,
                                              mid_img.size().height/2),

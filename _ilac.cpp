@@ -163,6 +163,9 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
   }catch(ILACExNoChessboardFound){
     PyErr_SetString ( PyExc_StandardError, "Chessboard not found." );
     return NULL;
+  }catch(ILACExNoneRedSquare){
+    PyErr_SetString ( PyExc_StandardError, "None red square found." );
+    return NULL;
   }
 
   /*Construct python list that will hold the image id*/
