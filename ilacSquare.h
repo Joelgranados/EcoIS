@@ -52,6 +52,5 @@ private:
   void init_chessboard ();
   static void check_input ( const string&, Size& );
   static double rad2deg ( const double );
-  static Size get_size ( unsigned int, unsigned int );
   static vector<Point2f> get_image_points ( const Mat&, const Size );
 };

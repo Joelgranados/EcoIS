@@ -40,15 +40,6 @@ ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
   init_chessboard ();
 }
 
-Size
-ILAC_ChessboardImage::get_size ( unsigned int size1, unsigned int size2 )
-{
-  Size boardSize;
-  boardSize.width = max ( size1, size2 );
-  boardSize.height = min ( size1, size2 );
-  return boardSize;
-}
-
 void //static method
 ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize )
 {
@@ -181,7 +172,8 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
   Size boardSize;
 
   /* 1. CREATE IMAGEPOINTS.*/
-  boardSize = ILAC_ChessboardImage::get_size ( size1, size2 );
+  boardSize.width = max ( size1, size2 );
+  boardSize.height = min ( size1, size2 );
   for ( vector<string>::const_iterator img = images.begin() ;
         img != images.end() ; ++img )
     try {
