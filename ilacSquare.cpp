@@ -28,9 +28,13 @@ ILAC_ChessboardImage::ILAC_ChessboardImage (){}/*Used to initialize.*/
 
 ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
                                              const Size &boardsize,
+                                             const Mat &camMat,
+                                             const Mat &disMat,
                                              const unsigned int sqr_size )
 {
   Size boardSize = boardsize; /* we cant have a const in check_input*/
+  this->camMat = camMat;
+  this->disMat = disMat;
   check_input ( image, boardSize, sqr_size );
   init_chessboard ( image, boardSize, sqr_size );
 }

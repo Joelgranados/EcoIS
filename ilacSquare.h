@@ -26,6 +26,8 @@ public:
   ILAC_ChessboardImage ();
   ILAC_ChessboardImage ( const string&,
                          const Size&,
+                         const Mat&, //camMat
+                         const Mat&, //disMat
                          const unsigned int = 1 );
 
   vector<unsigned short> get_image_id ();
@@ -46,6 +48,8 @@ private:
   vector<Point2f> imageCBpoints;
   vector<unsigned short> id;
   Mat orig_img;
+  Mat camMat;
+  Mat disMat;
   unsigned int sqr_size;
 
   /* helper functions */

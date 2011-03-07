@@ -39,16 +39,31 @@ ilac_get_image_id ( PyObject *self, PyObject *args )
   int size1, size2;
   PyObject *list_image_id;
   vector<unsigned short> image_id;
+  PyObject *camMat_pylist, *disMat_pylist;
+  Mat camMat_cvmat, disMat_cvmat;
 
   /* parse incoming arguments. */
   //FIXME: set the python error.
-  if ( !PyArg_ParseTuple ( args, "sII", &image_file, &size1, &size2 ) )
+  if ( !PyArg_ParseTuple ( args, "sIIOO", &image_file, &size1, &size2,
+                                        &camMat_pylist, &disMat_pylist ) )
     return NULL;
+
+  /* Lets create the disMat_cvmat var from the disMat_pylist */
+  disMat_cvmat = Mat::zeros( 1, 8, CV_64F );
+  for ( int i = 0 ; i < (int)PyList_Size(disMat_pylist) ; i++ )
+    disMat_cvmat.at<double>(0,i) = PyFloat_AsDouble (
+      PyList_GetItem (disMat_pylist, i) );
+
+  camMat_cvmat = Mat::zeros( 3, 3, CV_64F );
+  for ( int i = 0 ; i < 9 ; i++ )
+    camMat_cvmat.at<double>(floor(i/3), i%3) = PyFloat_AsDouble (
+        PyList_GetItem ( PyList_GetItem ( camMat_pylist, floor(i/3) ), i%3 ) );
 
   /* Calculate the image id vector */
   try
   {
-    ILAC_ChessboardImage cb = ILAC_ChessboardImage ( image_file, Size(size1,size2) );
+    ILAC_ChessboardImage cb = ILAC_ChessboardImage ( image_file, Size(size1,size2),
+                                                     camMat_cvmat, disMat_cvmat);
     image_id = cb.get_image_id ();
   }
   catch (std::exception& ilace)
@@ -153,12 +168,24 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
     return NULL;
   }
 
+  /* Lets create the disMat_cvmat var from the disMat_pylist */
+  disMat_cvmat = Mat::zeros( 1, 8, CV_64F );
+  for ( int i = 0 ; i < (int)PyList_Size(disMat_pylist) ; i++ )
+    disMat_cvmat.at<double>(0,i) = PyFloat_AsDouble (
+      PyList_GetItem (disMat_pylist, i) );
+
+  camMat_cvmat = Mat::zeros( 3, 3, CV_64F );
+  for ( int i = 0 ; i < 9 ; i++ )
+    camMat_cvmat.at<double>(floor(i/3), i%3) = PyFloat_AsDouble (
+        PyList_GetItem ( PyList_GetItem ( camMat_pylist, floor(i/3) ), i%3 ) );
+
   //FIXME we should export the class to a python type!!!!!!
   /* create the ILAC_ChessboardImage object */
   /* Calculate the image id vector */
   try
   {
-    cb = ILAC_ChessboardImage ( infile, Size(size1,size2) );
+    cb = ILAC_ChessboardImage ( infile, Size(size1,size2),
+                                camMat_cvmat, disMat_cvmat );
     image_id = cb.get_image_id ();
   }catch(ILACExNoChessboardFound){
     PyErr_SetString ( PyExc_StandardError, "Chessboard not found." );
@@ -183,17 +210,6 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
       PyErr_SetString ( PyExc_StandardError, "Error creating id list elem." );
       return NULL;
     }
-
-  /* Lets create the disMat_cvmat var from the disMat_pylist */
-  disMat_cvmat = Mat::zeros( 1, 8, CV_64F );
-  for ( int i = 0 ; i < (int)PyList_Size(disMat_pylist) ; i++ )
-    disMat_cvmat.at<double>(0,i) = PyFloat_AsDouble (
-      PyList_GetItem (disMat_pylist, i) );
-
-  camMat_cvmat = Mat::zeros( 3, 3, CV_64F );
-  for ( int i = 0 ; i < 9 ; i++ )
-    camMat_cvmat.at<double>(floor(i/3), i%3) = PyFloat_AsDouble (
-        PyList_GetItem ( PyList_GetItem ( camMat_pylist, floor(i/3) ), i%3 ) );
 
   //FIXME check for error.
   /* call the image process method. */
