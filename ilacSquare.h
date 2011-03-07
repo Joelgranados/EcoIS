@@ -27,8 +27,7 @@ public:
   ILAC_ChessboardImage ( const string&,
                          const Size&,
                          const Mat&, //camMat
-                         const Mat&, //disMat
-                         const unsigned int = 1 );
+                         const Mat& ); //disMat
 
   vector<unsigned short> get_image_id ();
   void process_image ( const string, //output filename
@@ -41,18 +40,16 @@ public:
                                     Mat&, Mat& );
 
 private:
-  vector<Point3f> perfectCBpoints;
   vector<Point2f> imageCBpoints;
   vector<unsigned short> id;
   Size boardSize;
   Mat orig_img;
   Mat camMat;
   Mat disMat;
-  unsigned int sqr_size;
 
   /* helper functions */
-  static void check_input ( const string&, Size&, const unsigned int = 1 );
-  void init_chessboard ( const string&, const Size&, const unsigned int = 1 );
+  static void check_input ( const string&, Size& );
+  void init_chessboard ( const string&, const Size& );
   static double rad2deg ( const double );
   static Size get_size ( unsigned int, unsigned int );
   static vector<Point2f> get_image_points ( const Mat&, const Size );

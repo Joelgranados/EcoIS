@@ -29,15 +29,14 @@ ILAC_ChessboardImage::ILAC_ChessboardImage (){}/*Used to initialize.*/
 ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
                                              const Size &boardsize,
                                              const Mat &camMat,
-                                             const Mat &disMat,
-                                             const unsigned int sqr_size )
+                                             const Mat &disMat )
 {
-  Size boardSize = boardsize; /* we cant have a const in check_input*/
   this->camMat = camMat;
   this->disMat = disMat;
-  check_input ( image, boardSize, sqr_size );
-  init_chessboard ( image, boardSize, sqr_size );
-  this->boardSize = boardSize;
+  Size tmpsize = boardsize; /* we cant have a const in check_input*/
+  check_input ( image, tmpsize );
+  init_chessboard ( image, tmpsize );
+  this->boardSize = tmpsize;
 }
 
 Size
@@ -49,18 +48,13 @@ ILAC_ChessboardImage::get_size ( unsigned int size1, unsigned int size2 )
   return boardSize;
 }
 
-void
-ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize,
-                                    const unsigned int sqr_size )
+void //static method
+ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize )
 {
   // Check that file exists.
   struct stat file_stat;
   if ( stat ( image.data(), &file_stat ) != 0 )
     throw ILACExFileError();
-
-  // Check to see if sizes are possitive.
-  if ( boardSize.height < 0 || boardSize.width < 0 || sqr_size < 0 )
-      throw ILACExSizeFormatError();
 
   // Check for width > height
   if ( boardSize.height > boardSize.width )
@@ -79,26 +73,15 @@ ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize,
 
 /*
  * This function has FOUR steps:
- * 1. CALCULATE PERFECT CHESSBOARD POINTS
- * 2. TRY TO NORMALIZE IMAGE.
- * 3. CALCULATE IMAGE CHESSBOARD POINTS.
- * 4. CALCULATE THE IMAGE ID.
+ * 1. TRY TO NORMALIZE IMAGE.
+ * 2. CALCULATE IMAGE CHESSBOARD POINTS.
+ * 3. CALCULATE THE IMAGE ID.
  */
 void
 ILAC_ChessboardImage::init_chessboard ( const string &image,
-                                        const Size &boardSize,
-                                        const unsigned int sqr_size )
+                                        const Size &boardSize )
 {
-  /* 1. CALCULATE PERFECT CHESSBOARD POINTS */
-  this->sqr_size = sqr_size; /* class sqr_size var */
-  perfectCBpoints.clear();
-  for ( int i = 0 ; i < boardSize.height ; i++ )
-    for ( int j = 0; j < boardSize.width ; j++ )
-      perfectCBpoints.push_back( Point3f( double(j*sqr_size),
-                                          double(i*sqr_size),
-                                          0 ) );
-
-  /* 2. TRY TO NORMALIZE IMAGE. */
+  /* 1. TRY TO NORMALIZE IMAGE. */
   Mat temp;
   orig_img = imread ( image );
   undistort ( orig_img , temp, camMat, disMat ); //always undistort
@@ -109,10 +92,10 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
   copyMakeBorder ( temp, orig_img, heightpad, heightpad, widthpad, widthpad,
                    BORDER_CONSTANT );
 
-  /* 3. CALCULATE CHESSBOARD POINTS.*/
+  /* 2. CALCULATE CHESSBOARD POINTS.*/
   imageCBpoints = ILAC_ChessboardImage::get_image_points (orig_img, boardSize);
 
-  /* 4. CALCULATE IMAGE ID */
+  /* 3. CALCULATE IMAGE ID */
   ILAC_Labeler labeler ( orig_img, imageCBpoints, boardSize );
   id = labeler.calculate_label();
 }
@@ -202,7 +185,8 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
   for ( vector<string>::const_iterator img = images.begin() ;
         img != images.end() ; ++img )
     try {
-      check_input ( (*img), boardSize, sqr_size );/*validate args*/
+      //FIXME: check for sqrsize validity.
+      check_input ( (*img), boardSize );/*validate args*/
       cvtColor ( imread ( (*img) ), tmp_img, CV_BGR2GRAY );/*to grayscale*/
       if ( !findChessboardCorners ( tmp_img, boardSize, pointbuf,
                                     CV_CALIB_CB_ADAPTIVE_THRESH ) )
