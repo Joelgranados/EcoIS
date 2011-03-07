@@ -60,5 +60,5 @@ private:
   static vector<Point2f> get_image_points ( const Mat&, const Size );
 
   /* define the argument for the process_image function */
-  enum {ILAC_DO_DISTNORM=1, ILAC_DO_ANGLENORM=2, ILAC_DO_UNDISTORT=4};
+  enum {ILAC_DO_DISTNORM=1, ILAC_DO_ANGLENORM=2};
 };

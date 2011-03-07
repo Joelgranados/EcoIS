@@ -97,7 +97,7 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
                                           0 ) );
 
   /* 2. CALCULATE CHESSBOARD POINTS.*/
-  orig_img = imread ( image );
+  undistort ( imread ( image ), orig_img, camMat, disMat ); //always undistort
   imageCBpoints = ILAC_ChessboardImage::get_image_points (orig_img, boardSize);
 
   /* 3. CALCULATE IMAGE ID */
@@ -116,9 +116,8 @@ ILAC_ChessboardImage::rad2deg ( const double Angle )
 /*
  * There are the possible actions.
  * 1. CALCULATE TVEC AND RVEC
- * 2. CORRECT DISTORTION
- * 3. NORMALIZE DISTANCE
- * 4. NORMALIZE ROTATION
+ * 2. NORMALIZE DISTANCE
+ * 3. NORMALIZE ROTATION
  */
 void
 ILAC_ChessboardImage::process_image ( const int action,
@@ -131,15 +130,11 @@ ILAC_ChessboardImage::process_image ( const int action,
   Mat final_img;
   Mat mid_img = Mat::zeros( 1, 1, CV_32F );
 
-  /*1. CALCULATE TVEC AND RVEC */
+  /* 1. CALCULATE TVEC AND RVEC */
   solvePnP ( (Mat)perfectCBpoints, (Mat)imageCBpoints, camMat, disMat,
              rvec, tvec );
 
-  /* 2. CORRECT DISTORTION */
-  if ( action & ILAC_DO_UNDISTORT )
-    undistort ( orig_img, final_img, camMat, disMat );
-
-  /*3. NORMALIZE DISTANCE */
+  /*k2. NORMALIZE DISTANCE */
   if ( action & ILAC_DO_DISTNORM )
     if ( 0 < distNorm && tvec.at<double>(0,2) > distNorm )
       try{
@@ -156,7 +151,7 @@ ILAC_ChessboardImage::process_image ( const int action,
           throw ILACExUnknownError();
       }
 
-  /* 4. NORMALIZE ROTATION */
+  /* 3. NORMALIZE ROTATION */
   if ( action & ILAC_DO_ANGLENORM )
   {
     /* pad image.  Enough for the rotation to fit. */
