@@ -40,6 +40,7 @@ public:
                                     Mat&, Mat& );
 
 private:
+  string image_file;
   vector<Point2f> imageCBpoints;
   vector<unsigned short> id;
   Size boardSize;
@@ -48,8 +49,8 @@ private:
   Mat disMat;
 
   /* helper functions */
+  void init_chessboard ();
   static void check_input ( const string&, Size& );
-  void init_chessboard ( const string&, const Size& );
   static double rad2deg ( const double );
   static Size get_size ( unsigned int, unsigned int );
   static vector<Point2f> get_image_points ( const Mat&, const Size );

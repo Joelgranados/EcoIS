@@ -33,10 +33,11 @@ ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
 {
   this->camMat = camMat;
   this->disMat = disMat;
+  this->image_file = image;
   Size tmpsize = boardsize; /* we cant have a const in check_input*/
   check_input ( image, tmpsize );
-  init_chessboard ( image, tmpsize );
   this->boardSize = tmpsize;
+  init_chessboard ();
 }
 
 Size
@@ -78,12 +79,11 @@ ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize )
  * 3. CALCULATE THE IMAGE ID.
  */
 void
-ILAC_ChessboardImage::init_chessboard ( const string &image,
-                                        const Size &boardSize )
+ILAC_ChessboardImage::init_chessboard ()
 {
   /* 1. TRY TO NORMALIZE IMAGE. */
   Mat temp;
-  orig_img = imread ( image );
+  orig_img = imread ( this->image_file );
   undistort ( orig_img , temp, camMat, disMat ); //always undistort
   /* coerce square image.  Sides = hypotenuse. */
   int D = sqrt ( pow(temp.size().width, 2) + pow(temp.size().height, 2) );
