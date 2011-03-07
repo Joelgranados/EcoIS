@@ -53,6 +53,7 @@ private:
   void init_chessboard ( const string&, const Size&, const unsigned int = 1 );
   static double rad2deg ( const double );
   static Size get_size ( unsigned int, unsigned int );
+  static vector<Point2f> get_image_points ( const Mat&, const Size );
 
   /* define the argument for the process_image function */
   enum {ILAC_DO_DISTNORM=1, ILAC_DO_ANGLENORM=2, ILAC_DO_UNDISTORT=4};

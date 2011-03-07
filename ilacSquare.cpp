@@ -94,27 +94,7 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
 
   /* 2. CALCULATE CHESSBOARD POINTS.*/
   orig_img = imread ( image );
-
-  try
-  {
-    /* Initialize gray image here so the scope takes care of it for us */
-    Mat g_img; //temp gray image
-    /* transform to grayscale */
-    cvtColor ( orig_img, g_img, CV_BGR2GRAY );
-
-    /* find the chessboard points in the image and put them in imageCBpoints.*/
-    if ( !findChessboardCorners(g_img, boardSize, (imageCBpoints),
-                                CV_CALIB_CB_ADAPTIVE_THRESH) )
-      throw ILACExNoChessboardFound();
-
-    else
-      /* The 3rd argument is of interest.  It defines the size of the subpix
-       * window.  window_size = NUM*2+1.  This means that with 5,5 we have a
-       * window of 11x11 pixels.  If the window is too big it will mess up the
-       * original corner calculations for small chessboards. */
-      cornerSubPix ( g_img, (imageCBpoints), Size(5,5), Size(-1,-1),
-                     TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1) );
-  }catch (cv::Exception){throw ILACExNoChessboardFound();}
+  imageCBpoints = ILAC_ChessboardImage::get_image_points (orig_img, boardSize);
 
   /* 3. CALCULATE IMAGE ID */
   ILAC_Labeler labeler ( orig_img, imageCBpoints, boardSize );
@@ -195,6 +175,36 @@ ILAC_ChessboardImage::process_image ( const int action,
   /* 5. We write the image to a file */
   imwrite ( filename_output, final_img );
 }
+
+
+vector<Point2f>// static method
+ILAC_ChessboardImage::get_image_points ( const Mat& image,
+                                         const Size boardSize )
+{
+  Mat g_img; //temp gray image
+  vector<Point2f> retvec;
+
+  try
+  {
+    cvtColor ( image, g_img, CV_BGR2GRAY );/* transform to grayscale */
+
+    /* find the chessboard points in the image and put them in retvec.*/
+    if ( !findChessboardCorners(g_img, boardSize, (retvec),
+                                CV_CALIB_CB_ADAPTIVE_THRESH) )
+      throw ILACExNoChessboardFound();
+
+    else
+      /* The 3rd argument is of interest.  It defines the size of the subpix
+       * window.  window_size = NUM*2+1.  This means that with 5,5 we have a
+       * window of 11x11 pixels.  If the window is too big it will mess up the
+       * original corner calculations for small chessboards. */
+      cornerSubPix ( g_img, (retvec), Size(5,5), Size(-1,-1),
+                     TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1) );
+  }catch (cv::Exception){throw ILACExNoChessboardFound();}
+
+  return retvec;
+}
+
 
 /*
  * 1. CREATE IMAGEPOINTS.
