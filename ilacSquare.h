@@ -31,11 +31,8 @@ public:
                          const unsigned int = 1 );
 
   vector<unsigned short> get_image_id ();
-  void process_image ( const int, //action int
-                       const Mat&, //camMat
-                       const Mat&, //disMat
-                       const int, // Normalization distance.
-                       const string ); //output filename
+  void process_image ( const string, //output filename
+                       const unsigned int = 80 );
 
   static void calc_img_intrinsics ( const vector<string>, //image
                                     const unsigned int, //size1
@@ -47,6 +44,7 @@ private:
   vector<Point3f> perfectCBpoints;
   vector<Point2f> imageCBpoints;
   vector<unsigned short> id;
+  Size boardSize;
   Mat orig_img;
   Mat camMat;
   Mat disMat;
@@ -58,7 +56,4 @@ private:
   static double rad2deg ( const double );
   static Size get_size ( unsigned int, unsigned int );
   static vector<Point2f> get_image_points ( const Mat&, const Size );
-
-  /* define the argument for the process_image function */
-  enum {ILAC_DO_DISTNORM=1, ILAC_DO_ANGLENORM=2};
 };

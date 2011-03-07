@@ -213,8 +213,7 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
 
   //FIXME check for error.
   /* call the image process method. */
-  cb.process_image ( action, camMat_cvmat, disMat_cvmat,
-                     normdist, outfile );
+  cb.process_image ( outfile );
 
   return list_image_id;
 }

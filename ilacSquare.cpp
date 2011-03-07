@@ -37,6 +37,7 @@ ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
   this->disMat = disMat;
   check_input ( image, boardSize, sqr_size );
   init_chessboard ( image, boardSize, sqr_size );
+  this->boardSize = boardSize;
 }
 
 Size
@@ -124,65 +125,28 @@ ILAC_ChessboardImage::rad2deg ( const double Angle )
       return Angle * ratio;
 }
 
-/*
- * There are the possible actions.
- * 1. CALCULATE TVEC AND RVEC
- * 2. NORMALIZE DISTANCE
- * 3. NORMALIZE ROTATION
- */
 void
-ILAC_ChessboardImage::process_image ( const int action,
-                                      const Mat &camMat, const Mat &disMat,
-                                      const int distNorm,
-                                      const string filename_output )
+ILAC_ChessboardImage::process_image ( const string filename_output,
+                                      const unsigned int sizeInPixels )
 {
-  Mat trans_mat; /*temporal Mats*/
-  Mat rvec, tvec;
-  Mat final_img;
-  Mat tmp_img = Mat::zeros( 1, 1, CV_32F );
+  Mat final_img = Mat::zeros( 1, 1, CV_32F );
+  Mat aftr;
 
-  orig_img.copyTo ( final_img );
+  /* create triangle vertices */
+  Point2f tvsrc[3] = { imageCBpoints[ boardSize.width*(boardSize.height-1) ],
+                       imageCBpoints[ 0 ],
+                       imageCBpoints[ boardSize.width - 1 ] };
+  Point2f tvdst[3] = {
+    Point2f ( 0, orig_img.size().height ),
+    Point2f ( 0, orig_img.size().height - boardSize.height*sizeInPixels ),
+    Point2f ( boardSize.width*sizeInPixels,
+              orig_img.size().height - boardSize.height*sizeInPixels ) };
 
-  /* 1. CALCULATE TVEC AND RVEC */
-  solvePnP ( (Mat)perfectCBpoints, (Mat)imageCBpoints, camMat, disMat,
-             rvec, tvec );
+  aftr = getAffineTransform ( tvsrc, tvdst );
+  warpAffine ( orig_img, final_img, aftr, orig_img.size() );
 
-  /* 2. NORMALIZE DISTANCE */
-  if ( action & ILAC_DO_DISTNORM )
-    if ( 0 < distNorm && tvec.at<double>(0,2) > distNorm )
-      try{
-        resize ( final_img, tmp_img, Size(0,0),
-                 tvec.at<double>(0,2)/distNorm,
-                 tvec.at<double>(0,2)/distNorm );
-        tmp_img.copyTo ( final_img );
-      }catch (cv::Exception cve){
-        /* if the scale factor tvec.at<double>(0,2)/distNorm is too big, the
-         * resized image will be too big and there will not be enough memory.*/
-        if ( cve.func == "OutOfMemoryError" )
-          throw ILACExInvalidResizeScale();
-        else
-          throw ILACExUnknownError();
-      }
-
-  /* 3. NORMALIZE ROTATION */
-  if ( action & ILAC_DO_ANGLENORM )
-  {
-    /* Calc rotation transformation matrix. First arg is center */
-    trans_mat = getRotationMatrix2D ( Point( final_img.size().width/2,
-                                             final_img.size().height/2),
-                                      rad2deg(rvec.at<double>(0,2)),
-                                      1 );
-
-    /* Perform the rotation and put it in final_img */
-    warpAffine ( final_img, tmp_img, trans_mat, final_img.size() );
-    tmp_img.copyTo ( final_img );
-  }
-
-  //FIXME: this shouldn't really be here. fix it someday :)
-  /* 5. We write the image to a file */
   imwrite ( filename_output, final_img );
 }
-
 
 vector<Point2f>// static method
 ILAC_ChessboardImage::get_image_points ( const Mat& image,
