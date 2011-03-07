@@ -75,12 +75,6 @@ ILAC_ChessboardImage::init_chessboard ()
   Mat temp;
   orig_img = imread ( this->image_file );
   undistort ( orig_img , temp, camMat, disMat ); //always undistort
-  /* coerce square image.  Sides = hypotenuse. */
-  int D = sqrt ( pow(temp.size().width, 2) + pow(temp.size().height, 2) );
-  int heightpad = (D - temp.size().height)/2;
-  int widthpad = (D - temp.size().width)/2;
-  copyMakeBorder ( temp, orig_img, heightpad, heightpad, widthpad, widthpad,
-                   BORDER_CONSTANT );
 
   /* 2. CALCULATE CHESSBOARD POINTS.*/
   imageCBpoints = ILAC_ChessboardImage::get_image_points (orig_img, boardSize);
