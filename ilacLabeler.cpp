@@ -271,6 +271,7 @@ ILAC_Labeler::calculate_label ()
     if ( squares[i].get_green_value() )/* modify the green bit */
       id[id_offset] = id[id_offset] | (unsigned short)2;
   }
+  return id;
 }
 
 vector<unsigned short>
