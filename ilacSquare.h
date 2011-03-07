@@ -27,9 +27,6 @@ public:
   ILAC_ChessboardImage ( const string&,
                          const Size&,
                          const unsigned int = 1 );
-  ILAC_ChessboardImage ( const string&,
-                         const unsigned int, const unsigned int,
-                         const unsigned int = 1 );
 
   vector<unsigned short> get_image_id ();
   void process_image ( const int, //action int

@@ -27,16 +27,6 @@
 ILAC_ChessboardImage::ILAC_ChessboardImage (){}/*Used to initialize.*/
 
 ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
-                                             const unsigned int size1,
-                                             const unsigned int size2,
-                                             const unsigned int sqr_size )
-{
-  Size boardSize = ILAC_ChessboardImage::get_size ( size1, size2 );
-  check_input ( image, boardSize, sqr_size );
-  init_chessboard ( image, boardSize, sqr_size );
-}
-
-ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
                                              const Size &boardsize,
                                              const unsigned int sqr_size )
 {

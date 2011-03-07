@@ -48,7 +48,7 @@ ilac_get_image_id ( PyObject *self, PyObject *args )
   /* Calculate the image id vector */
   try
   {
-    ILAC_ChessboardImage cb = ILAC_ChessboardImage ( image_file, size1, size2 );
+    ILAC_ChessboardImage cb = ILAC_ChessboardImage ( image_file, Size(size1,size2) );
     image_id = cb.get_image_id ();
   }
   catch (std::exception& ilace)
@@ -158,7 +158,7 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
   /* Calculate the image id vector */
   try
   {
-    cb = ILAC_ChessboardImage ( infile, size1, size2 );
+    cb = ILAC_ChessboardImage ( infile, Size(size1,size2) );
     image_id = cb.get_image_id ();
   }catch(ILACExNoChessboardFound){
     PyErr_SetString ( PyExc_StandardError, "Chessboard not found." );
