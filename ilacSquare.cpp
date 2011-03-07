@@ -79,8 +79,9 @@ ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize,
 /*
  * This function has FOUR steps:
  * 1. CALCULATE PERFECT CHESSBOARD POINTS
- * 2. CALCULATE IMAGE CHESSBOARD POINTS.
- * 3. CALCULATE THE IMAGE ID.
+ * 2. TRY TO NORMALIZE IMAGE.
+ * 3. CALCULATE IMAGE CHESSBOARD POINTS.
+ * 4. CALCULATE THE IMAGE ID.
  */
 void
 ILAC_ChessboardImage::init_chessboard ( const string &image,
@@ -96,12 +97,21 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
                                           double(i*sqr_size),
                                           0 ) );
 
-  /* 2. CALCULATE CHESSBOARD POINTS.*/
-  Mat temp = imread ( image );
-  undistort ( temp , orig_img, camMat, disMat ); //always undistort
+  /* 2. TRY TO NORMALIZE IMAGE. */
+  Mat temp;
+  orig_img = imread ( image );
+  undistort ( orig_img , temp, camMat, disMat ); //always undistort
+  /* coerce square image.  Sides = hypotenuse. */
+  int D = sqrt ( pow(temp.size().width, 2) + pow(temp.size().height, 2) );
+  int heightpad = (D - temp.size().height)/2;
+  int widthpad = (D - temp.size().width)/2;
+  copyMakeBorder ( temp, orig_img, heightpad, heightpad, widthpad, widthpad,
+                   BORDER_CONSTANT );
+
+  /* 3. CALCULATE CHESSBOARD POINTS.*/
   imageCBpoints = ILAC_ChessboardImage::get_image_points (orig_img, boardSize);
 
-  /* 3. CALCULATE IMAGE ID */
+  /* 4. CALCULATE IMAGE ID */
   ILAC_Labeler labeler ( orig_img, imageCBpoints, boardSize );
   id = labeler.calculate_label();
 }
@@ -157,20 +167,15 @@ ILAC_ChessboardImage::process_image ( const int action,
   /* 3. NORMALIZE ROTATION */
   if ( action & ILAC_DO_ANGLENORM )
   {
-    /* pad image.  Enough for the rotation to fit. */
-    int pad = ( sqrt ( pow ( final_img.size().width, 2 )
-                       + pow ( final_img.size().height, 2 ) )
-                - max(final_img.size().width, final_img.size().height) ) / 2;
-    copyMakeBorder ( final_img, tmp_img, pad, pad, pad, pad, BORDER_CONSTANT );
-
     /* Calc rotation transformation matrix. First arg is center */
-    trans_mat = getRotationMatrix2D ( Point( tmp_img.size().width/2,
-                                             tmp_img.size().height/2),
+    trans_mat = getRotationMatrix2D ( Point( final_img.size().width/2,
+                                             final_img.size().height/2),
                                       rad2deg(rvec.at<double>(0,2)),
                                       1 );
 
     /* Perform the rotation and put it in final_img */
-    warpAffine ( tmp_img, final_img, trans_mat, tmp_img.size() );
+    warpAffine ( final_img, tmp_img, trans_mat, final_img.size() );
+    tmp_img.copyTo ( final_img );
   }
 
   //FIXME: this shouldn't really be here. fix it someday :)
