@@ -97,7 +97,8 @@ ILAC_ChessboardImage::init_chessboard ( const string &image,
                                           0 ) );
 
   /* 2. CALCULATE CHESSBOARD POINTS.*/
-  undistort ( imread ( image ), orig_img, camMat, disMat ); //always undistort
+  Mat temp = imread ( image );
+  undistort ( temp , orig_img, camMat, disMat ); //always undistort
   imageCBpoints = ILAC_ChessboardImage::get_image_points (orig_img, boardSize);
 
   /* 3. CALCULATE IMAGE ID */
@@ -128,20 +129,22 @@ ILAC_ChessboardImage::process_image ( const int action,
   Mat trans_mat; /*temporal Mats*/
   Mat rvec, tvec;
   Mat final_img;
-  Mat mid_img = Mat::zeros( 1, 1, CV_32F );
+  Mat tmp_img = Mat::zeros( 1, 1, CV_32F );
+
+  orig_img.copyTo ( final_img );
 
   /* 1. CALCULATE TVEC AND RVEC */
   solvePnP ( (Mat)perfectCBpoints, (Mat)imageCBpoints, camMat, disMat,
              rvec, tvec );
 
-  /*k2. NORMALIZE DISTANCE */
+  /* 2. NORMALIZE DISTANCE */
   if ( action & ILAC_DO_DISTNORM )
     if ( 0 < distNorm && tvec.at<double>(0,2) > distNorm )
       try{
-        resize ( final_img, mid_img, Size(0,0),
+        resize ( final_img, tmp_img, Size(0,0),
                  tvec.at<double>(0,2)/distNorm,
                  tvec.at<double>(0,2)/distNorm );
-        mid_img.copyTo ( final_img );
+        tmp_img.copyTo ( final_img );
       }catch (cv::Exception cve){
         /* if the scale factor tvec.at<double>(0,2)/distNorm is too big, the
          * resized image will be too big and there will not be enough memory.*/
@@ -158,16 +161,16 @@ ILAC_ChessboardImage::process_image ( const int action,
     int pad = ( sqrt ( pow ( final_img.size().width, 2 )
                        + pow ( final_img.size().height, 2 ) )
                 - max(final_img.size().width, final_img.size().height) ) / 2;
-    copyMakeBorder ( final_img, mid_img, pad, pad, pad, pad, BORDER_CONSTANT );
+    copyMakeBorder ( final_img, tmp_img, pad, pad, pad, pad, BORDER_CONSTANT );
 
     /* Calc rotation transformation matrix. First arg is center */
-    trans_mat = getRotationMatrix2D ( Point( mid_img.size().width/2,
-                                             mid_img.size().height/2),
+    trans_mat = getRotationMatrix2D ( Point( tmp_img.size().width/2,
+                                             tmp_img.size().height/2),
                                       rad2deg(rvec.at<double>(0,2)),
                                       1 );
 
-    /* Perform the rotation and put it in a_img */
-    warpAffine ( mid_img, final_img, trans_mat, mid_img.size() );
+    /* Perform the rotation and put it in final_img */
+    warpAffine ( tmp_img, final_img, trans_mat, tmp_img.size() );
   }
 
   //FIXME: this shouldn't really be here. fix it someday :)
