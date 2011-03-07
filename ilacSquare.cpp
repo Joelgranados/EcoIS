@@ -91,14 +91,6 @@ ILAC_ChessboardImage::init_chessboard ()
   id = labeler.calculate_label();
 }
 
-/* Helper function for process_image. */
-double
-ILAC_ChessboardImage::rad2deg ( const double Angle )
-{
-    static double ratio = 180.0 / 3.141592653589793238;
-      return Angle * ratio;
-}
-
 void
 ILAC_ChessboardImage::process_image ( const string filename_output,
                                       const unsigned int sizeInPixels )
@@ -120,6 +112,20 @@ ILAC_ChessboardImage::process_image ( const string filename_output,
   warpAffine ( orig_img, final_img, aftr, orig_img.size() );
 
   imwrite ( filename_output, final_img );
+}
+
+vector<unsigned short>
+ILAC_ChessboardImage::get_image_id ()
+{
+  return id;
+}
+
+/* Helper function for process_image. */
+double //static function
+ILAC_ChessboardImage::rad2deg ( const double Angle )
+{
+    static double ratio = 180.0 / 3.141592653589793238;
+      return Angle * ratio;
 }
 
 vector<Point2f>// static method
@@ -210,8 +216,3 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
                    camMat, disMat, rvecs, tvecs, 0 );
 }
 
-vector<unsigned short>
-ILAC_ChessboardImage::get_image_id ()
-{
-  return id;
-}
