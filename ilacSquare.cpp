@@ -18,7 +18,6 @@
  */
 #include "ilacSquare.h"
 #include "ilacLabeler.h"
-#include <iostream>
 #include <math.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
