@@ -32,7 +32,6 @@ public:
   static void calc_img_intrinsics ( const vector<string>, //image
                                     const unsigned int, //size1
                                     const unsigned int, //size2
-                                    const unsigned int, //square size
                                     Mat&, Mat& );
 
 private:

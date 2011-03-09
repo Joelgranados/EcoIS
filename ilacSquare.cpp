@@ -159,7 +159,6 @@ void //static method.
 ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
                                             const unsigned int size1,
                                             const unsigned int size2,
-                                            const unsigned int sqr_size,
                                             Mat &camMat, Mat &disMat )
 {
   Mat tmp_img;
@@ -169,6 +168,7 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
   vector< vector<Point3f> > objectPoints;
   vector<Mat> rvecs, tvecs;
   Size boardSize;
+  int sqr_size = 1;
 
   /* 1. CREATE IMAGEPOINTS.*/
   boardSize.width = max ( size1, size2 );

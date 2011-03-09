@@ -96,11 +96,11 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
 {
   PyObject *py_file_list, *ret_list, *tmp_list, *camMat_list, *disMat_list;
   vector<string> images;
-  int size1, size2, sqr_size;
+  int size1, size2;
   Mat camMat, disMat;
 
   /* 1. PARSE ARGS */
-  if ( !PyArg_ParseTuple ( args, "Oiii", &py_file_list, &size1, &size2, &sqr_size ) )
+  if ( !PyArg_ParseTuple ( args, "Oii", &py_file_list, &size1, &size2 ) )
     ILAC_RETERR("Invalid parameters for ilac_calc_intrinsics.");
 
   for ( int i = 0 ; i < PyList_Size( py_file_list ) ; i++ )
@@ -108,7 +108,7 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
         (string)PyString_AsString ( PyList_GetItem(py_file_list, i) ) );
 
   /* 2. CALL CALC_IMG_INTRINSICS */
-  ILAC_ChessboardImage::calc_img_intrinsics ( images, size1, size2, sqr_size,
+  ILAC_ChessboardImage::calc_img_intrinsics ( images, size1, size2,
                                               camMat, disMat );
 
   /*
@@ -215,7 +215,7 @@ static struct PyMethodDef ilac_methods [] =
     (PyCFunction)ilac_calc_intrinsics,
     METH_VARARGS, "Returns the camera matrix and distortion vector."
     " [[x,x,x],[x,x,x],[x,x,x]],[x,x,...x] <- (list filenames, int "
-    " sizeofchessboard1, int sizeofchessboard2, int squaresize)"},
+    " sizeofchessboard1, int sizeofchessboard2)"},
 
   { "process_image",
     (PyCFunction)ilac_calc_process_image,
