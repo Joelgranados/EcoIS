@@ -145,16 +145,17 @@ static PyObject*
 ilac_calc_process_image ( PyObject *self, PyObject *args )
 {
   PyObject *camMat_pylist, *disMat_pylist;
-  int action, normdist, size1, size2;
+  int size1, size2;
   Mat camMat_cvmat, disMat_cvmat;
   char *outfile, *infile;
   vector<unsigned short> image_id;
   ILAC_ChessboardImage cb;
   PyObject *list_image_id;
 
-  //FIXME: comment on how the pyobjects should look like.
-  if ( !PyArg_ParseTuple ( args, "iiiiOOss", &action, &size1, &size2,
-                           &normdist, &camMat_pylist, &disMat_pylist,
+  /* First pyobjcect is a list of lists (camMat)
+   * second pyobject is a list of ints */
+  if ( !PyArg_ParseTuple ( args, "iiOOss", &size1, &size2,
+                           &camMat_pylist, &disMat_pylist,
                            &infile, &outfile ) )
     ILAC_RETERR("Invalid parameters for ilac_calc_process_image.");
 
@@ -197,7 +198,6 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
          == -1 )
       ILAC_RETERR("Error creating id list elem.");
 
-  //FIXME check for error.
   /* call the image process method. */
   cb.process_image ( outfile );
 
@@ -220,8 +220,8 @@ static struct PyMethodDef ilac_methods [] =
   { "process_image",
     (PyCFunction)ilac_calc_process_image,
     METH_VARARGS, "Returns image id and the file where the processed image"
-      " is located. Arguments: (action, size1, size2, distnorm,"
-      " camMat, disMat, inputfile, outputfile." },
+      " is located. Arguments: (size1, size2, camMat, disMat, inputfile, "
+      " outputfile." },
 
   { "version",
     (PyCFunction)ilac_get_version,
