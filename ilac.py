@@ -22,7 +22,7 @@ import shutil
 import sys
 import logging
 
-def ilac_classify_file( from_file_name, size1, size2, to_dir ):
+def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat, disMat ):
     """
     from_file_name = Full path of the image file
     size1 = The largets size
@@ -34,7 +34,7 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir ):
             % (from_file_name, to_dir) )
 
     # Let the exception go to the caller.
-    image_id = _ilac.get_image_id( from_file_name, size1, size2 )
+    image_id = _ilac.get_image_id( from_file_name, size1, size2, camMat, disMat )
 
     # Create id string that will be the dir name.
     image_id_dir = ""
@@ -73,12 +73,12 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2 ):
         for file in files:
             try:
                 ilac_classify_file( os.path.join(root,file), \
-                                    size1, size2, to_dir )
+                                    size1, size2, to_dir, camMat, disMat )
             except Exception, err:
                 ilaclog.error( err )
 
-def ilac_process_classify_dir ( from_dir, to_dir, action, \
-                                size1, size2, distNorm, camMat, disMat ):
+def ilac_process_classify_dir ( from_dir, to_dir, \
+                                size1, size2, camMat, disMat ):
     #Check that the two dirs exist.
     for dir in [from_dir, to_dir]:
         if not os.path.isdir(dir):
@@ -89,13 +89,13 @@ def ilac_process_classify_dir ( from_dir, to_dir, action, \
             try:
                 # process image to filename-new.
                 filename = os.path.join(root, f)
-                img_id = _ilac.process_image ( action, size1, size2, distNorm,
+                img_id = _ilac.process_image ( size1, size2,
                                                camMat, disMat,
                                                filename, "%s-new"%filename )
 
             except Exception, err:
                 ilaclog.error( err )
-                continue;
+                continue
 
             # Create id string that will be the dir name.
             id_dir = ""
