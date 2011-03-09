@@ -88,7 +88,6 @@ ILAC_Square::calc_exact_median ()
   return median;
 }
 
-/* FIXME: describe range anywhere */
 void
 ILAC_Square::calc_rgb ( vector<color_hue> range )
 {
@@ -178,7 +177,6 @@ vector<unsigned short>
 ILAC_Labeler::calculate_label ()
 {
   /* 1. INITIALIZE THE SQUARES VECTOR BASED ON POINTS. */
-  //FIXME: Can we do the same without the isBlack flag?
   bool isBlack = true;
   squares.clear();
   for ( int r = 0 ; r < boardSize.height-1 ; r++ )
@@ -195,7 +193,11 @@ ILAC_Labeler::calculate_label ()
       isBlack = !isBlack;
     }
 
-  /* 2. CALCULATE THE RANGE VECTOR.*/
+  /* 2. CALCULATE THE RANGE VECTOR.
+   * Range vector:  Mapping from hue->color (one of 6 colors).
+   * Range of range[i].color -> (range[i].hue, range[i+1].hue)
+   * Ranges are sorted in increasing order.
+   */
   vector<color_hue> range;
   for ( int i = 0 ; i < 8 ; i++ )
   {
@@ -208,7 +210,7 @@ ILAC_Labeler::calculate_label ()
   /* Known Colors. */
   alcolor_t kc[8] = {RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA, RED, NO_COLOR};
 
-  /* Fill the range with colors and medians. Inserted in order */
+  /* Fill the range with colors and means. Order based on hue */
   for ( int i = 0 ; i < 6 ; i++ )
   {
     range[i].hue = squares[i].calc_exact_median();

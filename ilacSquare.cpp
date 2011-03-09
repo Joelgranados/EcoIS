@@ -63,7 +63,7 @@ ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize )
 }
 
 /*
- * This function has FOUR steps:
+ * Function steps:
  * 1. TRY TO NORMALIZE IMAGE.
  * 2. CALCULATE IMAGE CHESSBOARD POINTS.
  * 3. CALCULATE THE IMAGE ID.
@@ -176,7 +176,6 @@ ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
   for ( vector<string>::const_iterator img = images.begin() ;
         img != images.end() ; ++img )
     try {
-      //FIXME: check for sqrsize validity.
       check_input ( (*img), boardSize );/*validate args*/
       cvtColor ( imread ( (*img) ), tmp_img, CV_BGR2GRAY );/*to grayscale*/
       if ( !findChessboardCorners ( tmp_img, boardSize, pointbuf,

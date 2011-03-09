@@ -24,14 +24,10 @@ using namespace cv;
 class ILAC_ChessboardImage{
 public:
   ILAC_ChessboardImage ();
-  ILAC_ChessboardImage ( const string&,
-                         const Size&,
-                         const Mat&, //camMat
-                         const Mat& ); //disMat
+  ILAC_ChessboardImage ( const string&, const Size&, const Mat&, const Mat& );
 
   vector<unsigned short> get_image_id ();
-  void process_image ( const string, //output filename
-                       const unsigned int = 80 );
+  void process_image ( const string, const unsigned int = 80 );
 
   static void calc_img_intrinsics ( const vector<string>, //image
                                     const unsigned int, //size1
