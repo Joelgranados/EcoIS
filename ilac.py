@@ -119,7 +119,12 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
             # tell the user about the move
             ilaclog.debug("Moved %s to %s"%(from_file_name, to_file_name))
 
-
+def ilac_calc_intrinsics ( img_dir, size1, size2 ):
+    filenames = [];
+    for img_file in os.listdir(img_dir):
+        if os.path.isfile( os.path.join(img_dir,img_file) ):
+            filenames.append ( os.path.join(img_dir,img_file) )
+    return _ilac.calc_intrinsics ( filenames, size1, size2 )
 
 class ILACException(Exception):
     def __init__(self):
