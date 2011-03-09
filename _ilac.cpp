@@ -23,6 +23,12 @@
 #include "ilacSquare.h"
 #include "ilacConfig.h"
 
+#define ILAC_RETERR( message ) \
+  { \
+    PyErr_SetString ( PyExc_StandardError, message ); \
+    return NULL; \
+  }
+
 static PyObject*
 ilac_get_version ( PyObject *self, PyObject *args )
 {
@@ -43,10 +49,9 @@ ilac_get_image_id ( PyObject *self, PyObject *args )
   Mat camMat_cvmat, disMat_cvmat;
 
   /* parse incoming arguments. */
-  //FIXME: set the python error.
   if ( !PyArg_ParseTuple ( args, "sIIOO", &image_file, &size1, &size2,
                                         &camMat_pylist, &disMat_pylist ) )
-    return NULL;
+    ILAC_RETERR("Invalid parameters for ilac_get_image_id");
 
   /* Lets create the disMat_cvmat var from the disMat_pylist */
   disMat_cvmat = Mat::zeros( 1, 8, CV_64F );
@@ -62,31 +67,21 @@ ilac_get_image_id ( PyObject *self, PyObject *args )
   /* Calculate the image id vector */
   try
   {
-    ILAC_ChessboardImage cb = ILAC_ChessboardImage ( image_file, Size(size1,size2),
-                                                     camMat_cvmat, disMat_cvmat);
+    ILAC_ChessboardImage cb =
+      ILAC_ChessboardImage ( image_file, Size(size1,size2),
+                             camMat_cvmat, disMat_cvmat);
     image_id = cb.get_image_id ();
   }
-  catch (std::exception& ilace)
-  {
-    PyErr_SetString ( PyExc_StandardError, ilace.what() );
-    return NULL;
-  }
+  catch (std::exception& ilace){ILAC_RETERR(ilace.what());}
 
   /*Construct python list that will hold the image id*/
   list_image_id = PyList_New ( image_id.size() );
-  if ( list_image_id == NULL )
-  {
-    PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
-    return NULL;
-  }
+  if ( list_image_id == NULL ){ILAC_RETERR("Error creating a new list.");}
 
   for ( int i = 0 ; i < image_id.size() ; i++ )
     if ( PyList_SetItem ( list_image_id, i, Py_BuildValue("H", image_id[i]) )
          == -1 )
-    {
-      PyErr_SetString ( PyExc_StandardError, "Error creating id list elem." );
-      return NULL;
-    }
+      ILAC_RETERR("Error creating id list elem.");
 
   return list_image_id;
 }
@@ -106,11 +101,7 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
 
   /* 1. PARSE ARGS */
   if ( !PyArg_ParseTuple ( args, "Oiii", &py_file_list, &size1, &size2, &sqr_size ) )
-  {
-    PyErr_SetString ( PyExc_TypeError,
-                      "ArgError: should be (list, int, int, int)." );
-    return NULL;
-  }
+    ILAC_RETERR("Invalid parameters for ilac_calc_intrinsics.");
 
   for ( int i = 0 ; i < PyList_Size( py_file_list ) ; i++ )
     images.push_back (
@@ -127,15 +118,19 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
   ret_list = PyList_New(0);
   camMat_list = PyList_New (0);
   disMat_list = PyList_New(0);
-  PyList_Append ( ret_list, camMat_list );
-  PyList_Append ( ret_list, disMat_list );
+  if ( ret_list == NULL || camMat_list == NULL || disMat_list == NULL )
+    ILAC_RETERR("Error initializing python objects in ilac_calc_intrinsics.");
 
+  if ( PyList_Append ( ret_list, camMat_list ) == -1
+       || PyList_Append ( ret_list, disMat_list ) == -1 )
+    ILAC_RETERR("Error initializing python objects in ilac_calc_intrinsics.");
+
+  //FIXME: add error detection
   for ( int row = 0 ; row < 3 ; row++ )/* create the camMat rows */
   {
     tmp_list = PyList_New (0);
     for ( int col = 0 ; col < 3 ; col++ )
-      PyList_Append ( tmp_list,
-                      Py_BuildValue ( "d", camMat.at<double>(row,col) ) );
+      PyList_Append ( tmp_list, Py_BuildValue ( "d", camMat.at<double>(row,col) ) );
     PyList_Append ( camMat_list, tmp_list );
   }
 
@@ -146,7 +141,6 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
   return ret_list;
 }
 
-//FIXME: check for error in all the python transform calls.
 static PyObject*
 ilac_calc_process_image ( PyObject *self, PyObject *args )
 {
@@ -162,22 +156,20 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
   if ( !PyArg_ParseTuple ( args, "iiiiOOss", &action, &size1, &size2,
                            &normdist, &camMat_pylist, &disMat_pylist,
                            &infile, &outfile ) )
-  {
-    //FIXME: change the error message.
-    PyErr_SetString ( PyExc_TypeError, "FIXME: Change the error message" );
-    return NULL;
-  }
+    ILAC_RETERR("Invalid parameters for ilac_calc_process_image.");
 
   /* Lets create the disMat_cvmat var from the disMat_pylist */
   disMat_cvmat = Mat::zeros( 1, 8, CV_64F );
   for ( int i = 0 ; i < (int)PyList_Size(disMat_pylist) ; i++ )
-    disMat_cvmat.at<double>(0,i) = PyFloat_AsDouble (
-      PyList_GetItem (disMat_pylist, i) );
+    disMat_cvmat.at<double>(0,i)
+      = PyFloat_AsDouble ( PyList_GetItem (disMat_pylist, i) );
 
   camMat_cvmat = Mat::zeros( 3, 3, CV_64F );
   for ( int i = 0 ; i < 9 ; i++ )
-    camMat_cvmat.at<double>(floor(i/3), i%3) = PyFloat_AsDouble (
-        PyList_GetItem ( PyList_GetItem ( camMat_pylist, floor(i/3) ), i%3 ) );
+    camMat_cvmat.at<double>(floor(i/3), i%3)
+      = PyFloat_AsDouble (
+          PyList_GetItem ( PyList_GetItem ( camMat_pylist, floor(i/3) ),
+                           i%3 ) );
 
   //FIXME we should export the class to a python type!!!!!!
   /* create the ILAC_ChessboardImage object */
@@ -198,18 +190,12 @@ ilac_calc_process_image ( PyObject *self, PyObject *args )
   /*Construct python list that will hold the image id*/
   list_image_id = PyList_New ( image_id.size() );
   if ( list_image_id == NULL )
-  {
-    PyErr_SetString ( PyExc_StandardError, "Error creating a new list." );
-    return NULL;
-  }
+    ILAC_RETERR("Error creating a new list.");
 
   for ( int i = 0 ; i < image_id.size() ; i++ )
     if ( PyList_SetItem ( list_image_id, i, Py_BuildValue("H", image_id[i]) )
          == -1 )
-    {
-      PyErr_SetString ( PyExc_StandardError, "Error creating id list elem." );
-      return NULL;
-    }
+      ILAC_RETERR("Error creating id list elem.");
 
   //FIXME check for error.
   /* call the image process method. */
