@@ -216,7 +216,7 @@ ILAC_Labeler::calculate_label ()
     range[i].hue = squares[i].calc_exact_median();
     range[i].color = kc[i];
     for ( int j = i ; j > 0 && range[j].hue < range[j-1].hue ; j-- )
-      swap( range[j], range[j-1] );
+      std::swap( range[j], range[j-1] );
   }
 
   /* Calculate the max ranges */
@@ -228,7 +228,7 @@ ILAC_Labeler::calculate_label ()
   /* There is a possibility that things are not in order. */
   for ( int i = 1 ; i < 7 ; i++ )
     for ( int j = i ; j > 1 && range[j].hue < range[j-1].hue ; j-- )
-      swap( range[j], range[j-1] );
+      std::swap( range[j], range[j-1] );
 
   /* We polish the ends. */
   range[0].hue = 0;
