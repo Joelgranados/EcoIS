@@ -1,4 +1,4 @@
-# image adjust.  Automatic image normalization.
+# ILAC: Image labeling and Classifying
 # Copyright (C) 2011 Joel Granados <joel.granados@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,13 +20,14 @@ cmake_minimum_required (VERSION 2.8)
 project (ImageLabel)
 
 # Set the version number
-set (IL_VER_MAJOR 1)
-set (IL_VER_MINOR 0)
+set (ILAC_VER_MAJOR 1)
+set (ILAC_VER_MINOR 0)
+set (ILAC_NAME "\"ILAC Image Labeling and Classifying\"")
 
 # Create the ia_config.h file.  Copy <from> <to> and make the modifications
 configure_file (
-    "${PROJECT_SOURCE_DIR}/ia_config.h.in"
-    "${PROJECT_BINARY_DIR}/ia_config.h"
+    "${PROJECT_SOURCE_DIR}/ilacConfig.h.in"
+    "${PROJECT_BINARY_DIR}/ilacConfig.h"
     )
 
 # Add the binary tree so we can find the include files.
@@ -34,8 +35,21 @@ include_directories("${PROJECT_BINARY_DIR}")
 
 # Try to find the opencv stuff
 find_package (OpenCV REQUIRED)
+find_package (PythonLibs REQUIRED)
 
-add_executable (imagelabel imagelabel.cpp ia_input.cpp IA_Square.cpp)
+# for including python
+include_directories(${PYTHON_INCLUDE_PATH})
+
+# add an option for debug.
+option(DEFINE_DEBUG "Build using debugging flags." OFF)
+if(DEFINE_DEBUG)
+    message("Adding Debug flags...")
+    set(CMAKE_BUILD_TYPE Debug)
+    message("Build type is " ${CMAKE_BUILD_TYPE})
+endif(DEFINE_DEBUG)
+
+add_library (_ilac SHARED ilacLabeler.cpp ilacSquare.cpp _ilac.cpp)
+set_target_properties (_ilac PROPERTIES PREFIX "") #get rid of the lib*
 
 # Make sure we link to the found opencv stuff.
-target_link_libraries (imagelabel ${OpenCV_LIBS})
+target_link_libraries (_ilac ${OpenCV_LIBS})
