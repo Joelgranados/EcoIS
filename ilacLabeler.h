@@ -1,6 +1,6 @@
 /*
- * image adjust.  Automatic image normalization.
- * Copyright (C) 2010 Joel Granados <joel.granados@gmail.com>
+ * ILAC: Image labeling and Classifying
+ * Copyright (C) 2011 Joel Granados <joel.granados@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 #include <opencv/cv.h>
 #include <math.h>
-#include <exception>
 
 using namespace cv;
 
@@ -36,16 +34,15 @@ struct color_hue {
   int hue;
 };
 
-class IA_Square{
+class ILAC_Square{
 public:
-  IA_Square ( const Point2f, const Point2f, const Point2f, const Point2f,
+  ILAC_Square ( const Point2f, const Point2f, const Point2f, const Point2f,
               const Mat& );
   void calc_rgb ( const vector<color_hue> );
   int calc_exact_median ();
   int get_red_value ();
   int get_green_value ();
   int get_blue_value ();
-  int& get_values();
 
 private:
   Mat hsv_subimg; /* minimal subimage that contains the 4 points. */
@@ -53,23 +50,18 @@ private:
   int rgb[3]; // Representation of the values in the square.
 };
 
-class IA_ChessboardImage{
+class ILAC_Labeler{
 public:
-  IA_ChessboardImage ( const string&, const Size& );
-  void debug_print ();
-  void median_print ();
-  void print_image_id ();
-  vector<unsigned short> get_image_id ();
+  ILAC_Labeler ();
+  ILAC_Labeler ( const Mat&, const vector<Point2f>, const Size );
+
+  vector<unsigned short> calculate_label ();
+  vector<unsigned short> get_label ();
+
 private:
-  vector<IA_Square> squares;
+  Mat image;
+  Size boardSize;
+  vector<Point2f> imageCBpoints;
   vector<unsigned short> id;
-  void calculate_image_id ();
-};
-
-class IACIExNoChessboardFound:public std::exception{
-  virtual const char* what() const throw(){return "No Chessboard found";}
-};
-
-class IACIExNoneRedSquare:public std::exception{
-  virtual const char* what() const throw(){return "None red square found";}
+  vector<ILAC_Square> squares;
 };
