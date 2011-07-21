@@ -23,10 +23,10 @@ import sys
 import logging
 
 def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat, disMat ):
-    """
+    """ Sorts files without processing them
     from_file_name = Full path of the image file
-    size1 = The largets size
-    size2 = The smallest size
+    size1 = Largets chessboard size
+    size2 = Smallest chessboard size
     to_dir = Full path of the destination dir
     """
     # tell the user when we start.
@@ -56,12 +56,14 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat, disMat ):
     ilaclog.debug( "Moved %s to %s" % (from_file_name, to_file_name) )
 
 
-def ilac_classify_dir( from_dir, to_dir, size1, size2 ):
-    """
+def ilac_classify_dir( from_dir, to_dir, size1, size2, camMat, distMat ):
+    """  Sorts all files contained an a directory without processing them.
     from_dir = Full path of the source dir.
     to_dir = Full path of the destination dir.
-    size1 = The largest size.
-    size2 = The smallest size.
+    size1 = Largest chessboard size.
+    size2 = Smallest chessboard size.
+    camMat = Camera intrinsics
+    disMat = Distortion values.
     """
     #Check that the two dirs exist.
     for dir in [from_dir, to_dir]:
@@ -79,6 +81,14 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2 ):
 
 def ilac_process_classify_dir ( from_dir, to_dir, \
                                 size1, size2, camMat, disMat ):
+    """ Classify all files in a directory and normalize the images
+    from_dir = Source dir (full path)
+    to_dir = Dest dir (full path)
+    size1 = Largest chessboard size.
+    size2 = Smallest chessboard size.
+    camMat = Camera intrinsics.
+    disMat = Distortion values.
+    """
     #Check that the two dirs exist.
     for dir in [from_dir, to_dir]:
         if not os.path.isdir(dir):
