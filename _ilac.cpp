@@ -106,17 +106,24 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject*
-IlacCB_version ( IlacCB *self )
+IlacCB_process_image ( IlacCB *self, PyObject *args )
 {
+  int squareSize; /*squareSize is in pixels.*/
+  char *outfile;
+
+  if ( !PyArg_ParseTuple ( args, "is", &squareSize, &outfile ) )
+    ILAC_RETERR("Invalid parameters for ilac_calc_process_image.");
+
+  self->cb->process_image ( outfile, squareSize );
+
   Py_RETURN_TRUE;
 }
 
 static PyMemberDef IlacCB_members[] = { {NULL} };
 
 static PyMethodDef IlacCB_methods[] = {
-  {"ver", (PyCFunction)IlacCB_version, METH_NOARGS,
-    "Return the version of IlacCB"},
-  {NULL}
+  {"process_image", (PyCFunction)IlacCB_process_image, METH_VARARGS,
+    "Saves an processed image to a FILENAME with a given SQUARE SIZE"},
 };
 
 static PyTypeObject IlacCBType = {
