@@ -91,9 +91,14 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
   try{
     self->cb = new ILAC_ChessboardImage ( image_file, Size(size1,size2),
                                           camMat_cvmat, disMat_cvmat);
-  }catch (std::exception& ilace)
-  {
-    PyErr_SetString ( PyExc_StandardError, ilace.what() );
+  }catch(ILACExNoChessboardFound){
+    PyErr_SetString ( PyExc_StandardError, "Chessboard not found." );
+    return -1;
+  }catch(ILACExNoneRedSquare){
+    PyErr_SetString ( PyExc_StandardError, "None red square found." );
+    return -1;
+  }catch(ILACExFileError){
+    PyErr_SetString ( PyExc_StandardError, "Unknown Image format" );
     return -1;
   }
 
