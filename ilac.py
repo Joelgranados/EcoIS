@@ -34,11 +34,11 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat, disMat ):
             % (from_file_name, to_dir) )
 
     # Let the exception go to the caller.
-    image_id = _ilac.get_image_id( from_file_name, size1, size2, camMat, disMat )
+    cb = _ilac.IlacCB( from_file_name, size1, size2, camMat, disMat )
 
     # Create id string that will be the dir name.
     image_id_dir = ""
-    for dirpart in image_id:
+    for dirpart in cb.img_id():
         image_id_dir = image_id_dir + str(dirpart)
 
     # Make sure the "new" to_file_dir exists.
@@ -100,19 +100,15 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
     for root, dirs, files in os.walk(from_dir):
         for f in files:
             try:
-                # process image to filename-new.
-                filename = os.path.join(root, f)
-                img_id = _ilac.process_image ( size1, size2, squareSize,
-                                               camMat, disMat,
-                                               filename, "%s-new"%filename )
-
+                from_file_name = os.path.join(root, f)
+                cb = _ilac.IlacCB( from_file_name, size1, size2, camMat, disMat )
             except Exception, err:
-                ilaclog.error( "File(%s): %s"%(filename, err) )
+                ilaclog.error( "File(%s): %s"%(from_file_name, err) )
                 continue
 
             # Create id string that will be the dir name.
             id_dir = ""
-            for dirpart in img_id:
+            for dirpart in cb.img_id():
                 id_dir = id_dir + str(dirpart)
 
             # Make sure the "new" to_file_dir exists.
@@ -121,13 +117,8 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
                 os.mkdir( to_file_dir )
 
             # We need the full to_file_name path
-            to_file_name = os.path.join(to_file_dir, f )
-
-            # We need the full from_file_name path
-            from_file_name = os.path.join(from_dir, "%s-new"%filename)
-
-            # shutil uses rename if on the same fielsystem.
-            shutil.move( from_file_name, to_file_name )
+            to_file_name = os.path.join(to_file_dir, f)
+            cb.process_image(squareSize, to_file_name)
 
             # tell the user about the move
             ilaclog.debug("Moved %s to %s"%(from_file_name, to_file_name))
