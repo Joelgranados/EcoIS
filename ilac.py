@@ -80,7 +80,8 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2, camMat, distMat ):
                 ilaclog.error( err )
 
 def ilac_process_classify_dir ( from_dir, to_dir, \
-                                size1, size2, camMat, disMat ):
+                                size1, size2, camMat, disMat, \
+                                squareSize=80 ):
     """ Classify all files in a directory and normalize the images
     from_dir = Source dir (full path)
     to_dir = Dest dir (full path)
@@ -88,6 +89,8 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
     size2 = Smallest chessboard size.
     camMat = Camera intrinsics.
     disMat = Distortion values.
+    squareSize = The size of the normalized chessboard square.
+                  (defines image size)
     """
     #Check that the two dirs exist.
     for dir in [from_dir, to_dir]:
@@ -99,12 +102,12 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
             try:
                 # process image to filename-new.
                 filename = os.path.join(root, f)
-                img_id = _ilac.process_image ( size1, size2,
+                img_id = _ilac.process_image ( size1, size2, squareSize,
                                                camMat, disMat,
                                                filename, "%s-new"%filename )
 
             except Exception, err:
-                ilaclog.error( err )
+                ilaclog.error( "File(%s): %s"%(filename, err) )
                 continue
 
             # Create id string that will be the dir name.
