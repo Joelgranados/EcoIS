@@ -119,11 +119,34 @@ IlacCB_process_image ( IlacCB *self, PyObject *args )
   Py_RETURN_TRUE;
 }
 
+static PyObject*
+IlacCB_img_id ( IlacCB *self )
+{
+  PyObject *list_image_id;
+  vector<unsigned short> image_id;
+
+  image_id = self->cb->get_image_id ();
+
+  /*Construct python list that will hold the image id*/
+  list_image_id = PyList_New ( image_id.size() );
+  if ( list_image_id == NULL ){ILAC_RETERR("Error creating a new list.");}
+
+  for ( int i = 0 ; i < image_id.size() ; i++ )
+    if ( PyList_SetItem ( list_image_id, i, Py_BuildValue("H", image_id[i]) )
+         == -1 )
+      ILAC_RETERR("Error creating id list elem.");
+
+  return list_image_id;
+}
+
 static PyMemberDef IlacCB_members[] = { {NULL} };
 
 static PyMethodDef IlacCB_methods[] = {
   {"process_image", (PyCFunction)IlacCB_process_image, METH_VARARGS,
     "Saves an processed image to a FILENAME with a given SQUARE SIZE"},
+  {"img_id", (PyCFunction)IlacCB_img_id, METH_NOARGS,
+    "Return the chessboard id of the image"},
+  {NULL}
 };
 
 static PyTypeObject IlacCBType = {
