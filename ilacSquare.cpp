@@ -19,8 +19,7 @@
 #include "ilacSquare.h"
 #include "ilacLabeler.h"
 #include <math.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
 #include <sys/stat.h>
 
 ILAC_ChessboardImage::ILAC_ChessboardImage (){}/*Used to initialize.*/

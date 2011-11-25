@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
 #include "error.h"
 
 using namespace cv;

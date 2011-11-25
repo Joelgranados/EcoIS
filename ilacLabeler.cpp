@@ -18,8 +18,7 @@
  */
 #include "ilacLabeler.h"
 #include "error.h"
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
 
 /* Notice ul:UpperLeft, ur:UpperRight, lr:LowerRight, ll:LowerLeft*/
 ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
