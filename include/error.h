@@ -59,3 +59,15 @@ class ILACExSizeFormatError:public std::exception{
 class ILACExTooManyColors:public std::exception{
   virtual const char* what() const throw(){return "Too many colors to classify";}
 };
+
+class ILACExChessboardTooSmall:public std::exception{
+  virtual const char* what() const throw(){return "Too few squares in chessboard.";}
+};
+
+class ILACExNotImplemented:public std::exception{
+  virtual const char* what() const throw(){return "Not implemented yet.";}
+};
+
+class ILACExInvalidClassifierType:public std::exception{
+  virtual const char* what() const throw(){return "Invalid Classifier type";}
+};

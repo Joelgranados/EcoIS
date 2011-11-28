@@ -17,17 +17,17 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "ilacChess.h"
-#include "ilacLabeler.h"
 #include <math.h>
 #include <opencv2/opencv.hpp>
 #include <sys/stat.h>
 
+/*{{{ ILAC_Chessboard*/
 ILAC_Chessboard::ILAC_Chessboard (){}/*Used to initialize.*/
 
 ILAC_Chessboard::ILAC_Chessboard ( const string &image,
-                                             const Size &boardsize,
-                                             const Mat &camMat,
-                                             const Mat &disMat )
+                                   const Size &boardsize,
+                                   const Mat &camMat,
+                                   const Mat &disMat )
 {
   this->camMat = camMat;
   this->disMat = disMat;
@@ -38,7 +38,86 @@ ILAC_Chessboard::ILAC_Chessboard ( const string &image,
   init_chessboard ();
 }
 
-void //static method
+/*
+ * 1. GET CHESSBOARD POINTS IN IMAGE
+ * 2. INITIALIZE THE SQUARES VECTOR BASED ON POINTS
+ * 3. CLASSIFY DATA SQUARES
+ */
+ILAC_Chessboard::ILAC_Chessboard ( const Mat &image,
+                                   const Size &dimension,
+                                   const int methodology )
+{
+  /* 1. GET CHESSBOARD POINTS IN IMAGE */
+  try
+  {
+    Mat g_img; //temp gray image
+
+    cvtColor ( image, g_img, CV_BGR2GRAY );/* transform to grayscale */
+
+    /* find the chessboard points in the image and put them in points.*/
+    if ( !findChessboardCorners(g_img, dimension, (cbPoints),
+                                CV_CALIB_CB_ADAPTIVE_THRESH) )
+      throw ILACExNoChessboardFound();
+
+    else
+      /* The 3rd argument is of interest.  It defines the size of the subpix
+       * window.  window_size = NUM*2+1.  This means that with 5,5 we have a
+       * window of 11x11 pixels.  If the window is too big it will mess up the
+       * original corner calculations for small chessboards. */
+      cornerSubPix ( g_img, (cbPoints), Size(5,5), Size(-1,-1),
+                     TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1) );
+  }catch (cv::Exception){throw ILACExNoChessboardFound();}
+
+  /* 2. INITIALIZE THE SQUARES VECTOR BASED ON POINTS. */
+  bool isBlack = true;
+  int numSamples = 6; //FIXME: Generalize this better.
+
+  for ( int r = 0 ; r < dimension.height-1 ; r++ )
+    for ( int c = 0 ; c < dimension.width-1 ; c++ )
+    {
+      if ( !isBlack )
+      {
+        ILAC_Square tmpSqr = ILAC_Square(
+            cbPoints[ (r*dimension.width)+c ], /* upper left */
+            cbPoints[ (r*dimension.width)+c+1 ], /* upper right */
+            cbPoints[ (r*dimension.width)+dimension.width+c+1 ],/*lower right*/
+            cbPoints[ (r*dimension.width)+dimension.width+c ], /*lower left*/
+            image );
+        if ( this->sampleSquares.size() <= numSamples )
+          this->sampleSquares.push_back(tmpSqr);
+        else
+          this->squares.push_back(tmpSqr);
+      }
+      isBlack = !isBlack;
+    }
+
+  if ( this->squares.size() <= 0 )
+    throw ILACExChessboardTooSmall ();
+
+  /* 3. CLASSIFY DATA SQUARES*/
+  ILAC_ColorClassifier *cc;
+  switch (methodology){
+    case (ILACCB_MEDIAN):
+      cc = new ILAC_Median_CC (this->sampleSquares, this->squares);
+      break;
+    case (ILACCB_MAXLIKELIHOOD):
+      throw ILACExNotImplemented();
+      break;
+    default:
+      throw ILACExInvalidClassifierType();
+  }
+  cc->classify();
+  this->association = cc->getClasses();
+  delete cc;
+}
+
+vector<int>
+ILAC_Chessboard::getAssociation ()
+{
+  return this->association;
+}
+
+void //static method //FIXME: We repeat this method in ILAC_Image
 ILAC_Chessboard::check_input ( const string &image, Size &boardSize )
 {
   // Check that file exists.
@@ -85,7 +164,7 @@ ILAC_Chessboard::init_chessboard ()
 
 void
 ILAC_Chessboard::process_image ( const string filename_output,
-                                      const unsigned int sizeInPixels )
+                                 const unsigned int sizeInPixels )
 {
   Mat final_img = Mat::zeros( 1, 1, CV_32F );
   Mat aftr;
@@ -122,7 +201,7 @@ ILAC_Chessboard::rad2deg ( const double Angle )
 
 vector<Point2f>// static method
 ILAC_Chessboard::get_image_points ( const Mat& image,
-                                         const Size boardSize )
+                                    const Size boardSize )
 {
   Mat g_img; //temp gray image
   vector<Point2f> retvec;
@@ -147,18 +226,31 @@ ILAC_Chessboard::get_image_points ( const Mat& image,
 
   return retvec;
 }
+/*}}} ILAC_Chessboard*/
 
+/*{{{ ILAC_Image*/
+ILAC_Image::ILAC_Image (){}
 
-/*
- * 1. CREATE IMAGEPOINTS.
- * 2. CREATE OBJECTPOINTS.
- * 3. CALL CALIBRATE CAMERA.
- */
-void //static method.
-ILAC_Chessboard::calc_img_intrinsics ( const vector<string> images,
-                                            const unsigned int size1,
-                                            const unsigned int size2,
-                                            Mat &camMat, Mat &disMat )
+ILAC_Image::ILAC_Image ( const string &image, const Size &dimensions,
+                         const Mat &camMat, const Mat &disMat )
+{}
+
+vector<unsigned short>
+ILAC_Image::getID ()
+{
+  return this->id;
+}
+
+void
+ILAC_Image::normalize ( const string filename_output,
+                        const unsigned int sizeInPixels )
+{}
+
+void
+ILAC_Image::calcIntr ( const vector<string> images,
+                       const unsigned int size1,
+                       const unsigned int size2,
+                       Mat &camMat, Mat &disMat )
 {
   Mat tmp_img;
   vector<Point2f> pointbuf;
@@ -207,3 +299,27 @@ ILAC_Chessboard::calc_img_intrinsics ( const vector<string> images,
                    camMat, disMat, rvecs, tvecs, 0 );
 }
 
+void //static method
+ILAC_Image::check_input ( const string &image, Size &boardSize )
+{
+  // Check that file exists.
+  struct stat file_stat;
+  if ( stat ( image.data(), &file_stat ) != 0 )
+    throw ILACExFileError();
+
+  // Check for width > height
+  if ( boardSize.height > boardSize.width )
+  {
+    unsigned int temp = boardSize.height;
+    boardSize.height = boardSize.width;
+    boardSize.width = temp;
+  }
+
+  /* We need a chessboard of odd dimensions (6,5 for example).  This gives us
+   * a chessboard with only one symmetry axis.  We use this in order to identify
+   * a unique origin. <ISBN 978-0-596-51613-0 Learning Opencv page 382> */
+  if ( boardSize.height % 2 == boardSize.width % 2 )
+    throw ILACExSymmetricalChessboard();
+}
+
+/*}}} ILAC_Image*/

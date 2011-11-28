@@ -224,8 +224,7 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
         (string)PyString_AsString ( PyList_GetItem(py_file_list, i) ) );
 
   /* 2. CALL CALC_IMG_INTRINSICS */
-  ILAC_Chessboard::calc_img_intrinsics ( images, size1, size2,
-                                              camMat, disMat );
+  ILAC_Image::calcIntr ( images, size1, size2, camMat, disMat );
 
   /*
    * 3. CREATE RETURN LIST
