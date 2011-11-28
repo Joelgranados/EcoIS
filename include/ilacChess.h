@@ -21,10 +21,10 @@
 
 using namespace cv;
 
-class ILAC_ChessboardImage{
+class ILAC_Chessboard{
 public:
-  ILAC_ChessboardImage ();
-  ILAC_ChessboardImage ( const string&, const Size&, const Mat&, const Mat& );
+  ILAC_Chessboard ();
+  ILAC_Chessboard ( const string&, const Size&, const Mat&, const Mat& );
 
   vector<unsigned short> get_image_id ();
   void process_image ( const string, const unsigned int = 80 );

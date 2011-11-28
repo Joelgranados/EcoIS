@@ -32,7 +32,7 @@
 /*{{{ IlacCB Object*/
 typedef struct{
   PyObject_HEAD /* ";" provided by macro*/
-  ILAC_ChessboardImage *cb;
+  ILAC_Chessboard *cb;
 } IlacCB;
 
 static void
@@ -86,9 +86,9 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
     camMat_cvmat.at<double>(floor(i/3), i%3) = PyFloat_AsDouble (
         PyList_GetItem ( PyList_GetItem ( camMat_pylist, floor(i/3) ), i%3 ) );
 
-  /* Instantiate ILAC_ChessboardImage into an object */
+  /* Instantiate ILAC_Chessboard into an object */
   try{
-    self->cb = new ILAC_ChessboardImage ( image_file, Size(size1,size2),
+    self->cb = new ILAC_Chessboard ( image_file, Size(size1,size2),
                                           camMat_cvmat, disMat_cvmat);
   }catch(ILACExNoChessboardFound){
     PyErr_SetString ( PyExc_StandardError, "Chessboard not found." );
@@ -224,7 +224,7 @@ ilac_calc_intrinsics ( PyObject *self, PyObject *args )
         (string)PyString_AsString ( PyList_GetItem(py_file_list, i) ) );
 
   /* 2. CALL CALC_IMG_INTRINSICS */
-  ILAC_ChessboardImage::calc_img_intrinsics ( images, size1, size2,
+  ILAC_Chessboard::calc_img_intrinsics ( images, size1, size2,
                                               camMat, disMat );
 
   /*

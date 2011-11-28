@@ -22,9 +22,9 @@
 #include <opencv2/opencv.hpp>
 #include <sys/stat.h>
 
-ILAC_ChessboardImage::ILAC_ChessboardImage (){}/*Used to initialize.*/
+ILAC_Chessboard::ILAC_Chessboard (){}/*Used to initialize.*/
 
-ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
+ILAC_Chessboard::ILAC_Chessboard ( const string &image,
                                              const Size &boardsize,
                                              const Mat &camMat,
                                              const Mat &disMat )
@@ -39,7 +39,7 @@ ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
 }
 
 void //static method
-ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize )
+ILAC_Chessboard::check_input ( const string &image, Size &boardSize )
 {
   // Check that file exists.
   struct stat file_stat;
@@ -68,7 +68,7 @@ ILAC_ChessboardImage::check_input ( const string &image, Size &boardSize )
  * 3. CALCULATE THE IMAGE ID.
  */
 void
-ILAC_ChessboardImage::init_chessboard ()
+ILAC_Chessboard::init_chessboard ()
 {
   /* 1. TRY TO NORMALIZE IMAGE. */
   Mat temp;
@@ -76,7 +76,7 @@ ILAC_ChessboardImage::init_chessboard ()
   undistort ( chessboard , temp, camMat, disMat ); //always undistort
 
   /* 2. CALCULATE CHESSBOARD POINTS.*/
-  imageCBpoints = ILAC_ChessboardImage::get_image_points (chessboard, dimension);
+  imageCBpoints = ILAC_Chessboard::get_image_points (chessboard, dimension);
 
   /* 3. CALCULATE IMAGE ID */
   ILAC_Labeler labeler ( chessboard, imageCBpoints, dimension );
@@ -84,7 +84,7 @@ ILAC_ChessboardImage::init_chessboard ()
 }
 
 void
-ILAC_ChessboardImage::process_image ( const string filename_output,
+ILAC_Chessboard::process_image ( const string filename_output,
                                       const unsigned int sizeInPixels )
 {
   Mat final_img = Mat::zeros( 1, 1, CV_32F );
@@ -107,21 +107,21 @@ ILAC_ChessboardImage::process_image ( const string filename_output,
 }
 
 vector<unsigned short>
-ILAC_ChessboardImage::get_image_id ()
+ILAC_Chessboard::get_image_id ()
 {
   return id;
 }
 
 /* Helper function for process_image. */
 double //static function
-ILAC_ChessboardImage::rad2deg ( const double Angle )
+ILAC_Chessboard::rad2deg ( const double Angle )
 {
     static double ratio = 180.0 / 3.141592653589793238;
       return Angle * ratio;
 }
 
 vector<Point2f>// static method
-ILAC_ChessboardImage::get_image_points ( const Mat& image,
+ILAC_Chessboard::get_image_points ( const Mat& image,
                                          const Size boardSize )
 {
   Mat g_img; //temp gray image
@@ -155,7 +155,7 @@ ILAC_ChessboardImage::get_image_points ( const Mat& image,
  * 3. CALL CALIBRATE CAMERA.
  */
 void //static method.
-ILAC_ChessboardImage::calc_img_intrinsics ( const vector<string> images,
+ILAC_Chessboard::calc_img_intrinsics ( const vector<string> images,
                                             const unsigned int size1,
                                             const unsigned int size2,
                                             Mat &camMat, Mat &disMat )
