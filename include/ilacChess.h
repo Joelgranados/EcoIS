@@ -39,7 +39,7 @@ private:
   vector<Point2f> imageCBpoints;
   vector<unsigned short> id;
   Size boardSize;
-  Mat orig_img;
+  Mat chessboard;
   Mat camMat;
   Mat disMat;
 

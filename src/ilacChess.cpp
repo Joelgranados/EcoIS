@@ -72,14 +72,14 @@ ILAC_ChessboardImage::init_chessboard ()
 {
   /* 1. TRY TO NORMALIZE IMAGE. */
   Mat temp;
-  orig_img = imread ( this->image_file );
-  undistort ( orig_img , temp, camMat, disMat ); //always undistort
+  chessboard = imread ( this->image_file );
+  undistort ( chessboard , temp, camMat, disMat ); //always undistort
 
   /* 2. CALCULATE CHESSBOARD POINTS.*/
-  imageCBpoints = ILAC_ChessboardImage::get_image_points (orig_img, boardSize);
+  imageCBpoints = ILAC_ChessboardImage::get_image_points (chessboard, boardSize);
 
   /* 3. CALCULATE IMAGE ID */
-  ILAC_Labeler labeler ( orig_img, imageCBpoints, boardSize );
+  ILAC_Labeler labeler ( chessboard, imageCBpoints, boardSize );
   id = labeler.calculate_label();
 }
 
@@ -95,13 +95,13 @@ ILAC_ChessboardImage::process_image ( const string filename_output,
                        imageCBpoints[ 0 ],
                        imageCBpoints[ boardSize.width - 1 ] };
   Point2f tvdst[3] = {
-    Point2f ( 0, orig_img.size().height ),
-    Point2f ( 0, orig_img.size().height - boardSize.height*sizeInPixels ),
+    Point2f ( 0, chessboard.size().height ),
+    Point2f ( 0, chessboard.size().height - boardSize.height*sizeInPixels ),
     Point2f ( boardSize.width*sizeInPixels,
-              orig_img.size().height - boardSize.height*sizeInPixels ) };
+              chessboard.size().height - boardSize.height*sizeInPixels ) };
 
   aftr = getAffineTransform ( tvsrc, tvdst );
-  warpAffine ( orig_img, final_img, aftr, orig_img.size() );
+  warpAffine ( chessboard, final_img, aftr, chessboard.size() );
 
   imwrite ( filename_output, final_img );
 }
