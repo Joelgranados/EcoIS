@@ -26,12 +26,13 @@ set (ILAC_NAME "\"ILAC Image Labeling and Classifying\"")
 
 # Create the ia_config.h file.  Copy <from> <to> and make the modifications
 configure_file (
-    "${PROJECT_SOURCE_DIR}/ilacConfig.h.in"
+    "${PROJECT_SOURCE_DIR}/include/ilacConfig.h.in"
     "${PROJECT_BINARY_DIR}/ilacConfig.h"
     )
 
 # Add the binary tree so we can find the include files.
 include_directories("${PROJECT_BINARY_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/include")
 
 # Try to find the opencv stuff
 find_package (OpenCV REQUIRED)
@@ -48,7 +49,7 @@ if(DEFINE_DEBUG)
     message("Build type is " ${CMAKE_BUILD_TYPE})
 endif(DEFINE_DEBUG)
 
-add_library (_ilac SHARED ilacLabeler.cpp ilacChess.cpp _ilac.cpp)
+add_library (_ilac SHARED src/ilacLabeler.cpp src/ilacChess.cpp src/_ilac.cpp)
 set_target_properties (_ilac PROPERTIES PREFIX "") #get rid of the lib*
 
 # Make sure we link to the found opencv stuff.
