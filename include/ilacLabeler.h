@@ -55,18 +55,7 @@ private:
 class ILAC_Labeler{
 public:
   ILAC_Labeler ();
-  ILAC_Labeler ( const Mat&, const vector<Point2f>, const Size );
-
-  vector<unsigned short> calculate_label ();
-  vector<unsigned short> get_label ();
   static vector<unsigned short> calcID ( const vector<ILAC_Square> );
-
-private:
-  Mat image;
-  Size boardSize;
-  vector<Point2f> imageCBpoints;
-  vector<unsigned short> id;
-  vector<ILAC_Square> squares;
 };
 
 class ILAC_ColorClassifier{
