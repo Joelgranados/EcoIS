@@ -34,7 +34,7 @@ ILAC_ChessboardImage::ILAC_ChessboardImage ( const string &image,
   this->image_file = image;
   Size tmpsize = boardsize; /* we cant have a const in check_input*/
   check_input ( image, tmpsize );
-  this->boardSize = tmpsize;
+  this->dimension = tmpsize;
   init_chessboard ();
 }
 
@@ -76,10 +76,10 @@ ILAC_ChessboardImage::init_chessboard ()
   undistort ( chessboard , temp, camMat, disMat ); //always undistort
 
   /* 2. CALCULATE CHESSBOARD POINTS.*/
-  imageCBpoints = ILAC_ChessboardImage::get_image_points (chessboard, boardSize);
+  imageCBpoints = ILAC_ChessboardImage::get_image_points (chessboard, dimension);
 
   /* 3. CALCULATE IMAGE ID */
-  ILAC_Labeler labeler ( chessboard, imageCBpoints, boardSize );
+  ILAC_Labeler labeler ( chessboard, imageCBpoints, dimension );
   id = labeler.calculate_label();
 }
 
@@ -91,14 +91,14 @@ ILAC_ChessboardImage::process_image ( const string filename_output,
   Mat aftr;
 
   /* create triangle vertices */
-  Point2f tvsrc[3] = { imageCBpoints[ boardSize.width*(boardSize.height-1) ],
+  Point2f tvsrc[3] = { imageCBpoints[ dimension.width*(dimension.height-1) ],
                        imageCBpoints[ 0 ],
-                       imageCBpoints[ boardSize.width - 1 ] };
+                       imageCBpoints[ dimension.width - 1 ] };
   Point2f tvdst[3] = {
     Point2f ( 0, chessboard.size().height ),
-    Point2f ( 0, chessboard.size().height - boardSize.height*sizeInPixels ),
-    Point2f ( boardSize.width*sizeInPixels,
-              chessboard.size().height - boardSize.height*sizeInPixels ) };
+    Point2f ( 0, chessboard.size().height - dimension.height*sizeInPixels ),
+    Point2f ( dimension.width*sizeInPixels,
+              chessboard.size().height - dimension.height*sizeInPixels ) };
 
   aftr = getAffineTransform ( tvsrc, tvdst );
   warpAffine ( chessboard, final_img, aftr, chessboard.size() );

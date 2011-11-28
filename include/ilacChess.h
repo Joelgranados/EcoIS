@@ -38,7 +38,7 @@ private:
   string image_file;
   vector<Point2f> imageCBpoints;
   vector<unsigned short> id;
-  Size boardSize;
+  Size dimension;
   Mat chessboard;
   Mat camMat;
   Mat disMat;
