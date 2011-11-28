@@ -61,90 +61,10 @@ ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
   rgb[0]=rgb[1]=rgb[2]=0;
 }
 
-int
-ILAC_Square::calc_exact_median ()
-{
-  uchar *data_ptr;
-  unsigned long c_accum[256] = {0};
-  for ( unsigned int row = 0 ; row <= h_subimg.rows ; row++ )
-    for ( unsigned int col = 0 ; col <= h_subimg.cols ; col++ )
-    {
-      data_ptr = h_subimg.data + (row*h_subimg.cols) + col;
-      c_accum[ *data_ptr ]++;
-    }
-
-  /* The median is the offset in c_accum where we cross the middle of the data
-   * set. */
-  unsigned long hp_size = (h_subimg.rows * h_subimg.cols)/2; //half population size
-  unsigned long accum_size = 0;
-  int median = 0;
-  for ( ; median <= 256 ; median++ )
-  {
-    if ( accum_size > hp_size )
-      break;// We have found the median
-    accum_size = accum_size + c_accum[median];
-  }
-
-  return median;
-}
-
 void
 ILAC_Square::set_rgb ( int color )
 {
   switch (color){
-    case RED:
-      rgb[0]=1;
-      break;
-    case YELLOW:
-      rgb[0]=rgb[1]=1;
-      break;
-    case GREEN:
-      rgb[1]=1;
-      break;
-    case CYAN:
-      rgb[0]=rgb[1]=rgb[2]=1;
-      break;
-    case BLUE:
-      rgb[2]=1;
-      break;
-    case MAGENTA:
-      rgb[0]=rgb[2]=1;
-      break;
-    default:
-      // should not get here
-      ;
-  }
-}
-
-void
-ILAC_Square::calc_rgb ( vector<color_hue> range )
-{
-  uchar *data_ptr;
-  /* Each accumulator offset will represent a color.
-   * c_accum[0] -> red,  c_accum[1] -> yellow, c_accum[2] -> green,
-   * c_accum[3] -> cyan, c_accum[4] -> Blue,   c_accum[5] -> magenta
-   * These values are related to the range argument.
-   * The color with more hits is the one that is chosen.*/
-  unsigned long c_accum[6] = {0};
-  for ( unsigned int row = 0 ; row <= h_subimg.rows ; row++ )
-    for ( unsigned int col = 0 ; col <= h_subimg.cols ; col++ )
-    {
-      data_ptr = h_subimg.data + (row*h_subimg.cols) + col;
-      for ( int j = 0 ; j < 8 ; j++ )
-        if ( range[j].hue > *data_ptr )
-        {
-          c_accum[(j-1)%6]++;
-          break;
-        }
-    }
-
-  /* find where the maximum offset is*/
-  int max_offset = 0;
-  for ( int i = 0 ; i < 6 ; i++ )
-    if ( c_accum[max_offset] < c_accum[i] )
-      max_offset = i;
-
-  switch ( range[max_offset].color ){
     case RED:
       rgb[0]=1;
       break;

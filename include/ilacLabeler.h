@@ -38,8 +38,6 @@ class ILAC_Square{
 public:
   ILAC_Square ( const Point2f, const Point2f, const Point2f, const Point2f,
               const Mat& );
-  void calc_rgb ( const vector<color_hue> );
-  int calc_exact_median ();
   int get_red_value ();
   int get_green_value ();
   int get_blue_value ();
