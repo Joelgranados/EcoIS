@@ -32,13 +32,15 @@
 /*{{{ IlacCB Object*/
 typedef struct{
   PyObject_HEAD /* ";" provided by macro*/
-  ILAC_Chessboard *cb;
+  //ILAC_Chessboard *cb; //FIXME :Erase me
+  ILAC_Image *ii;
 } IlacCB;
 
 static void
 IlacCB_dealloc ( IlacCB *self )
 {
-  delete self->cb;
+  //delete self->cb; //FIXME:erase me.
+  delete self->ii;
   self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -49,7 +51,8 @@ IlacCB_new ( PyTypeObject *type, PyObject *args, PyObject *kwds )
   IlacCB *self;
   self = (IlacCB *)type->tp_alloc(type, 0);
   if ( self != NULL )
-    self->cb = NULL;
+    //self->cb = NULL; //FIXME: erase me
+    self->ii = NULL;
   return (PyObject *)self;
 }
 
@@ -62,8 +65,9 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
   PyObject *camMat_pylist, *disMat_pylist;
   Mat camMat_cvmat, disMat_cvmat;
 
-  /* We do nothing if cb has already been created */
-  if ( self->cb != NULL )
+  /* We do nothing if ii has already been created */
+  //if ( self->cb != NULL ) //FIXME: erase me
+  if ( self->ii != NULL )
     return 0;
 
   /* parse incoming arguments. */
@@ -88,8 +92,11 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
 
   /* Instantiate ILAC_Chessboard into an object */
   try{
-    self->cb = new ILAC_Chessboard ( image_file, Size(size1,size2),
-                                          camMat_cvmat, disMat_cvmat);
+    //self->cb = new ILAC_Chessboard ( image_file, Size(size1,size2), //FIXME:
+    //eraseme
+    //                                      camMat_cvmat, disMat_cvmat);
+    self->ii = new ILAC_Image ( image_file, Size(size1,size2),
+                                camMat_cvmat, disMat_cvmat );
   }catch(ILACExNoChessboardFound){
     PyErr_SetString ( PyExc_StandardError, "Chessboard not found." );
     return -1;
@@ -113,7 +120,8 @@ IlacCB_process_image ( IlacCB *self, PyObject *args )
   if ( !PyArg_ParseTuple ( args, "is", &squareSize, &outfile ) )
     ILAC_RETERR("Invalid parameters for ilac_calc_process_image.");
 
-  self->cb->process_image ( outfile, squareSize );
+  //self->cb->process_image ( outfile, squareSize ); //FIXME:ERASE ME
+  self->ii->normalize ( "whatever" );
 
   Py_RETURN_TRUE;
 }
@@ -124,7 +132,7 @@ IlacCB_img_id ( IlacCB *self )
   PyObject *list_image_id;
   vector<unsigned short> image_id;
 
-  image_id = self->cb->get_image_id ();
+  image_id = self->ii->getID();
 
   /*Construct python list that will hold the image id*/
   list_image_id = PyList_New ( image_id.size() );

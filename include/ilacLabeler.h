@@ -44,6 +44,7 @@ public:
   int get_green_value ();
   int get_blue_value ();
   Mat get_h_subimg ();
+  void set_rgb ( int );
 
 private:
   Mat hsv_subimg; /* minimal subimage that contains the 4 points. */
@@ -58,6 +59,7 @@ public:
 
   vector<unsigned short> calculate_label ();
   vector<unsigned short> get_label ();
+  static vector<unsigned short> calcID ( const vector<ILAC_Square> );
 
 private:
   Mat image;

@@ -97,10 +97,10 @@ ILAC_Chessboard::ILAC_Chessboard ( const Mat &image,
   /* 3. CLASSIFY DATA SQUARES*/
   ILAC_ColorClassifier *cc;
   switch (methodology){
-    case (ILACCB_MEDIAN):
+    case (CB_MEDIAN):
       cc = new ILAC_Median_CC (this->sampleSquares, this->squares);
       break;
-    case (ILACCB_MAXLIKELIHOOD):
+    case (CB_MAXLIKELIHOOD):
       throw ILACExNotImplemented();
       break;
     default:
@@ -115,6 +115,12 @@ vector<int>
 ILAC_Chessboard::getAssociation ()
 {
   return this->association;
+}
+
+vector<ILAC_Square>
+ILAC_Chessboard::getSquares ()
+{
+  return this->squares;
 }
 
 void //static method //FIXME: We repeat this method in ILAC_Image
@@ -231,9 +237,47 @@ ILAC_Chessboard::get_image_points ( const Mat& image,
 /*{{{ ILAC_Image*/
 ILAC_Image::ILAC_Image (){}
 
-ILAC_Image::ILAC_Image ( const string &image, const Size &dimensions,
+/*
+ * 1. INITIALIZE VARIABLES
+ * 2. NORMALIZE IMG & INITIALIZE CHESSBOARD
+ * 3. CALCULATE IMAGE ID
+ */
+ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
                          const Mat &camMat, const Mat &disMat )
-{}
+{
+  /* 1. INITIALIZE VARIABLES*/
+  this->camMat = camMat;
+  this->disMat = disMat;
+  this->image_file = image;
+  Size tmpsize = boardSize; /* we cant have a const in check_input*/
+  check_input ( image, tmpsize );
+  this->dimension = tmpsize;
+
+  /* 2. NORMALIZE IMG & INITIALIZE CHESSBOARD*/
+  Mat tmp = imread( this->image_file );
+  undistort ( tmp , this->img, camMat, disMat ); //always undistort
+  this->cb = new ILAC_Chessboard ( this->img,
+                                   this->dimension,
+                                   ILAC_Chessboard::CB_MEDIAN );
+  //FIXME: create a delete for this new.
+
+}
+
+/*
+ * FIXME: temp hack. we calculate the id through the square class for now but in
+ * the future this should change.
+ */
+void
+ILAC_Image::calcID ()
+{
+  /* Known Colors. */
+  alcolor_t kc[8] = {RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA};
+  for ( int i = 0 ; i < this->cb->getAssociation().size() ; i++ )
+    this->cb->getSquares()[i].set_rgb( kc[this->cb->getAssociation()[i]] );
+
+  /* 3. CALCULATE IMAGE ID */
+  id = ILAC_Labeler::calcID ( this->cb->getSquares() );
+}
 
 vector<unsigned short>
 ILAC_Image::getID ()
@@ -244,7 +288,9 @@ ILAC_Image::getID ()
 void
 ILAC_Image::normalize ( const string filename_output,
                         const unsigned int sizeInPixels )
-{}
+{
+  throw ILACExNotImplemented ();
+}
 
 void
 ILAC_Image::calcIntr ( const vector<string> images,

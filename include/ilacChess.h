@@ -24,7 +24,7 @@ using namespace cv;
 
 class ILAC_Chessboard{
 public:
-  enum { ILACCB_MEDIAN, ILACCB_MAXLIKELIHOOD };
+  enum { CB_MEDIAN, CB_MAXLIKELIHOOD };
 
   ILAC_Chessboard ();
   ILAC_Chessboard ( const string&, const Size&, const Mat&, const Mat& );
@@ -33,6 +33,7 @@ public:
   vector<unsigned short> get_image_id (); //Should go away.
   void process_image ( const string, const unsigned int = 80 ); //Should go away.
   vector<int> getAssociation ();
+  vector<ILAC_Square> getSquares ();
 
 private:
   string image_file; //FIXME: Should go away.
@@ -41,16 +42,16 @@ private:
   Size dimension;
   Mat chessboard;
   vector<Point2f> cbPoints;
-  vector<ILAC_Square> sampleSquares;
   vector<int> association;
+  vector<ILAC_Square> sampleSquares;
   vector<ILAC_Square> squares; // Data squares.
   Mat camMat; // FIXME: should go away.
   Mat disMat; // FIXME: should go away.
 
   /* helper functions */
-  void init_chessboard ();
+  void init_chessboard (); //should go away
   static void check_input ( const string&, Size& ); //FIXME: should go away.
-  static double rad2deg ( const double );
+  static double rad2deg ( const double ); // may go away
   static vector<Point2f> get_image_points ( const Mat&, const Size ); //FIXME: should go away.
 };
 
@@ -60,6 +61,7 @@ class ILAC_Image{
     ILAC_Image ( const string&, const Size&, const Mat&, const Mat& );
 
     vector<unsigned short> getID (); // previously get_image_id
+    void calcID ();
     void normalize ( const string, const unsigned int = 80 ); // previously process_image
 
     /* Calculate image intrinsics */
@@ -69,12 +71,14 @@ class ILAC_Image{
                            Mat&, Mat& );
 
   private:
-    ILAC_Chessboard cb;
+    ILAC_Chessboard *cb;
+    string image_file;
     Mat img; //Original image
     Mat normImg; //Normalized image
     Mat camMat; //Camera intrinsics
     Mat disMat; //Distortion intrinsics.
     vector<unsigned short> id;
+    Size dimension;
 
     static void check_input ( const string&, Size& );
 };

@@ -89,6 +89,34 @@ ILAC_Square::calc_exact_median ()
 }
 
 void
+ILAC_Square::set_rgb ( int color )
+{
+  switch (color){
+    case RED:
+      rgb[0]=1;
+      break;
+    case YELLOW:
+      rgb[0]=rgb[1]=1;
+      break;
+    case GREEN:
+      rgb[1]=1;
+      break;
+    case CYAN:
+      rgb[0]=rgb[1]=rgb[2]=1;
+      break;
+    case BLUE:
+      rgb[2]=1;
+      break;
+    case MAGENTA:
+      rgb[0]=rgb[2]=1;
+      break;
+    default:
+      // should not get here
+      ;
+  }
+}
+
+void
 ILAC_Square::calc_rgb ( vector<color_hue> range )
 {
   uchar *data_ptr;
@@ -283,6 +311,41 @@ ILAC_Labeler::calculate_label ()
   }
   return id;
 }
+
+vector<unsigned short> //static method
+ILAC_Labeler::calcID ( vector<ILAC_Square> squares )
+{
+  int short_size = 8*sizeof(unsigned short); //assume short is a factor of 8
+  int id_offset;
+  vector <unsigned short> id;
+
+  /* We create the id vector as we go along.*/
+  for ( int i = 0 ; i < squares.size() ; i++ )
+  {
+    if ( i % short_size == 0 )
+    {
+      /* Move to the next position in id when i > multiple of short_size */
+      id_offset = (int)(i/short_size);
+
+      /* Make sure value = 0 */
+      id.push_back ( (unsigned short)0 );
+    }
+
+    /* All the colored squares should have red bit on.*/
+    if ( squares[i].get_red_value() != 1 )
+      throw ILACExNoneRedSquare();
+
+    id[id_offset] = id[id_offset]<<2;/* bit shift for green and blue */
+
+    if ( squares[i].get_blue_value() )/* modify the blue bit */
+      id[id_offset] = id[id_offset] | (unsigned short)1;
+
+    if ( squares[i].get_green_value() )/* modify the green bit */
+      id[id_offset] = id[id_offset] | (unsigned short)2;
+  }
+  return id;
+}
+
 
 vector<unsigned short>
 ILAC_Labeler::get_label ()
