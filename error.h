@@ -55,3 +55,7 @@ class ILACExFileError:public std::exception{
 class ILACExSizeFormatError:public std::exception{
   virtual const char* what() const throw(){return "Invalid size format";}
 };
+
+class ILACExTooManyColors:public std::exception{
+  virtual const char* what() const throw(){return "Too many colors to classify";}
+};

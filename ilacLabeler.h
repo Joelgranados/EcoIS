@@ -43,6 +43,7 @@ public:
   int get_red_value ();
   int get_green_value ();
   int get_blue_value ();
+  Mat get_h_subimg ();
 
 private:
   Mat hsv_subimg; /* minimal subimage that contains the 4 points. */
@@ -64,4 +65,32 @@ private:
   vector<Point2f> imageCBpoints;
   vector<unsigned short> id;
   vector<ILAC_Square> squares;
+};
+
+class ILAC_ColorClassifier{
+  public:
+    ILAC_ColorClassifier ( const vector<ILAC_Square>&,
+                           const vector<ILAC_Square>& );
+    vector<int> getClasses ();
+    virtual void classify () = 0;
+
+  protected:
+    vector<ILAC_Square> samples; //Sample squares
+    vector<ILAC_Square> data; //Data squares
+
+    /*
+     * Possition in classes refers to data squares.
+     * Value in clsses refers to the offset in samples.
+     * classes[I] = J -> data square I is of class J.
+     */
+    vector <int> classes;
+};
+
+class ILAC_Median_CC : public ILAC_ColorClassifier{
+  public:
+    ILAC_Median_CC ( const vector<ILAC_Square>&, const vector<ILAC_Square>& );
+    virtual void classify ();
+
+  private:
+    int calcHueMedian ( ILAC_Square& );
 };
