@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include "ilacSquare.h"
+#include "ilacChess.h"
 #include "ilacLabeler.h"
 #include <math.h>
 #include <opencv2/opencv.hpp>

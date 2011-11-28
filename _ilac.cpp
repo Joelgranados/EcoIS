@@ -20,7 +20,7 @@
 #include <Python.h>
 #include <structmember.h>
 #include <opencv2/opencv.hpp>
-#include "ilacSquare.h"
+#include "ilacChess.h"
 #include "ilacConfig.h"
 
 #define ILAC_RETERR( message ) \
