@@ -50,12 +50,6 @@ private:
   int rgb[3]; // Representation of the values in the square.
 };
 
-class ILAC_Labeler{
-public:
-  ILAC_Labeler ();
-  static vector<unsigned short> calcID ( const vector<ILAC_Square> );
-};
-
 class ILAC_ColorClassifier{
   public:
     ILAC_ColorClassifier ( const vector<ILAC_Square>&,
