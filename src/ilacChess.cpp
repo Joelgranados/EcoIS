@@ -69,7 +69,7 @@ ILAC_Chessboard::ILAC_Chessboard ( const Mat &image,
             cbPoints[ (r*dimension.width)+dimension.width+c+1 ],/*lower right*/
             cbPoints[ (r*dimension.width)+dimension.width+c ], /*lower left*/
             image );
-        if ( this->sampleSquares.size() <= numSamples )
+        if ( this->sampleSquares.size() < numSamples )
           this->sampleSquares.push_back(tmpSqr);
         else
           this->squares.push_back(tmpSqr);
