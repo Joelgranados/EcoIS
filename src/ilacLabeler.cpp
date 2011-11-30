@@ -239,10 +239,10 @@ ILAC_Median_CC::classify ()
   uchar *data_ptr;
 
   int coffset = 0;
-  for ( vector<ILAC_Square>::iterator sample = samples.begin();
-        sample != samples.end() ; ++sample, coffset++ )
+  for ( vector<ILAC_Square>::iterator _data = data.begin();
+        _data != data.end() ; ++_data, coffset++ )
   {
-    hImg = (*sample).get_h_subimg();
+    hImg = (*_data).get_h_subimg();
     /* Transform from BGR to HSV */
     //cvtColor ( square.hsv_subimg, hsvImg, CV_BGR2HSV_FULL ); 
     //vector<Mat> tmp_dim;
