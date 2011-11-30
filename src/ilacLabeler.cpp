@@ -45,26 +45,26 @@ ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
 
   /* Calculate the perspective transform and create a subimage. */
   Mat t_img = Mat( img, t_rect );
-  warpPerspective( t_img, hsv_subimg,
+  warpPerspective( t_img, this->img,
                    getPerspectiveTransform(s,d), t_img.size() );
 
   /* Transform from BGR to HSV */
-  cvtColor ( hsv_subimg, hsv_subimg, CV_BGR2HSV_FULL );
+  //cvtColor ( hsv_subimg, hsv_subimg, CV_BGR2HSV_FULL );
 
   /* We separate hsv into its different dimensions */
   //FIXME: try using the mixchannels so we can avoid s and v
-  vector<Mat> tmp_dim;
-  split( hsv_subimg, tmp_dim );
-  h_subimg = tmp_dim[0];
+  //vector<Mat> tmp_dim;
+  //split( hsv_subimg, tmp_dim );
+  //h_subimg = tmp_dim[0];
 
   /* Initialize the array that will hold the bits. */
-  rgb[0]=rgb[1]=rgb[2]=0;
+  //rgb[0]=rgb[1]=rgb[2]=0;
 }
 
 Mat
-ILAC_Square::get_h_subimg ()
+ILAC_Square:: getImg ()
 {
-  return this->h_subimg;
+  return this->img;
 }
 /*}}} ILAC_Square*/
 
@@ -158,12 +158,14 @@ ILAC_Median_CC::classify ()
   for ( vector<ILAC_Square>::iterator _data = data.begin();
         _data != data.end() ; ++_data, coffset++ )
   {
-    hImg = (*_data).get_h_subimg();
     /* Transform from BGR to HSV */
-    //cvtColor ( square.hsv_subimg, hsvImg, CV_BGR2HSV_FULL ); 
-    //vector<Mat> tmp_dim;
-    //split( hsvImg, tmp_dim );
-    //hImg = tmp_dim[0];
+    {
+      Mat hsvImg;
+      cvtColor ( (*_data).getImg(), hsvImg, CV_BGR2HSV_FULL );
+      vector<Mat> tmp_dim;
+      split( hsvImg, tmp_dim );
+      hImg = tmp_dim[0];
+    }
 
     unsigned long c_accum[6] = {0};
     for ( unsigned int row = 0 ; row <= hImg.rows ; row++ )
@@ -192,12 +194,14 @@ int
 ILAC_Median_CC::calcHueMedian ( ILAC_Square &square )
 {
   Mat hImg;
-  hImg = square.get_h_subimg();
   /* Transform from BGR to HSV */
-  //cvtColor ( square.hsv_subimg, hsvImg, CV_BGR2HSV_FULL ); 
-  //vector<Mat> tmp_dim;
-  //split( hsvImg, tmp_dim );
-  //hImg = tmp_dim[0];
+  {
+    Mat hsvImg;
+    cvtColor ( square.getImg(), hsvImg, CV_BGR2HSV_FULL );
+    vector<Mat> tmp_dim;
+    split( hsvImg, tmp_dim );
+    hImg = tmp_dim[0];
+  }
 
   uchar *data_ptr;
   unsigned long c_accum[256] = {0};

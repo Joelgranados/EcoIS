@@ -38,12 +38,10 @@ class ILAC_Square{
 public:
   ILAC_Square ( const Point2f, const Point2f, const Point2f, const Point2f,
               const Mat& );
-  Mat get_h_subimg ();
+  Mat getImg ();
 
 private:
-  Mat hsv_subimg; /* minimal subimage that contains the 4 points. */
-  Mat h_subimg; /* subimage for the hue dimension */
-  int rgb[3]; // Representation of the values in the square.
+  Mat img; /* RGB image of the square*/
 };
 
 class ILAC_ColorClassifier{
