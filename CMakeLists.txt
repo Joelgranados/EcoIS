@@ -21,7 +21,7 @@ project (ImageLabel)
 
 # Set the version number
 set (ILAC_VER_MAJOR 1)
-set (ILAC_VER_MINOR 0)
+set (ILAC_VER_MINOR 1)
 set (ILAC_NAME "\"ILAC Image Labeling and Classifying\"")
 
 # Create the ia_config.h file.  Copy <from> <to> and make the modifications
