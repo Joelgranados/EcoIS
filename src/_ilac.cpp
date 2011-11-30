@@ -32,14 +32,12 @@
 /*{{{ IlacCB Object*/
 typedef struct{
   PyObject_HEAD /* ";" provided by macro*/
-  //ILAC_Chessboard *cb; //FIXME :Erase me
   ILAC_Image *ii;
 } IlacCB;
 
 static void
 IlacCB_dealloc ( IlacCB *self )
 {
-  //delete self->cb; //FIXME:erase me.
   delete self->ii;
   self->ob_type->tp_free((PyObject*)self);
 }
@@ -51,7 +49,6 @@ IlacCB_new ( PyTypeObject *type, PyObject *args, PyObject *kwds )
   IlacCB *self;
   self = (IlacCB *)type->tp_alloc(type, 0);
   if ( self != NULL )
-    //self->cb = NULL; //FIXME: erase me
     self->ii = NULL;
   return (PyObject *)self;
 }
@@ -66,7 +63,6 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
   Mat camMat_cvmat, disMat_cvmat;
 
   /* We do nothing if ii has already been created */
-  //if ( self->cb != NULL ) //FIXME: erase me
   if ( self->ii != NULL )
     return 0;
 
@@ -92,9 +88,6 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
 
   /* Instantiate ILAC_Chessboard into an object */
   try{
-    //self->cb = new ILAC_Chessboard ( image_file, Size(size1,size2), //FIXME:
-    //eraseme
-    //                                      camMat_cvmat, disMat_cvmat);
     self->ii = new ILAC_Image ( image_file, Size(size1,size2),
                                 camMat_cvmat, disMat_cvmat );
     self->ii->calcID();
@@ -121,7 +114,6 @@ IlacCB_process_image ( IlacCB *self, PyObject *args )
   if ( !PyArg_ParseTuple ( args, "is", &squareSize, &outfile ) )
     ILAC_RETERR("Invalid parameters for ilac_calc_process_image.");
 
-  //self->cb->process_image ( outfile, squareSize ); //FIXME:ERASE ME
   self->ii->normalize ( "whatever" );
 
   Py_RETURN_TRUE;
