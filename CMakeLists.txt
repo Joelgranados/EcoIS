@@ -54,3 +54,14 @@ set_target_properties (_ilac PROPERTIES PREFIX "") #get rid of the lib*
 
 # Make sure we link to the found opencv stuff.
 target_link_libraries (_ilac ${OpenCV_LIBS})
+
+# Create the test target.
+file(COPY "${PROJECT_SOURCE_DIR}/tests" DESTINATION "${PROJECT_BINARY_DIR}")
+add_custom_target ( test
+    COMMAND ${CMAKE_COMMAND} -E echo "====== STARTING TEST SUITE ======"
+    COMMAND ${CMAKE_COMMAND} -E
+            copy "${CMAKE_CURRENT_BINARY_DIR}/_ilac.so"
+                 "${CMAKE_CURRENT_BINARY_DIR}/tests"
+    COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/tests" ./test
+    COMMAND ${CMAKE_COMMAND} -E echo "====== ENDING TEST SUITE ======" )
+add_dependencies(test _ilac)
