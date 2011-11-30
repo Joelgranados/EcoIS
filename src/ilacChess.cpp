@@ -146,12 +146,49 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
 void
 ILAC_Image::calcID ()
 {
-  /* Known Colors. */
-  alcolor_t kc[8] = {RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA};
-  for ( int i = 0 ; i < this->cb->getAssociation().size() ; i++ )
-    this->cb->getSquares()[i].set_rgb( kc[this->cb->getAssociation()[i]] );
+  int short_size = 8*sizeof(unsigned short); //assume short is a factor of 8
+  int id_offset;
 
-  id = ILAC_Labeler::calcID ( this->cb->getSquares() );
+  for ( int i = 0 ; i < this->cb->getAssociation().size() ; i++ )
+  {
+    if ( i % short_size == 0 )
+    {
+      /* Move to the next position in id when i > multiple of short_size */
+      id_offset = (int)(i/short_size);
+
+      /* Make sure value = 0 */
+      this->id.push_back ( (unsigned short)0 );
+    }
+
+    /* Don't consider case 2,3,4 because red is on*/
+    int r, g, b;
+    switch ( this->cb->getAssociation()[i])
+    {
+      case 0:
+        r=1;g=0;b=0;
+        break;
+      case 1:
+        r=1;g=1;b=0;
+        break;
+      case 5:
+        r=1;g=0;b=1;
+        break;
+      default:
+        r=0;g=0;b=0;
+        ;
+    }
+
+    /* All the colored squares should have red bit on.*/
+    if ( r != 1 ) throw ILACExNoneRedSquare();
+
+    this->id[id_offset] = this->id[id_offset]<<2;/* bit shift for green and blue */
+
+    /* modify the blue bit */
+    if ( b ) this->id[id_offset] = this->id[id_offset] | (unsigned short)1;
+
+    /* modify the green bit */
+    if ( g ) this->id[id_offset] = this->id[id_offset] | (unsigned short)2;
+  }
 }
 
 vector<unsigned short>
