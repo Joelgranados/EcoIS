@@ -142,10 +142,6 @@ ILAC_Image::~ILAC_Image ()
   delete this->cb;
 }
 
-/*
- * FIXME: temp hack. we calculate the id through the square class for now but in
- * the future this should change.
- */
 void
 ILAC_Image::calcID ()
 {
