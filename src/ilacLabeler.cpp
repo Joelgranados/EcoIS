@@ -61,52 +61,6 @@ ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
   rgb[0]=rgb[1]=rgb[2]=0;
 }
 
-void
-ILAC_Square::set_rgb ( int color )
-{
-  switch (color){
-    case RED:
-      rgb[0]=1;
-      break;
-    case YELLOW:
-      rgb[0]=rgb[1]=1;
-      break;
-    case GREEN:
-      rgb[1]=1;
-      break;
-    case CYAN:
-      rgb[0]=rgb[1]=rgb[2]=1;
-      break;
-    case BLUE:
-      rgb[2]=1;
-      break;
-    case MAGENTA:
-      rgb[0]=rgb[2]=1;
-      break;
-    default:
-      // should not get here
-      ;
-  }
-}
-
-int
-ILAC_Square::get_red_value ()
-{
-  return rgb[0];
-}
-
-int
-ILAC_Square::get_green_value ()
-{
-  return rgb[1];
-}
-
-int
-ILAC_Square::get_blue_value ()
-{
-  return rgb[2];
-}
-
 Mat
 ILAC_Square::get_h_subimg ()
 {
