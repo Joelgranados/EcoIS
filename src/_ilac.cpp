@@ -98,7 +98,7 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
     PyErr_SetString ( PyExc_StandardError, "None red square found." );
     return -1;
   }catch(ILACExFileError){
-    PyErr_SetString ( PyExc_StandardError, "Unknown Image format" );
+    PyErr_SetString ( PyExc_StandardError, "Unable to read image file" );
     return -1;
   }
 
