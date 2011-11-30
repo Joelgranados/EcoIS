@@ -45,6 +45,7 @@ class ILAC_Image{
   public:
     ILAC_Image ();
     ILAC_Image ( const string&, const Size&, const Mat&, const Mat& );
+    ~ILAC_Image ();
 
     vector<unsigned short> getID ();
     void calcID ();

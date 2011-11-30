@@ -135,8 +135,11 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
   this->cb = new ILAC_Chessboard ( this->img,
                                    this->dimension,
                                    ILAC_Chessboard::CB_MEDIAN );
-  //FIXME: create a delete for this new.
+}
 
+ILAC_Image::~ILAC_Image ()
+{
+  delete this->cb;
 }
 
 /*
