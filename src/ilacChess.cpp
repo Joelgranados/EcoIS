@@ -151,7 +151,6 @@ ILAC_Image::calcID ()
   for ( int i = 0 ; i < this->cb->getAssociation().size() ; i++ )
     this->cb->getSquares()[i].set_rgb( kc[this->cb->getAssociation()[i]] );
 
-  /* 3. CALCULATE IMAGE ID */
   id = ILAC_Labeler::calcID ( this->cb->getSquares() );
 }
 
