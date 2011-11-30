@@ -47,18 +47,6 @@ ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
   Mat t_img = Mat( img, t_rect );
   warpPerspective( t_img, this->img,
                    getPerspectiveTransform(s,d), t_img.size() );
-
-  /* Transform from BGR to HSV */
-  //cvtColor ( hsv_subimg, hsv_subimg, CV_BGR2HSV_FULL );
-
-  /* We separate hsv into its different dimensions */
-  //FIXME: try using the mixchannels so we can avoid s and v
-  //vector<Mat> tmp_dim;
-  //split( hsv_subimg, tmp_dim );
-  //h_subimg = tmp_dim[0];
-
-  /* Initialize the array that will hold the bits. */
-  //rgb[0]=rgb[1]=rgb[2]=0;
 }
 
 Mat
@@ -199,6 +187,7 @@ ILAC_Median_CC::calcHueMedian ( ILAC_Square &square )
     Mat hsvImg;
     cvtColor ( square.getImg(), hsvImg, CV_BGR2HSV_FULL );
     vector<Mat> tmp_dim;
+    //FIXME: try using mixchannels to avoid s and v
     split( hsvImg, tmp_dim );
     hImg = tmp_dim[0];
   }
