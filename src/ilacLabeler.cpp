@@ -71,6 +71,10 @@ ILAC_ColorClassifier::getClasses ()
   return this->classes;
 }
 
+/*
+ * Sample colors should be ordered: red, yellow, green, cyan, blue, magenta.
+ * This cannot be checked.The caller must make sure.
+ */
 ILAC_Median_CC::ILAC_Median_CC
   ( const vector<ILAC_Square>& samples, const vector<ILAC_Square>& data ):
     ILAC_ColorClassifier ( samples, data )
@@ -78,10 +82,6 @@ ILAC_Median_CC::ILAC_Median_CC
   /* Detection only works with 6 colors :)*/
   if ( samples.size() != 6 )
     throw ILACExTooManyColors();
-
-  /* The input sample colors have to be in the following order:
-   * red, yellow, green, cyan, blue, magenta. This cannot be checked.
-   * The caller must make sure.*/
 }
 
 void
