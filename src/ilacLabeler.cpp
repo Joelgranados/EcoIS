@@ -50,7 +50,7 @@ ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
 }
 
 Mat
-ILAC_Square:: getImg ()
+ILAC_Square::getImg ()
 {
   return this->img;
 }
@@ -216,4 +216,109 @@ ILAC_Median_CC::calcHueMedian ( ILAC_Square &square )
   return median;
 }
 /*}}} ILAC_ColorClassifiers*/
+
+/*{{{ ILAC_Sphere and related*/
+ILAC_Sphere::ILAC_Sphere ()
+{
+  this->img = NULL;
+  this->center = Point(0,0);
+  this->radius = 0;
+}
+
+
+ILAC_Sphere::ILAC_Sphere
+  ( const Mat *img, const Point center, const int radius)
+{
+  this->img = (Mat*)img;
+  this->center = (Point)center;
+  this->radius = (int)radius;
+}
+
+Mat*
+ILAC_Sphere::getImg()
+{
+  return this->img;
+}
+
+Point
+ILAC_Sphere::getCenter()
+{
+  return this->center;
+}
+
+int
+ILAC_Sphere::getRadius()
+{
+  return this->radius;
+}
+
+ILAC_SphereFinder::ILAC_SphereFinder () {}
+
+/*
+ * 1. CALCULATE RANGE FROM MEAN AND STANDARD DEVIATION
+ * 2. CREATE A MASK FROM THE RANGE
+ * 3. SMOOTH STUFF USING MORPHOLOGY
+ * 4. DETECT THE CIRCLES
+ */
+vector<ILAC_Sphere>
+ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img )
+{
+  /* 1. CALCULATE RANGE FROM MEAN AND STANDARD DEVIATION */
+  Mat mean, stddev;
+  {/* Isolate the Hue */
+    Mat tmpImg;
+    cvtColor ( square.getImg(), tmpImg, CV_BGR2HSV_FULL );
+    vector<Mat> tmp_dim;
+    split( tmpImg, tmp_dim );
+    tmpImg = tmp_dim[0];
+    meanStdDev ( tmpImg, mean, stddev );
+  }
+
+  /*
+   * Range will be -+ 1 standard deviation. This has aprox 68% of the data
+   * (http://en.wikipedia.org/wiki/Standard_deviation)
+   */
+  Mat lowerb = mean - stddev;
+  Mat upperb = mean + stddev;
+
+  /* 2. CREATE A MASK FROM THE RANGE */
+  Mat mask = Mat::ones(img.rows, img.cols, CV_8UC1);
+  inRange(img, lowerb, upperb, mask);
+
+  /* 3. SMOOTH STUFF USING MORPHOLOGY */
+  /* Playing with the size of the structuring elements might be good */
+  {
+    Mat se1 = getStructuringElement ( MORPH_RECT, Size(21,10) );
+    Mat se2 = getStructuringElement ( MORPH_RECT, Size(11,5) );
+    morphologyEx ( mask, mask, MORPH_CLOSE, se1 );
+    morphologyEx ( mask, mask, MORPH_OPEN, se2 );
+  }
+
+  /* 4. DETECT THE CIRCLES */
+  /* Play with the arguments for HoughCircles. */
+  vector<Vec3f> circles;
+  vector<ILAC_Sphere> spheres;
+
+  GaussianBlur ( mask, mask, Size(15, 15), 2, 2 );
+  HoughCircles ( mask, circles, CV_HOUGH_GRADIENT, 2, mask.rows/10, 100, 40);
+
+  for( size_t i = 0; i < circles.size(); i++ )
+  {
+    Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+    int radius = cvRound(circles[i][2]);
+    ILAC_Sphere temp ( &img, center, radius );
+
+    /* Add spheres in descending order */
+    if ( spheres.size() == 0 )
+      spheres.push_back ( temp );
+    else
+      for ( size_t j = 0 ; j < spheres.size() ; j++ )
+        if ( temp.getRadius() > spheres[j].getRadius() )
+        {
+          spheres.insert ( spheres.begin()+j, temp );
+          break;
+        }
+  }
+}
+/*}}} ILAC_Sphere and related*/
 

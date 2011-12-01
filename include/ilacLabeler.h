@@ -65,3 +65,26 @@ class ILAC_Median_CC : public ILAC_ColorClassifier{
   private:
     int calcHueMedian ( ILAC_Square& );
 };
+
+class ILAC_Sphere{
+  public:
+    ILAC_Sphere ();
+    ILAC_Sphere ( const Mat*, const Point, const int );
+
+    Mat* getImg ();
+    Point getCenter ();
+    int getRadius ();
+
+  private:
+    Mat *img;
+    Point center;
+    int radius;
+};
+
+class ILAC_SphereFinder{
+  public:
+    ILAC_SphereFinder();
+
+    /* Might be a good idea to virtualize in the future */
+    vector<ILAC_Sphere> findSpheres ( ILAC_Square&, Mat& );
+};
