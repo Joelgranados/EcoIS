@@ -34,6 +34,7 @@ ILAC_Chessboard::ILAC_Chessboard ( const Mat &image,
                                    const int methodology )
 {
   /* 1. GET CHESSBOARD POINTS IN IMAGE */
+  vector<Point2f> cbPoints;
   try
   {
     Mat g_img; //temp gray image

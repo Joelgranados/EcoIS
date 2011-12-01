@@ -34,8 +34,6 @@ public:
 
 private:
   Size dimension;
-  Mat chessboard;
-  vector<Point2f> cbPoints;
   vector<int> association;
   vector<ILAC_Square> sampleSquares;
   vector<ILAC_Square> squares; // Data squares.
