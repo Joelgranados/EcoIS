@@ -89,47 +89,47 @@ ILAC_Median_CC::classify ()
 {
   /*
    * 1 CREATE RANGE ARRAY
-   * Range vector:  Mapping from hue->color (one of 6 colors).
-   * Range of range[i].color -> (range[i].hue, range[i+1].hue)
+   * Color mapping: hRange[0] < RED < hRange[1] |
+   *                hRange[1] < YELLOW < hRange[2] |
+   *                ... |
+   *                hRange[6] < RED < hRange[7]
    * Ranges are sorted in increasing order.
    */
-  vector<color_hue> range;
-  for ( int i = 0 ; i < 8 ; i++ )
-  {
-    color_hue temp;
-    temp.hue = 0;
-    temp.color = NO_COLOR;
-    range.push_back ( temp );
-  }
+  vector<int> hRange(8,0);
 
-  /* Known Colors. */
-  alcolor_t kc[8] = {RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA, RED, NO_COLOR};
-
-  /* Fill the range with colors and means. Order based on hue */
+  /*
+   * Fill the range with colors and means. Order based on hue. Make sure
+   * smallest and largets values in the endpoints.
+   */
   for ( int i = 0 ; i < 6 ; i++ )
   {
-    range[i].hue = this->calcHueMedian(samples[i]);
-    range[i].color = kc[i];
-    for ( int j = i ; j > 0 && range[j].hue < range[j-1].hue ; j-- )
-      std::swap( range[j], range[j-1] );
+    hRange[i] = this->calcHueMedian(samples[i]);
+    for ( int j = i ; j > 0 && hRange[j] < hRange[j-1] ; j-- )
+      std::swap( hRange[j], hRange[j-1] );
   }
 
-  /* Calculate the max ranges */
-  range[6].hue = 256+range[0].hue;
-  range[6].color = range[0].color;
+  /*
+   * Calculate the max ranges. The midpoints between two medians are calculated
+   * by adding half (/2) the distance (subtraction) -between to medians- to the
+   * smallest median; and making sure it does not exceed 256 (%256)
+   */
+  hRange[6] = 256+hRange[0];
   for ( int i = 6 ; i > 0 ; i-- )
-    range[i].hue = (((range[i].hue-range[i-1].hue)/2)+range[i-1].hue)%256;
+    hRange[i] = ( hRange[i-1]
+                  + ((hRange[i] - hRange[i-1]) / 2) )
+                % 256;
 
-  /* There is a possibility that things are not in order. */
+  /*
+   * There is a possibility that things are not in order. We do this because the
+   * hue 257 is equal to 0 (and so on)
+   */
   for ( int i = 1 ; i < 7 ; i++ )
-    for ( int j = i ; j > 1 && range[j].hue < range[j-1].hue ; j-- )
-      std::swap( range[j], range[j-1] );
+    for ( int j = i ; j > 1 && hRange[j] < hRange[j-1] ; j-- )
+      std::swap( hRange[j], hRange[j-1] );
 
   /* We polish the ends. */
-  range[0].hue = 0;
-  range[0].color = range[6].color;
-  range[7].hue = 256;
-  range[7].color = NO_COLOR;
+  hRange[0] = 0;
+  hRange[7] = 256;
 
   /*
    * 2.CALCULATE CLASS
@@ -161,7 +161,7 @@ ILAC_Median_CC::classify ()
       {
         data_ptr = hImg.data + (row*hImg.cols) + col;
         for ( int j = 0 ; j < 8 ; j++ )
-          if ( range[j].hue > *data_ptr )
+          if ( hRange[j] > *data_ptr )
           {
             c_accum[(j-1)%6]++;
             break;

@@ -28,12 +28,6 @@ using namespace cv;
   ceil ( max ( max(p1,p2), max(p3,p4) ) ) \
   - floor ( min ( min(p1,p2), min(p3,p4) ) )
 
-enum alcolor_t { NO_COLOR, RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA };
-struct color_hue {
-  alcolor_t color;
-  int hue;
-};
-
 class ILAC_Square{
 public:
   ILAC_Square ( const Point2f, const Point2f, const Point2f, const Point2f,
