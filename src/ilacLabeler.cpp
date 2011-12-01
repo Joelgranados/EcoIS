@@ -319,6 +319,11 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img )
           break;
         }
   }
+
+  if ( spheres.size() < 3 )
+    throw ILACExLessThanThreeSpheres ();
+
+  return spheres
 }
 /*}}} ILAC_Sphere and related*/
 
