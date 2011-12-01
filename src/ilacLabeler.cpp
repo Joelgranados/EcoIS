@@ -323,7 +323,7 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img )
   if ( spheres.size() < 3 )
     throw ILACExLessThanThreeSpheres ();
 
-  return spheres
+  return spheres;
 }
 /*}}} ILAC_Sphere and related*/
 

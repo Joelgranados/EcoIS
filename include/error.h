@@ -74,5 +74,5 @@ class ILACExInvalidClassifierType:public std::exception{
 
 class ILACExLessThanThreeSpheres:public std::exception{
   virtual const char* what() const throw()
-    {return "Not enough spheres in image."}
+    {return "Not enough spheres in image.";}
 };
