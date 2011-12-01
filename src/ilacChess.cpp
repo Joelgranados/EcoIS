@@ -136,6 +136,8 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
   this->cb = new ILAC_Chessboard ( this->img,
                                    this->dimension,
                                    ILAC_Chessboard::CB_MEDIAN );
+  /* 3. CALCULATE IMAGE ID */
+  this->calcID();
 }
 
 ILAC_Image::~ILAC_Image ()
@@ -181,7 +183,8 @@ ILAC_Image::calcID ()
     /* All the colored squares should have red bit on.*/
     if ( r != 1 ) throw ILACExNoneRedSquare();
 
-    this->id[id_offset] = this->id[id_offset]<<2;/* bit shift for green and blue */
+    /* bit shift for green and blue */
+    this->id[id_offset] = this->id[id_offset]<<2;
 
     /* modify the blue bit */
     if ( b ) this->id[id_offset] = this->id[id_offset] | (unsigned short)1;
