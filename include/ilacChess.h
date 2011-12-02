@@ -44,10 +44,12 @@ private:
 class ILAC_Image{
   public:
     ILAC_Image ();
-    ILAC_Image ( const string&, const Size&, const Mat&, const Mat& );
+    ILAC_Image ( const string&, const Size&,
+                 const Mat&, const Mat&, const bool = true );
     ~ILAC_Image ();
 
     vector<unsigned short> getID ();
+    void initChess ();
     void calcID ();
     void calcRefPoints ();
     void normalize ( const unsigned int = 80 );

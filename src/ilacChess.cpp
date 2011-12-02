@@ -120,12 +120,13 @@ ILAC_Image::ILAC_Image (){}
 
 /*
  * 1. INITIALIZE VARIABLES
- * 2. NORMALIZE IMG & INITIALIZE CHESSBOARD
+ * 2. INITIALIZE CHESSBOARD
  * 3. CALCULATE IMAGE ID
  * 4. CALCULATE PLOT CORNERS
  */
 ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
-                         const Mat &camMat, const Mat &disMat )
+                         const Mat &camMat, const Mat &disMat,
+                         const bool full )
 {
   /* 1. INITIALIZE VARIABLES*/
   this->camMat = camMat;
@@ -134,18 +135,20 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
   Size tmpsize = boardSize; /* we cant have a const in check_input*/
   check_input ( image, tmpsize );
   this->dimension = tmpsize;
+  undistort ( imread( this->image_file ), //always undistort
+              this->img, camMat, disMat );
 
-  /* 2. NORMALIZE IMG & INITIALIZE CHESSBOARD*/
-  Mat tmp = imread( this->image_file );
-  undistort ( tmp , this->img, camMat, disMat ); //always undistort
-  this->cb = new ILAC_Chessboard ( this->img,
-                                   this->dimension,
-                                   ILAC_Chessboard::CB_MEDIAN );
-  /* 3. CALCULATE IMAGE ID */
-  this->calcID();
+  if ( full )
+  {
+    /* 2. INITIALIZE CHESSBOARD*/
+    this->initChess ();
 
-  /* 4. CALCULATE PLOT CORNERS */
-  this->calcRefPoints();
+    /* 3. CALCULATE IMAGE ID */
+    this->calcID();
+
+    /* 4. CALCULATE PLOT CORNERS */
+    this->calcRefPoints();
+  }
 }
 
 ILAC_Image::~ILAC_Image ()
@@ -249,6 +252,14 @@ ILAC_Image::calcID ()
     /* modify the green bit */
     if ( g ) this->id[id_offset] = this->id[id_offset] | (unsigned short)2;
   }
+}
+
+void
+ILAC_Image::initChess ()
+{
+  this->cb = new ILAC_Chessboard ( this->img,
+                                   this->dimension,
+                                   ILAC_Chessboard::CB_MEDIAN );
 }
 
 vector<unsigned short>
