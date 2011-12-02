@@ -34,7 +34,6 @@ ILAC_Chessboard::ILAC_Chessboard ( const Mat &image,
                                    const int methodology )
 {
   /* 1. GET CHESSBOARD POINTS IN IMAGE */
-  vector<Point2f> cbPoints;
   try
   {
     Mat g_img; //temp gray image
@@ -109,6 +108,11 @@ ILAC_Chessboard::getSquares ()
 {
   return this->squares;
 }
+vector<Point2f>
+ILAC_Chessboard::getPoints ()
+{
+  return this->cbPoints;
+}
 /*}}} ILAC_Chessboard*/
 
 /*{{{ ILAC_Image*/
@@ -164,20 +168,20 @@ ILAC_Image::calcRefPoints ()
   if ( spheres.size() != 3 ) //FIXME:Just to make sure, should go away.
     throw ILACExUnknownError();
 
-  this->plotCorners.push_back ( Point(0,0) );//FIXME: should be cb->center()
+  this->plotCorners.push_back ( this->calcChessCenter(this->cb->getPoints()) );
   for ( vector<ILAC_Sphere>::iterator sphere = spheres.begin() ;
       sphere != spheres.end() ; ++sphere )
     this->plotCorners.push_back ( (*sphere).getCenter() );
 
   /* 2. ORDER THE POINTS ACCORDINGLY */
-  vector< vector<Point> > quadTypes; /*3 quadrilateral types: 1234,1324,1243 */
+  vector< vector<Point2f> > quadTypes; /*3 quadrilateral types: 1234,1324,1243 */
   for ( int i = 0 ; i < 3 ; i++ )
     quadTypes.push_back ( this->plotCorners );    /* [0] => 1234 */
   std::swap ( quadTypes[1][1], quadTypes[1][2] ); /* [1] => 1324 */
   std::swap ( quadTypes[2][2], quadTypes[2][3] ); /* [2] => 1243 */
 
   bool foundType = false;
-  for ( vector< vector<Point> >::iterator qT = quadTypes.begin() ;
+  for ( vector< vector<Point2f> >::iterator qT = quadTypes.begin() ;
       qT != quadTypes.end() ; ++qT )
     if ( this->calcAngle ( (*qT)[0],(*qT)[1],(*qT)[2] ) < 180
          && this->calcAngle ( (*qT)[1],(*qT)[2],(*qT)[3] ) < 180
@@ -334,7 +338,7 @@ ILAC_Image::check_input ( const string &image, Size &boardSize )
 
 /* Helper function. Calculates the angle made up by A-V-B */
 int
-ILAC_Image::calcAngle ( const Point &V, const Point &A, const Point &B )
+ILAC_Image::calcAngle ( const Point2f &V, const Point2f &A, const Point2f &B )
 {
   /* 1. Calculate the lengths of the oposite lines */
   double a_opp, b_opp, v_opp, retAng;
@@ -344,5 +348,24 @@ ILAC_Image::calcAngle ( const Point &V, const Point &A, const Point &B )
   retAng = (int) acos ( (pow(a_opp,2) + pow(b_opp,2) - pow(v_opp,2))
                         / ( 2 * a_opp * b_opp ) );
   return retAng;
+}
+
+Point2f
+ILAC_Image::calcChessCenter ( vector<Point2f> points )
+{
+  Point2f retVal;
+  double accumWidth=0, accumHeight=0;
+
+  for ( vector<Point2f>::iterator point = points.begin() ;
+        point != points.end() ; point++ )
+  {
+    accumWidth = accumWidth + (double)((*point).x);
+    accumHeight = accumHeight + (double)((*point).y);
+  }
+
+  retVal.x = ceil((double)accumWidth/points.size());
+  retVal.y = ceil((double)accumHeight/points.size());
+
+  return retVal;
 }
 /*}}} ILAC_Image*/

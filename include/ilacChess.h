@@ -31,9 +31,11 @@ public:
 
   vector<int> getAssociation ();
   vector<ILAC_Square> getSquares ();
+  vector<Point2f> getPoints ();
 
 private:
   Size dimension;
+  vector<Point2f> cbPoints;
   vector<int> association;
   vector<ILAC_Square> sampleSquares;
   vector<ILAC_Square> squares; // Data squares.
@@ -64,9 +66,10 @@ class ILAC_Image{
     Mat camMat; //Camera intrinsics
     Mat disMat; //Distortion intrinsics.
     vector<unsigned short> id;
-    vector<Point> plotCorners;
+    vector<Point2f> plotCorners;
     Size dimension;
 
     static void check_input ( const string&, Size& );
-    int calcAngle ( const Point&, const Point&, const Point& );
+    int calcAngle ( const Point2f&, const Point2f&, const Point2f& );
+    Point2f calcChessCenter ( const vector<Point2f> points );
 };
