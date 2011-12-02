@@ -76,3 +76,7 @@ class ILACExLessThanThreeSpheres:public std::exception{
   virtual const char* what() const throw()
     {return "Not enough spheres in image.";}
 };
+
+class ILACExCouldNotCreateQuadType:public std::exception{
+  virtual const char* what() const throw(){return "Quadrilateral strangeness";}
+};

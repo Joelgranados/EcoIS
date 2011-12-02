@@ -47,6 +47,7 @@ class ILAC_Image{
 
     vector<unsigned short> getID ();
     void calcID ();
+    void calcRefPoints ();
     void normalize ( const string, const unsigned int = 80 );
 
     /* Calculate image intrinsics */
@@ -63,7 +64,9 @@ class ILAC_Image{
     Mat camMat; //Camera intrinsics
     Mat disMat; //Distortion intrinsics.
     vector<unsigned short> id;
+    vector<Point> plotCorners;
     Size dimension;
 
     static void check_input ( const string&, Size& );
+    int calcAngle ( const Point&, const Point&, const Point& );
 };

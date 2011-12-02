@@ -145,6 +145,55 @@ ILAC_Image::~ILAC_Image ()
   delete this->cb;
 }
 
+/*
+ * This function sets the plotCorners up.
+ * 1. EXTRACT THE FOUR MARKED POINTS: SPHERES AND CHESSBOARD.
+ * 2. ORDER THE POINTS ACCORDINGLY
+ */
+void
+ILAC_Image::calcRefPoints ()
+{
+  /* 1. EXTRACT THE FOUR MARKED POINTS: SPHERES AND CHESSBOARD. */
+  ILAC_SphereFinder sf;
+  //FIXME: It feels strange using cb->getSquares here.
+  /* 6 is the position of the sample square that contains sphere colors */
+  vector<ILAC_Sphere> spheres = sf.findSpheres (
+      this->cb->getSquares()[6], this->img );
+  if ( spheres.size() > 3 )
+    spheres.erase ( spheres.begin()+3, spheres.end() );
+  if ( spheres.size() != 3 ) //FIXME:Just to make sure, should go away.
+    throw ILACExUnknownError();
+
+  this->plotCorners.push_back ( Point(0,0) );//FIXME: should be cb->center()
+  for ( vector<ILAC_Sphere>::iterator sphere = spheres.begin() ;
+      sphere != spheres.end() ; ++sphere )
+    this->plotCorners.push_back ( (*sphere).getCenter() );
+
+  /* 2. ORDER THE POINTS ACCORDINGLY */
+  vector< vector<Point> > quadTypes; /*3 quadrilateral types: 1234,1324,1243 */
+  for ( int i = 0 ; i < 3 ; i++ )
+    quadTypes.push_back ( this->plotCorners );    /* [0] => 1234 */
+  std::swap ( quadTypes[1][1], quadTypes[1][2] ); /* [1] => 1324 */
+  std::swap ( quadTypes[2][2], quadTypes[2][3] ); /* [2] => 1243 */
+
+  bool foundType = false;
+  for ( vector< vector<Point> >::iterator qT = quadTypes.begin() ;
+      qT != quadTypes.end() ; ++qT )
+    if ( this->calcAngle ( (*qT)[0],(*qT)[1],(*qT)[2] ) < 180
+         && this->calcAngle ( (*qT)[1],(*qT)[2],(*qT)[3] ) < 180
+         && this->calcAngle ( (*qT)[2],(*qT)[3],(*qT)[0] ) < 180
+         && this->calcAngle ( (*qT)[3],(*qT)[0],(*qT)[1] ) < 180 )
+    {
+      /* We choose the order that has no angles greater than 180 (convex) */
+      this->plotCorners = (*qT);
+      foundType = true;
+      break;
+    }
+
+  if ( !foundType )
+    throw ILACExCouldNotCreateQuadType();
+}
+
 void
 ILAC_Image::calcID ()
 {
@@ -283,4 +332,17 @@ ILAC_Image::check_input ( const string &image, Size &boardSize )
     throw ILACExSymmetricalChessboard();
 }
 
+/* Helper function. Calculates the angle made up by A-V-B */
+int
+ILAC_Image::calcAngle ( const Point &V, const Point &A, const Point &B )
+{
+  /* 1. Calculate the lengths of the oposite lines */
+  double a_opp, b_opp, v_opp, retAng;
+  a_opp = sqrt ( pow( (V.x-B.x),2 ) - pow( (V.y-B.y),2 ) );
+  b_opp = sqrt ( pow( (V.x-A.x),2 ) - pow( (V.y-A.y),2 ) );
+  v_opp = sqrt ( pow( (A.x-B.x),2 ) - pow( (A.y-B.y),2 ) );
+  retAng = (int) acos ( (pow(a_opp,2) + pow(b_opp,2) - pow(v_opp,2))
+                        / ( 2 * a_opp * b_opp ) );
+  return retAng;
+}
 /*}}} ILAC_Image*/
