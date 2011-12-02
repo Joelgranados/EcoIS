@@ -50,7 +50,7 @@ class ILAC_Image{
     vector<unsigned short> getID ();
     void calcID ();
     void calcRefPoints ();
-    void normalize ( const string, const unsigned int = 80 );
+    void normalize ( const unsigned int = 80 );
 
     /* Calculate image intrinsics */
     static void calcIntr ( const vector<string>, //image

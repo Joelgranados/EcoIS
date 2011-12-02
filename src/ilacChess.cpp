@@ -122,6 +122,7 @@ ILAC_Image::ILAC_Image (){}
  * 1. INITIALIZE VARIABLES
  * 2. NORMALIZE IMG & INITIALIZE CHESSBOARD
  * 3. CALCULATE IMAGE ID
+ * 4. CALCULATE PLOT CORNERS
  */
 ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
                          const Mat &camMat, const Mat &disMat )
@@ -142,6 +143,9 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
                                    ILAC_Chessboard::CB_MEDIAN );
   /* 3. CALCULATE IMAGE ID */
   this->calcID();
+
+  /* 4. CALCULATE PLOT CORNERS */
+  this->calcRefPoints();
 }
 
 ILAC_Image::~ILAC_Image ()
@@ -254,10 +258,16 @@ ILAC_Image::getID ()
 }
 
 void
-ILAC_Image::normalize ( const string filename_output,
-                        const unsigned int sizeInPixels )
+ILAC_Image::normalize ( const unsigned int sizeInPixels )
 {
-  throw ILACExNotImplemented ();
+  Mat persTrans;
+  Point2f tvsrc[4] = { this->plotCorners[0], this->plotCorners[1],
+                       this->plotCorners[2], this->plotCorners[3] };
+  Point2f tvdst[4] = { Point2f(0,0), Point2f(0,2000),
+                        Point2f(2000,2000), Point2f(2000,0) };
+
+  persTrans = getPerspectiveTransform ( tvsrc, tvdst );
+  warpPerspective ( this->img, this->normImg, persTrans, this->img.size() );
 }
 
 void

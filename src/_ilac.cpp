@@ -113,7 +113,7 @@ IlacCB_process_image ( IlacCB *self, PyObject *args )
   if ( !PyArg_ParseTuple ( args, "is", &squareSize, &outfile ) )
     ILAC_RETERR("Invalid parameters for ilac_calc_process_image.");
 
-  self->ii->normalize ( "whatever" );
+  self->ii->normalize ();
 
   Py_RETURN_TRUE;
 }
