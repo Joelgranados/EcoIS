@@ -108,6 +108,7 @@ ILAC_Chessboard::getSquares ()
 {
   return this->squares;
 }
+
 vector<Point2f>
 ILAC_Chessboard::getPoints ()
 {
