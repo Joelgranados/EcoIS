@@ -170,10 +170,10 @@ ILAC_Image::calcRefPoints ()
   /* 6 is the position of the sample square that contains sphere colors */
   vector<ILAC_Sphere> spheres = sf.findSpheres (
       this->cb->getSquares()[6], this->img );
-  if ( spheres.size() > 3 )
+  if ( spheres.size() < 3 )
+    throw ILACExLessThanThreeSpheres();
+  else if ( spheres.size() > 3 )
     spheres.erase ( spheres.begin()+3, spheres.end() );
-  if ( spheres.size() != 3 ) //FIXME:Just to make sure, should go away.
-    throw ILACExUnknownError();
 
   this->plotCorners.push_back ( this->calcChessCenter(this->cb->getPoints()) );
   for ( vector<ILAC_Sphere>::iterator sphere = spheres.begin() ;
