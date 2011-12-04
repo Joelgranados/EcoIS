@@ -27,11 +27,8 @@ ILAC_Chessboard::ILAC_Chessboard (){}/*Used to initialize.*/
 /*
  * 1. GET CHESSBOARD POINTS IN IMAGE
  * 2. INITIALIZE THE SQUARES VECTOR BASED ON POINTS
- * 3. CLASSIFY DATA SQUARES
  */
-ILAC_Chessboard::ILAC_Chessboard ( const Mat &image,
-                                   const Size &dimension,
-                                   const int methodology )
+ILAC_Chessboard::ILAC_Chessboard ( const Mat &image, const Size &dimension )
 {
   /* 1. GET CHESSBOARD POINTS IN IMAGE */
   try
@@ -56,7 +53,7 @@ ILAC_Chessboard::ILAC_Chessboard ( const Mat &image,
 
   /* 2. INITIALIZE THE SQUARES VECTOR BASED ON POINTS. */
   bool isBlack = true;
-  int numSamples = 6; //FIXME: Generalize this better.
+  //int numSamples = 6; //FIXME: Generalize this better.
 
   for ( int r = 0 ; r < dimension.height-1 ; r++ )
     for ( int c = 0 ; c < dimension.width-1 ; c++ )
@@ -69,22 +66,60 @@ ILAC_Chessboard::ILAC_Chessboard ( const Mat &image,
             cbPoints[ (r*dimension.width)+dimension.width+c+1 ],/*lower right*/
             cbPoints[ (r*dimension.width)+dimension.width+c ], /*lower left*/
             image );
-        if ( this->sampleSquares.size() < numSamples )
+        this->squares.push_back ( tmpSqr );
+        /*if ( this->sampleSquares.size() < numSamples )
           this->sampleSquares.push_back(tmpSqr);
         else
-          this->squares.push_back(tmpSqr);
+          this->squares.push_back(tmpSqr);*/
       }
       isBlack = !isBlack;
     }
 
   if ( this->squares.size() <= 0 )
     throw ILACExChessboardTooSmall ();
+}
 
-  /* 3. CLASSIFY DATA SQUARES*/
+size_t
+ILAC_Chessboard::getSquaresSize ()
+{
+  return this->squares.size();
+}
+
+ILAC_Square
+ILAC_Chessboard::getSquare ( const size_t offset )
+{
+  if ( offset < this->squares.size() )
+    return this->squares[offset];
+  else
+    throw ILACExOutOfBounds();
+}
+
+vector<Point2f>
+ILAC_Chessboard::getPoints ()
+{
+  return this->cbPoints;
+}
+
+ILAC_Chess_SD::ILAC_Chess_SD():ILAC_Chessboard(){}
+
+/*
+ * 1. SPLIT INTO SAMPLES AND DATA.
+ * 2. CLASSIFY DATA SQUARES
+ */
+ILAC_Chess_SD::ILAC_Chess_SD ( const Mat &image,
+                               const Size &dimension,
+                               const int methodology )
+  :ILAC_Chessboard ( image, dimension )
+{
   ILAC_ColorClassifier *cc;
+  vector<ILAC_Square> samples ( this->squares.begin(),
+      this->squares.begin() + ILAC_Chess_SD::numSamples );
+  vector<ILAC_Square> datas ( this->squares.begin() + ILAC_Chess_SD::numSamples,
+      this->squares.end() );
+
   switch (methodology){
     case (CB_MEDIAN):
-      cc = new ILAC_Median_CC (this->sampleSquares, this->squares);
+      cc = new ILAC_Median_CC ( samples, datas );
       break;
     case (CB_MAXLIKELIHOOD):
       throw ILACExNotImplemented();
@@ -97,23 +132,117 @@ ILAC_Chessboard::ILAC_Chessboard ( const Mat &image,
   delete cc;
 }
 
+size_t //static method
+ILAC_Chess_SD::getSamplesSize ()
+{
+  return ILAC_Chess_SD::numSamples;
+}
+
+ILAC_Square
+ILAC_Chess_SD::getSampleSquare ( const size_t offset )
+{
+  if ( offset < ILAC_Chess_SD::numSamples )
+    return this->squares[offset];
+  else
+    throw ILACExOutOfBounds();
+}
+
+size_t
+ILAC_Chess_SD::getDatasSize ()
+{
+  return this->squares.size() - ILAC_Chess_SD::numSamples;
+}
+
+ILAC_Square
+ILAC_Chess_SD::getDataSquare ( const size_t offset )
+{
+  if ( offset < ( this->squares.size() - ILAC_Chess_SD::numSamples ) )
+    return this->squares[ILAC_Chess_SD::numSamples + offset];
+  else
+    throw ILACExOutOfBounds();
+}
+
 vector<int>
-ILAC_Chessboard::getAssociation ()
+ILAC_Chess_SD::getAssociation ()
 {
   return this->association;
 }
 
-vector<ILAC_Square>
-ILAC_Chessboard::getSquares ()
+ILAC_Chess_SSD::ILAC_Chess_SSD():ILAC_Chessboard(){}
+
+/*
+ * 1. SPLIT INTO SAMPLES AND DATA.
+ * 2. CLASSIFY DATA SQUARES
+ */
+ILAC_Chess_SSD::ILAC_Chess_SSD ( const Mat &image,
+                                 const Size &dimension,
+                                 const int methodology )
+  :ILAC_Chessboard ( image, dimension )
 {
-  return this->squares;
+  ILAC_ColorClassifier *cc;
+  vector<ILAC_Square> samples ( this->squares.begin(),
+      this->squares.begin() + ILAC_Chess_SSD::numSamples );
+  vector<ILAC_Square> datas (
+      this->squares.begin() + ILAC_Chess_SSD::numSamples + 1,
+      this->squares.end() );
+
+  switch (methodology){
+    case (CB_MEDIAN):
+      cc = new ILAC_Median_CC ( samples, datas );
+      break;
+    case (CB_MAXLIKELIHOOD):
+      throw ILACExNotImplemented();
+      break;
+    default:
+      throw ILACExInvalidClassifierType();
+  }
+  cc->classify();
+  this->association = cc->getClasses();
+  delete cc;
 }
 
-vector<Point2f>
-ILAC_Chessboard::getPoints ()
+size_t //static method
+ILAC_Chess_SSD::getSamplesSize ()
 {
-  return this->cbPoints;
+  return ILAC_Chess_SSD::numSamples;
 }
+
+ILAC_Square
+ILAC_Chess_SSD::getSampleSquare ( const size_t offset )
+{
+  if ( offset < ILAC_Chess_SSD::numSamples )
+    return this->squares[offset];
+  else
+    throw ILACExOutOfBounds();
+}
+
+size_t
+ILAC_Chess_SSD::getDatasSize ()
+{
+  return this->squares.size() - ILAC_Chess_SSD::numSamples;
+}
+
+ILAC_Square
+ILAC_Chess_SSD::getDataSquare ( const size_t offset )
+{
+  if ( offset < ( this->squares.size() - ILAC_Chess_SSD::numSamples ) )
+    return this->squares[ILAC_Chess_SSD::numSamples + offset];
+  else
+    throw ILACExOutOfBounds();
+}
+
+ILAC_Square&
+ILAC_Chess_SSD::getSphereSquare ()
+{
+  return this->squares[ILAC_Chess_SSD::numSamples+1];
+}
+
+vector<int>
+ILAC_Chess_SSD::getAssociation ()
+{
+  return this->association;
+}
+
 /*}}} ILAC_Chessboard*/
 
 /*{{{ ILAC_Image*/
@@ -167,10 +296,9 @@ ILAC_Image::calcRefPoints ()
 {
   /* 1. EXTRACT THE FOUR MARKED POINTS: SPHERES AND CHESSBOARD. */
   ILAC_SphereFinder sf;
-  //FIXME: It feels strange using cb->getSquares here.
   /* 6 is the position of the sample square that contains sphere colors */
-  vector<ILAC_Sphere> spheres = sf.findSpheres (
-      this->cb->getSquares()[6], this->img );
+  vector<ILAC_Sphere> spheres = sf.findSpheres ( this->cb->getSphereSquare(),
+                                                 this->img );
   if ( spheres.size() < 3 )
     throw ILACExLessThanThreeSpheres();
   else if ( spheres.size() > 3 )
@@ -206,6 +334,7 @@ ILAC_Image::calcRefPoints ()
     throw ILACExCouldNotCreateQuadType();
 }
 
+#include <stdio.h>
 void
 ILAC_Image::calcID ()
 {
@@ -225,6 +354,8 @@ ILAC_Image::calcID ()
 
     /* Don't consider case 2,3,4 because red is on*/
     int r, g, b;
+    fprintf (stderr, "ass %d\n", this->cb->getAssociation()[i]);
+    fprintf (stderr, "ass size %d\n", this->cb->getAssociation().size());
     switch ( this->cb->getAssociation()[i])
     {
       case 0:
@@ -258,9 +389,9 @@ ILAC_Image::calcID ()
 void
 ILAC_Image::initChess ()
 {
-  this->cb = new ILAC_Chessboard ( this->img,
-                                   this->dimension,
-                                   ILAC_Chessboard::CB_MEDIAN );
+  this->cb = new ILAC_Chess_SSD( this->img,
+                                 this->dimension,
+                                 ILAC_Chessboard::CB_MEDIAN );
 }
 
 vector<unsigned short>

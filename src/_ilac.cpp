@@ -92,6 +92,7 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
                                 camMat_cvmat, disMat_cvmat, false );
     self->ii->initChess();
     self->ii->calcID();
+    self->ii->calcRefPoints();
   }catch(ILACExNoChessboardFound){
     PyErr_SetString ( PyExc_StandardError, "Chessboard not found." );
     return -1;

@@ -80,3 +80,7 @@ class ILACExLessThanThreeSpheres:public std::exception{
 class ILACExCouldNotCreateQuadType:public std::exception{
   virtual const char* what() const throw(){return "Quadrilateral strangeness";}
 };
+
+class ILACExOutOfBounds:public std::exception{
+  virtual const char* what() const throw(){return "Out of bounds exception.";}
+};
