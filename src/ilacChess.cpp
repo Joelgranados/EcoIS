@@ -234,7 +234,7 @@ ILAC_Chess_SSD::getDataSquare ( const size_t offset )
 ILAC_Square&
 ILAC_Chess_SSD::getSphereSquare ()
 {
-  return this->squares[ILAC_Chess_SSD::numSamples+1];
+  return this->squares[ILAC_Chess_SSD::numSamples];
 }
 
 vector<int>
