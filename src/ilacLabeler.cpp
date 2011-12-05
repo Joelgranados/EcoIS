@@ -49,7 +49,7 @@ ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
                    getPerspectiveTransform(s,d), t_img.size() );
 }
 
-Mat
+Mat&
 ILAC_Square::getImg ()
 {
   return this->img;

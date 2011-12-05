@@ -32,7 +32,7 @@ class ILAC_Square{
 public:
   ILAC_Square ( const Point2f, const Point2f, const Point2f, const Point2f,
               const Mat& );
-  Mat getImg ();
+  Mat& getImg ();
 
 private:
   Mat img; /* RGB image of the square*/
