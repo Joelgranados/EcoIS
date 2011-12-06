@@ -25,11 +25,14 @@ class ILAC_Image{
   public:
     ILAC_Image ();
     ILAC_Image ( const string&, const Size&,
-                 const Mat&, const Mat&, const bool = true );
+                 const Mat&, const Mat&,
+                 const int, const int,
+                 const bool = true );
     ~ILAC_Image ();
 
     vector<unsigned short> getID ();
     void initChess ();
+    void calcPixPerUU ();
     void calcID ();
     void calcRefPoints ();
     void normalize ( const unsigned int = 80 );
@@ -50,6 +53,15 @@ class ILAC_Image{
     vector<unsigned short> id;
     vector<Point2f> plotCorners;
     Size dimension;
+
+    /*
+     * Pixels per millimeter. Has errors regarding perspective
+     * and overall distortion. We will use it to hint at the
+     * sphere detection.*/
+    double pixPerUU;
+    int sphDiamUU; /* sphere diameter in whatever UNIT */
+    int sqrSideUU; /* size of square in same UNIT as diamUU */
+
 
     static void check_input ( const string&, Size& );
     int calcAngle ( const Point2f&, const Point2f&, const Point2f& );

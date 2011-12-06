@@ -26,11 +26,13 @@ ILAC_Image::ILAC_Image (){}
 /*
  * 1. INITIALIZE VARIABLES
  * 2. INITIALIZE CHESSBOARD
- * 3. CALCULATE IMAGE ID
- * 4. CALCULATE PLOT CORNERS
+ * 3. CALCULATE PIXELS PER MILIMITER
+ * 4. CALCULATE IMAGE ID
+ * 5. CALCULATE PLOT CORNERS
  */
 ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
                          const Mat &camMat, const Mat &disMat,
+                         const int sphDiamUU, const int sqrSideUU,
                          const bool full )
 {
   /* 1. INITIALIZE VARIABLES*/
@@ -38,20 +40,27 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
   this->disMat = disMat;
   this->image_file = image;
   Size tmpsize = boardSize; /* we cant have a const in check_input*/
+                            //FIXME: why dont we just pass this->dim to check?
   check_input ( image, tmpsize );
   this->dimension = tmpsize;
   undistort ( imread( this->image_file ), //always undistort
               this->img, camMat, disMat );
+
+  this->sphDiamUU = sphDiamUU;
+  this->sqrSideUU = sqrSideUU;
 
   if ( full )
   {
     /* 2. INITIALIZE CHESSBOARD*/
     this->initChess ();
 
-    /* 3. CALCULATE IMAGE ID */
+    /* 3. CALCULATE PIXELS PER MILIMITER */
+    this->calcPixPerUU ();
+
+    /* 4. CALCULATE IMAGE ID */
     this->calcID();
 
-    /* 4. CALCULATE PLOT CORNERS */
+    /* 5. CALCULATE PLOT CORNERS */
     this->calcRefPoints();
   }
 }
@@ -59,6 +68,25 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
 ILAC_Image::~ILAC_Image ()
 {
   delete this->cb;
+}
+
+void
+ILAC_Image::calcPixPerUU ()
+{
+  if ( this->cb->getSquaresSize() < 1 )
+    throw ILACExNoChessboardFound ();
+
+  double wAccum = 0, hAccum = 0;
+  for ( int i = 0 ; i < this->cb->getSquaresSize() ; i++ )
+  {
+    wAccum += this->cb->getSquare(i).getImg().size().width;
+    hAccum += this->cb->getSquare(i).getImg().size().height;
+  }
+
+  /* Averate square side size in pixels:
+   * averageSide = (averageWidth + averageHeight) / 2 */
+  double avePixSide = (wAccum + hAccum)/(2*this->cb->getSquaresSize());
+  this->pixPerUU = avePixSide / (double)this->sqrSideUU;
 }
 
 /*

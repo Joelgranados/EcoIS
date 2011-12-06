@@ -89,7 +89,8 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
   /* Instantiate ILAC_Chessboard into an object */
   try{
     self->ii = new ILAC_Image ( image_file, Size(size1,size2),
-                                camMat_cvmat, disMat_cvmat, false );
+                                camMat_cvmat, disMat_cvmat,
+                                4, 10, false );
     self->ii->initChess();
     self->ii->calcID();
     self->ii->calcRefPoints();
