@@ -100,8 +100,9 @@ ILAC_Image::calcRefPoints ()
   /* 1. EXTRACT THE FOUR MARKED POINTS: SPHERES AND CHESSBOARD. */
   ILAC_SphereFinder sf;
   /* 6 is the position of the sample square that contains sphere colors */
-  vector<ILAC_Sphere> spheres = sf.findSpheres ( this->cb->getSphereSquare(),
-                                                 this->img );
+  vector<ILAC_Sphere> spheres =
+    sf.findSpheres ( this->cb->getSphereSquare(), this->img,
+                     this->sphDiamUU*this->pixPerUU );
   if ( spheres.size() < 3 )
     throw ILACExLessThanThreeSpheres();
   else if ( spheres.size() > 3 )

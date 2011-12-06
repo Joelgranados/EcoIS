@@ -90,8 +90,9 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
   try{
     self->ii = new ILAC_Image ( image_file, Size(size1,size2),
                                 camMat_cvmat, disMat_cvmat,
-                                4, 10, false );
+                                40, 10, false );
     self->ii->initChess();
+    self->ii->calcPixPerUU ();
     self->ii->calcID();
     self->ii->calcRefPoints();
   }catch(ILACExNoChessboardFound){

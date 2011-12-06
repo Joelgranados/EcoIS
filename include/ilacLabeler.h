@@ -86,5 +86,5 @@ class ILAC_SphereFinder{
     ILAC_SphereFinder();
 
     /* Might be a good idea to virtualize in the future */
-    vector<ILAC_Sphere> findSpheres ( ILAC_Square&, Mat& );
+    vector<ILAC_Sphere> findSpheres ( ILAC_Square&, Mat&, const size_t );
 };

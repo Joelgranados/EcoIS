@@ -261,7 +261,8 @@ ILAC_SphereFinder::ILAC_SphereFinder () {}
  * 4. DETECT THE CIRCLES
  */
 vector<ILAC_Sphere>
-ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img )
+ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
+                                 const size_t pixSphDiam )
 {
   /* 1. CALCULATE RANGE FROM MEAN AND STANDARD DEVIATION */
   Mat mean, stddev;
@@ -295,21 +296,36 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img )
   inRange(himg, lowerb, upperb, mask);
 
   /* 3. SMOOTH STUFF USING MORPHOLOGY */
-  /* Playing with the size of the structuring elements might be good */
   {
-    Mat se1 = getStructuringElement ( MORPH_RECT, Size(21,10) );
-    Mat se2 = getStructuringElement ( MORPH_RECT, Size(11,5) );
-    morphologyEx ( mask, mask, MORPH_CLOSE, se1 );
-    morphologyEx ( mask, mask, MORPH_OPEN, se2 );
+    /*
+     * Morphological open is 1.Erode and 2.Dilate. We use 1/4 of the sphere
+     * diameter in the hope that its big enough to clean the noise, but not big
+     * enough to remove the big sphere blob.
+     */
+    int openSize = pixSphDiam/4;
+    Mat se = getStructuringElement ( MORPH_ELLIPSE, Size(openSize,openSize) );
+    morphologyEx ( mask, mask, MORPH_OPEN, se );
+
+
+    /*
+     * We dilate with half of the sphere diameter and hope for a blob
+     * that is approx double the radius of the original blob. The edges are more
+     * roundy this way.
+     */
+    int dilateSize = pixSphDiam/2;
+    se = getStructuringElement ( MORPH_ELLIPSE,
+                                 Size(dilateSize,dilateSize) );
+    dilate ( mask, mask, se );
   }
 
   /* 4. DETECT THE CIRCLES */
   /* Play with the arguments for HoughCircles. */
   vector<Vec3f> circles;
   vector<ILAC_Sphere> spheres;
+  int minCircDist = 3*pixSphDiam/2;
 
   GaussianBlur ( mask, mask, Size(15, 15), 2, 2 );
-  HoughCircles ( mask, circles, CV_HOUGH_GRADIENT, 2, mask.rows/10, 100, 40);
+  HoughCircles ( mask, circles, CV_HOUGH_GRADIENT, 2, minCircDist, 100, 40);
 
   for( size_t i = 0; i < circles.size(); i++ )
   {
