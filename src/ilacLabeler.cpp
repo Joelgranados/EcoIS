@@ -332,17 +332,11 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
     Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
     int radius = cvRound(circles[i][2]);
     ILAC_Sphere temp ( &img, center, radius );
+    spheres.push_back(temp);
 
-    /* Add spheres in descending order */
-    if ( spheres.size() == 0 )
-      spheres.push_back ( temp );
-    else
-      for ( size_t j = 0 ; j < spheres.size() ; j++ )
-        if ( temp.getRadius() > spheres[j].getRadius() )
-        {
-          spheres.insert ( spheres.begin()+j, temp );
-          break;
-        }
+    for ( int j = i ;
+         j > 0 && spheres[j].getRadius() < spheres[j-1].getRadius() ; j-- )
+      std::swap( spheres[j], spheres[j-1] );
   }
 
   if ( spheres.size() < 3 )
