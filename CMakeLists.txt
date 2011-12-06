@@ -49,7 +49,11 @@ if(DEFINE_DEBUG)
     message("Build type is " ${CMAKE_BUILD_TYPE})
 endif(DEFINE_DEBUG)
 
-add_library (_ilac SHARED src/ilacLabeler.cpp src/ilacChess.cpp src/_ilac.cpp)
+add_library (_ilac SHARED
+        src/ilacLabeler.cpp
+        src/ilacChess.cpp
+        src/ilacImage.cpp
+        src/_ilac.cpp)
 set_target_properties (_ilac PROPERTIES PREFIX "") #get rid of the lib*
 
 # Make sure we link to the found opencv stuff.

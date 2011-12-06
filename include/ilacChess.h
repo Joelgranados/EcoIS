@@ -76,38 +76,3 @@ class ILAC_Chess_SSD:public ILAC_Chessboard{
   private:
     vector<int> association;
 };
-
-class ILAC_Image{
-  public:
-    ILAC_Image ();
-    ILAC_Image ( const string&, const Size&,
-                 const Mat&, const Mat&, const bool = true );
-    ~ILAC_Image ();
-
-    vector<unsigned short> getID ();
-    void initChess ();
-    void calcID ();
-    void calcRefPoints ();
-    void normalize ( const unsigned int = 80 );
-
-    /* Calculate image intrinsics */
-    static void calcIntr ( const vector<string>, //image
-                           const unsigned int, //size1
-                           const unsigned int, //size2
-                           Mat&, Mat& );
-
-  private:
-    ILAC_Chess_SSD *cb;
-    string image_file;
-    Mat img; //Original image
-    Mat normImg; //Normalized image
-    Mat camMat; //Camera intrinsics
-    Mat disMat; //Distortion intrinsics.
-    vector<unsigned short> id;
-    vector<Point2f> plotCorners;
-    Size dimension;
-
-    static void check_input ( const string&, Size& );
-    int calcAngle ( const Point2f&, const Point2f&, const Point2f& );
-    Point2f calcChessCenter ( const vector<Point2f> points );
-};

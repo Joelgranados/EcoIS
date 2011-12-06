@@ -20,8 +20,8 @@
 #include <Python.h>
 #include <structmember.h>
 #include <opencv2/opencv.hpp>
-#include "ilacChess.h"
 #include "ilacConfig.h"
+#include "ilacImage.h"
 
 #define ILAC_RETERR( message ) \
   { \
