@@ -267,8 +267,8 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img )
   Mat mean, stddev;
   {/* Isolate the Hue */
     Mat tmpImg;
-    cvtColor ( square.getImg(), tmpImg, CV_BGR2HSV_FULL );
     vector<Mat> tmp_dim;
+    cvtColor ( square.getImg(), tmpImg, CV_BGR2HSV_FULL );
     split( tmpImg, tmp_dim );
     tmpImg = tmp_dim[0];
     meanStdDev ( tmpImg, mean, stddev );
@@ -282,8 +282,17 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img )
   Mat upperb = mean + stddev;
 
   /* 2. CREATE A MASK FROM THE RANGE */
+  Mat himg;
+  {
+    Mat tmpImg;
+    vector<Mat> tmp_dim;
+    cvtColor ( img, tmpImg, CV_BGR2HSV_FULL );
+    split ( tmpImg, tmp_dim );
+    himg = tmp_dim[0];
+  }
+
   Mat mask = Mat::ones(img.rows, img.cols, CV_8UC1);
-  inRange(img, lowerb, upperb, mask);
+  inRange(himg, lowerb, upperb, mask);
 
   /* 3. SMOOTH STUFF USING MORPHOLOGY */
   /* Playing with the size of the structuring elements might be good */
