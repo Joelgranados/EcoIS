@@ -67,10 +67,6 @@ ILAC_Chessboard::ILAC_Chessboard ( const Mat &image, const Size &dimension )
             cbPoints[ (r*dimension.width)+dimension.width+c ], /*lower left*/
             image );
         this->squares.push_back ( tmpSqr );
-        /*if ( this->sampleSquares.size() < numSamples )
-          this->sampleSquares.push_back(tmpSqr);
-        else
-          this->squares.push_back(tmpSqr);*/
       }
       isBlack = !isBlack;
     }
