@@ -53,8 +53,6 @@ ILAC_Chessboard::ILAC_Chessboard ( const Mat &image, const Size &dimension )
 
   /* 2. INITIALIZE THE SQUARES VECTOR BASED ON POINTS. */
   bool isBlack = true;
-  //int numSamples = 6; //FIXME: Generalize this better.
-
   for ( int r = 0 ; r < dimension.height-1 ; r++ )
     for ( int c = 0 ; c < dimension.width-1 ; c++ )
     {
