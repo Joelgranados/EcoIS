@@ -23,39 +23,40 @@
 using namespace cv;
 
 class ILAC_Chessboard{
-public:
-  enum { CB_MEDIAN, CB_MAXLIKELIHOOD };
+  public:
+    enum { CB_MEDIAN, CB_MAXLIKELIHOOD };
 
-  ILAC_Chessboard ();
-  ILAC_Chessboard ( const Mat&, const Size& );
+    ILAC_Chessboard ();
+    ILAC_Chessboard ( const Mat&, const Size& );
 
-  vector<Point2f> getPoints ();
-  size_t getSquaresSize ();
-  ILAC_Square getSquare ( const size_t );
+    vector<Point2f> getPoints ();
 
-protected:
-  Size dimension;
-  vector<Point2f> cbPoints;
-  vector<ILAC_Square> squares; // Data squares.
+    size_t getSquaresSize ();
+    static size_t getSamplesSize ();
+    size_t getDatasSize ();
+
+    ILAC_Square getSquare ( const size_t );
+    ILAC_Square getSampleSquare ( const size_t );
+    ILAC_Square getDataSquare ( const size_t );
+
+    vector<int> getAssociation ();
+
+    static const size_t numSamples = 6;
+
+  protected:
+    vector<ILAC_Square> squares; // Data squares.
+    vector<int> association;
+
+  private:
+    Size dimension;
+    vector<Point2f> cbPoints;
 };
 
-//FIXME: We should be able to put ILAC_Chess_SD and ILAC_Chess_SSD together.
 /* ILAC Chessboard Sampels and Data (SD) */
 class ILAC_Chess_SD:public ILAC_Chessboard{
   public:
     ILAC_Chess_SD ();
     ILAC_Chess_SD ( const Mat&, const Size&, const int );
-
-    ILAC_Square getSampleSquare ( const size_t );
-    size_t getDatasSize ();
-    ILAC_Square getDataSquare ( const size_t );
-    vector<int> getAssociation ();
-
-    static size_t getSamplesSize ();
-    static const size_t numSamples = 6;
-
-  private:
-    vector<int> association;
 };
 
 /* ILAC Chessboard Sample, Shpere, Data (SSD) */
@@ -64,15 +65,7 @@ class ILAC_Chess_SSD:public ILAC_Chessboard{
     ILAC_Chess_SSD ();
     ILAC_Chess_SSD ( const Mat&, const Size&, const int );
 
-    ILAC_Square getSampleSquare ( const size_t );
     size_t getDatasSize ();
     ILAC_Square getDataSquare ( const size_t );
-    vector<int> getAssociation ();
     ILAC_Square& getSphereSquare ();
-
-    static size_t getSamplesSize ();
-    static const size_t numSamples = 6;
-
-  private:
-    vector<int> association;
 };

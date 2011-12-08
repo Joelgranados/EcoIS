@@ -28,6 +28,7 @@ ILAC_Chessboard::ILAC_Chessboard (){}/*Used to initialize.*/
  * 2. INITIALIZE THE SQUARES VECTOR BASED ON POINTS
  */
 ILAC_Chessboard::ILAC_Chessboard ( const Mat &image, const Size &dimension )
+  :dimension(dimension), association()
 {
   /* 1. GET CHESSBOARD POINTS IN IMAGE */
   try
@@ -80,6 +81,18 @@ ILAC_Chessboard::getSquaresSize ()
   return this->squares.size();
 }
 
+size_t //static method
+ILAC_Chessboard::getSamplesSize ()
+{
+  return ILAC_Chessboard::numSamples;
+}
+
+size_t
+ILAC_Chessboard::getDatasSize ()
+{
+  return this->squares.size() - ILAC_Chessboard::numSamples;
+}
+
 ILAC_Square
 ILAC_Chessboard::getSquare ( const size_t offset )
 {
@@ -89,10 +102,34 @@ ILAC_Chessboard::getSquare ( const size_t offset )
     throw ILACExOutOfBounds();
 }
 
+ILAC_Square
+ILAC_Chessboard::getSampleSquare ( const size_t offset )
+{
+  if ( offset < ILAC_Chessboard::numSamples )
+    return this->squares[offset];
+  else
+    throw ILACExOutOfBounds();
+}
+
+ILAC_Square
+ILAC_Chessboard::getDataSquare ( const size_t offset )
+{
+  if ( offset < ( this->squares.size() - ILAC_Chessboard::numSamples ) )
+    return this->squares[ILAC_Chessboard::numSamples + offset];
+  else
+    throw ILACExOutOfBounds();
+}
+
 vector<Point2f>
 ILAC_Chessboard::getPoints ()
 {
   return this->cbPoints;
+}
+
+vector<int>
+ILAC_Chessboard::getAssociation ()
+{
+  return this->association;
 }
 
 ILAC_Chess_SD::ILAC_Chess_SD():ILAC_Chessboard(){}
@@ -125,42 +162,6 @@ ILAC_Chess_SD::ILAC_Chess_SD ( const Mat &image,
   cc->classify();
   this->association = cc->getClasses();
   delete cc;
-}
-
-size_t //static method
-ILAC_Chess_SD::getSamplesSize ()
-{
-  return ILAC_Chess_SD::numSamples;
-}
-
-ILAC_Square
-ILAC_Chess_SD::getSampleSquare ( const size_t offset )
-{
-  if ( offset < ILAC_Chess_SD::numSamples )
-    return this->squares[offset];
-  else
-    throw ILACExOutOfBounds();
-}
-
-size_t
-ILAC_Chess_SD::getDatasSize ()
-{
-  return this->squares.size() - ILAC_Chess_SD::numSamples;
-}
-
-ILAC_Square
-ILAC_Chess_SD::getDataSquare ( const size_t offset )
-{
-  if ( offset < ( this->squares.size() - ILAC_Chess_SD::numSamples ) )
-    return this->squares[ILAC_Chess_SD::numSamples + offset];
-  else
-    throw ILACExOutOfBounds();
-}
-
-vector<int>
-ILAC_Chess_SD::getAssociation ()
-{
-  return this->association;
 }
 
 ILAC_Chess_SSD::ILAC_Chess_SSD():ILAC_Chessboard(){}
@@ -196,32 +197,19 @@ ILAC_Chess_SSD::ILAC_Chess_SSD ( const Mat &image,
   delete cc;
 }
 
-size_t //static method
-ILAC_Chess_SSD::getSamplesSize ()
-{
-  return ILAC_Chess_SSD::numSamples;
-}
-
-ILAC_Square
-ILAC_Chess_SSD::getSampleSquare ( const size_t offset )
-{
-  if ( offset < ILAC_Chess_SSD::numSamples )
-    return this->squares[offset];
-  else
-    throw ILACExOutOfBounds();
-}
-
 size_t
 ILAC_Chess_SSD::getDatasSize ()
 {
-  return this->squares.size() - ILAC_Chess_SSD::numSamples;
+  /* Minus 1 because of the sphere square */
+  return this->squares.size() - ILAC_Chess_SSD::numSamples - 1;
 }
 
 ILAC_Square
 ILAC_Chess_SSD::getDataSquare ( const size_t offset )
 {
   if ( offset < ( this->squares.size() - ILAC_Chess_SSD::numSamples ) )
-    return this->squares[ILAC_Chess_SSD::numSamples + offset];
+    /* Plus 1 because of the sphere square */
+    return this->squares[ILAC_Chess_SSD::numSamples + 1 + offset];
   else
     throw ILACExOutOfBounds();
 }
@@ -231,11 +219,4 @@ ILAC_Chess_SSD::getSphereSquare ()
 {
   return this->squares[ILAC_Chess_SSD::numSamples];
 }
-
-vector<int>
-ILAC_Chess_SSD::getAssociation ()
-{
-  return this->association;
-}
-
 /*}}} ILAC_Chessboard*/
