@@ -31,10 +31,10 @@ class IDCalc_SimpleCalc(unittest.TestCase):
                       0.004686710353697188,
                       8.29981714263666e-05,
                       1.8496002163239513]
-        self.image_file = "images/chessboard1.jpg"
+        self.image_file = "images/chessSpheres1.jpg"
 
     def testOutput (self):
         import _ilac
         icb = _ilac.IlacCB(self.image_file, 5, 6, self.camMat, self.disMat)
         id = icb.img_id()
-        self.assertEqual ( id, [4] )
+        self.assertEqual ( id, [24] )
