@@ -94,7 +94,6 @@ ILAC_Image::calcPixPerUU ()
  * 1. EXTRACT THE FOUR MARKED POINTS: SPHERES AND CHESSBOARD.
  * 2. ORDER THE POINTS ACCORDINGLY
  */
-#include <stdio.h>
 void
 ILAC_Image::calcRefPoints ()
 {
