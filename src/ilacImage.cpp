@@ -116,8 +116,11 @@ ILAC_Image::calcRefPoints ()
     tmpCor.push_back ( (*sphere).getCenter() );
 
   /* 2. ORDER THE POINTS ACCORDINGLY */
-  //FIXME: is it clockwise or counter that we need?????
-  convexHull ( tmpCor, this->plotCorners );
+  convexHull ( tmpCor, this->plotCorners ); /*counter clockwise by default*/
+  while ( this->plotCorners[0] == tmpCor[0] ) /* put chessboard at [0]*/
+    rotate(this->plotCorners.begin(),
+           this->plotCorners.end(),
+           this->plotCorners.end() );
 }
 
 void
