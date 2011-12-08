@@ -35,8 +35,9 @@ class ILAC_Image{
     void calcPixPerUU ();
     void calcID ();
     void calcRefPoints ();
-    void normalize ( const unsigned int = 80 );
+    void normalize ();
 
+    void saveNormalized ( const string& );
     /* Calculate image intrinsics */
     static void calcIntr ( const vector<string>, //image
                            const unsigned int, //size1

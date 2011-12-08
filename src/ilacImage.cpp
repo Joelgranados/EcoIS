@@ -94,12 +94,14 @@ ILAC_Image::calcPixPerUU ()
  * 1. EXTRACT THE FOUR MARKED POINTS: SPHERES AND CHESSBOARD.
  * 2. ORDER THE POINTS ACCORDINGLY
  */
+#include <stdio.h>
 void
 ILAC_Image::calcRefPoints ()
 {
   /* 1. EXTRACT THE FOUR MARKED POINTS: SPHERES AND CHESSBOARD. */
   ILAC_SphereFinder sf;
-  /* 6 is the position of the sample square that contains sphere colors */
+  vector<Point2f> tmpCor; /* Temp Corners */
+
   vector<ILAC_Sphere> spheres =
     sf.findSpheres ( this->cb->getSphereSquare(), this->img,
                      this->sphDiamUU*this->pixPerUU );
@@ -108,34 +110,14 @@ ILAC_Image::calcRefPoints ()
   else if ( spheres.size() > 3 )
     spheres.erase ( spheres.begin()+3, spheres.end() );
 
-  this->plotCorners.push_back ( this->calcChessCenter(this->cb->getPoints()) );
+  tmpCor.push_back ( this->calcChessCenter(this->cb->getPoints()) );
   for ( vector<ILAC_Sphere>::iterator sphere = spheres.begin() ;
       sphere != spheres.end() ; ++sphere )
-    this->plotCorners.push_back ( (*sphere).getCenter() );
+    tmpCor.push_back ( (*sphere).getCenter() );
 
   /* 2. ORDER THE POINTS ACCORDINGLY */
-  vector< vector<Point2f> > quadTypes; /*3 quadrilateral types: 1234,1324,1243 */
-  for ( int i = 0 ; i < 3 ; i++ )
-    quadTypes.push_back ( this->plotCorners );    /* [0] => 1234 */
-  std::swap ( quadTypes[1][1], quadTypes[1][2] ); /* [1] => 1324 */
-  std::swap ( quadTypes[2][2], quadTypes[2][3] ); /* [2] => 1243 */
-
-  bool foundType = false;
-  for ( vector< vector<Point2f> >::iterator qT = quadTypes.begin() ;
-      qT != quadTypes.end() ; ++qT )
-    if ( this->calcAngle ( (*qT)[0],(*qT)[1],(*qT)[2] ) < 180
-         && this->calcAngle ( (*qT)[1],(*qT)[2],(*qT)[3] ) < 180
-         && this->calcAngle ( (*qT)[2],(*qT)[3],(*qT)[0] ) < 180
-         && this->calcAngle ( (*qT)[3],(*qT)[0],(*qT)[1] ) < 180 )
-    {
-      /* We choose the order that has no angles greater than 180 (convex) */
-      this->plotCorners = (*qT);
-      foundType = true;
-      break;
-    }
-
-  if ( !foundType )
-    throw ILACExCouldNotCreateQuadType();
+  //FIXME: is it clockwise or counter that we need?????
+  convexHull ( tmpCor, this->plotCorners );
 }
 
 void
@@ -202,16 +184,24 @@ ILAC_Image::getID ()
 }
 
 void
-ILAC_Image::normalize ( const unsigned int sizeInPixels )
+ILAC_Image::normalize ()
 {
   Mat persTrans;
   Point2f tvsrc[4] = { this->plotCorners[0], this->plotCorners[1],
                        this->plotCorners[2], this->plotCorners[3] };
+  //FIXME: the end size should be calculated differently.
   Point2f tvdst[4] = { Point2f(0,0), Point2f(0,2000),
                         Point2f(2000,2000), Point2f(2000,0) };
 
   persTrans = getPerspectiveTransform ( tvsrc, tvdst );
   warpPerspective ( this->img, this->normImg, persTrans, this->img.size() );
+}
+
+void
+ILAC_Image::saveNormalized ( const string &fileName )
+{
+  //FIXME: check to see if the file already exists.
+  imwrite ( fileName, this->normImg );
 }
 
 void

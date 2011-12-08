@@ -112,13 +112,12 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
 static PyObject*
 IlacCB_process_image ( IlacCB *self, PyObject *args )
 {
-  int squareSize; /*squareSize is in pixels.*/
   char *outfile;
-
-  if ( !PyArg_ParseTuple ( args, "is", &squareSize, &outfile ) )
+  if ( !PyArg_ParseTuple ( args, "s", &outfile ) )
     ILAC_RETERR("Invalid parameters for ilac_calc_process_image.");
 
   self->ii->normalize ();
+  self->ii->saveNormalized ( outfile );
 
   Py_RETURN_TRUE;
 }
