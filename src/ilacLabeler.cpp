@@ -50,25 +50,17 @@ ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
 }
 
 Mat&
-ILAC_Square::getImg ()
-{
-  return this->img;
-}
+ILAC_Square::getImg () { return this->img; }
 /*}}} ILAC_Square*/
 
 /*{{{ ILAC_ColorClassifiers*/
 ILAC_ColorClassifier::ILAC_ColorClassifier
   ( const vector<ILAC_Square>& samples, const vector<ILAC_Square>& data )
   :samples(samples), data(data), classes()
-{
-  this->classes.resize(this->data.size());
-}
+{ this->classes.resize(this->data.size()); }
 
 vector<int>
-ILAC_ColorClassifier::getClasses ()
-{
-  return this->classes;
-}
+ILAC_ColorClassifier::getClasses () { return this->classes; }
 
 /*
  * Sample colors should be ordered: red, yellow, green, cyan, blue, magenta.
@@ -226,22 +218,13 @@ ILAC_Sphere::ILAC_Sphere
   :img((Mat*)img),center(center), radius(radius){}
 
 Mat*
-ILAC_Sphere::getImg()
-{
-  return this->img;
-}
+ILAC_Sphere::getImg() { return this->img; }
 
 Point
-ILAC_Sphere::getCenter()
-{
-  return this->center;
-}
+ILAC_Sphere::getCenter() { return this->center; }
 
 int
-ILAC_Sphere::getRadius()
-{
-  return this->radius;
-}
+ILAC_Sphere::getRadius() { return this->radius; }
 
 ILAC_SphereFinder::ILAC_SphereFinder () {}
 

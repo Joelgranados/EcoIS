@@ -76,22 +76,14 @@ ILAC_Chessboard::ILAC_Chessboard ( const Mat &image, const Size &dimension )
 }
 
 size_t
-ILAC_Chessboard::getSquaresSize ()
-{
-  return this->squares.size();
-}
+ILAC_Chessboard::getSquaresSize () { return this->squares.size(); }
 
 size_t //static method
-ILAC_Chessboard::getSamplesSize ()
-{
-  return ILAC_Chessboard::numSamples;
-}
+ILAC_Chessboard::getSamplesSize () { return ILAC_Chessboard::numSamples; }
 
 size_t
 ILAC_Chessboard::getDatasSize ()
-{
-  return this->squares.size() - ILAC_Chessboard::numSamples;
-}
+{ return this->squares.size() - ILAC_Chessboard::numSamples; }
 
 ILAC_Square
 ILAC_Chessboard::getSquare ( const size_t offset )
@@ -121,16 +113,10 @@ ILAC_Chessboard::getDataSquare ( const size_t offset )
 }
 
 vector<Point2f>
-ILAC_Chessboard::getPoints ()
-{
-  return this->cbPoints;
-}
+ILAC_Chessboard::getPoints () { return this->cbPoints; }
 
 vector<int>
-ILAC_Chessboard::getAssociation ()
-{
-  return this->association;
-}
+ILAC_Chessboard::getAssociation () { return this->association; }
 
 ILAC_Chess_SD::ILAC_Chess_SD():ILAC_Chessboard(){}
 
@@ -216,7 +202,5 @@ ILAC_Chess_SSD::getDataSquare ( const size_t offset )
 
 ILAC_Square&
 ILAC_Chess_SSD::getSphereSquare ()
-{
-  return this->squares[ILAC_Chess_SSD::numSamples];
-}
+{ return this->squares[ILAC_Chess_SSD::numSamples]; }
 /*}}} ILAC_Chessboard*/

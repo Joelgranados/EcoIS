@@ -59,10 +59,7 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
   }
 }
 
-ILAC_Image::~ILAC_Image ()
-{
-  delete this->cb;
-}
+ILAC_Image::~ILAC_Image () { delete this->cb; }
 
 void
 ILAC_Image::calcPixPerUU ()
@@ -174,10 +171,7 @@ ILAC_Image::initChess ()
 }
 
 vector<unsigned short>
-ILAC_Image::getID ()
-{
-  return this->id;
-}
+ILAC_Image::getID () { return this->id; }
 
 void
 ILAC_Image::normalize ()
