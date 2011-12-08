@@ -59,9 +59,8 @@ ILAC_Square::getImg ()
 /*{{{ ILAC_ColorClassifiers*/
 ILAC_ColorClassifier::ILAC_ColorClassifier
   ( const vector<ILAC_Square>& samples, const vector<ILAC_Square>& data )
+  :samples(samples), data(data), classes()
 {
-  this->samples = samples;
-  this->data = data;
   this->classes.resize(this->data.size());
 }
 
@@ -219,20 +218,12 @@ ILAC_Median_CC::calcHueMedian ( ILAC_Square &square )
 
 /*{{{ ILAC_Sphere and related*/
 ILAC_Sphere::ILAC_Sphere ()
-{
-  this->img = NULL;
-  this->center = Point(0,0);
-  this->radius = 0;
-}
+  :img(NULL), center(Point(0,0)), radius(0){}
 
 
 ILAC_Sphere::ILAC_Sphere
   ( const Mat *img, const Point center, const int radius)
-{
-  this->img = (Mat*)img;
-  this->center = (Point)center;
-  this->radius = (int)radius;
-}
+  :img((Mat*)img),center(center), radius(radius){}
 
 Mat*
 ILAC_Sphere::getImg()

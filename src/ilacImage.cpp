@@ -34,20 +34,14 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
                          const Mat &camMat, const Mat &disMat,
                          const int sphDiamUU, const int sqrSideUU,
                          const bool full )
+  :camMat(camMat),disMat(disMat),image_file(image),
+   sphDiamUU(sphDiamUU),sqrSideUU(sqrSideUU)
 {
   /* 1. INITIALIZE VARIABLES*/
-  this->camMat = camMat;
-  this->disMat = disMat;
-  this->image_file = image;
-  Size tmpsize = boardSize; /* we cant have a const in check_input*/
-                            //FIXME: why dont we just pass this->dim to check?
-  check_input ( image, tmpsize );
-  this->dimension = tmpsize;
-  undistort ( imread( this->image_file ), //always undistort
-              this->img, camMat, disMat );
-
-  this->sphDiamUU = sphDiamUU;
-  this->sqrSideUU = sqrSideUU;
+  this->dimension.width = max ( boardSize.width, boardSize.height );
+  this->dimension.height = min ( boardSize.width, boardSize.height );
+  check_input ( image, this->dimension );
+  undistort ( imread(this->image_file), this->img, camMat, disMat );
 
   if ( full )
   {
@@ -269,14 +263,6 @@ ILAC_Image::check_input ( const string &image, Size &boardSize )
   struct stat file_stat;
   if ( stat ( image.data(), &file_stat ) != 0 )
     throw ILACExFileError();
-
-  // Check for width > height
-  if ( boardSize.height > boardSize.width )
-  {
-    unsigned int temp = boardSize.height;
-    boardSize.height = boardSize.width;
-    boardSize.width = temp;
-  }
 
   /* We need a chessboard of odd dimensions (6,5 for example).  This gives us
    * a chessboard with only one symmetry axis.  We use this in order to identify
