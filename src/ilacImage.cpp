@@ -190,14 +190,17 @@ void
 ILAC_Image::normalize ()
 {
   Mat persTrans;
+  int width = ILAC_Image::normWidth;
+  int height = width/ILAC_Image::normRatio;
+
   Point2f tvsrc[4] = { this->plotCorners[0], this->plotCorners[1],
                        this->plotCorners[2], this->plotCorners[3] };
-  //FIXME: the end size should be calculated differently.
-  Point2f tvdst[4] = { Point2f(0,0), Point2f(0,2000),
-                        Point2f(2000,2000), Point2f(2000,0) };
+  Point2f tvdst[4] = { Point2f(height,0), Point2f(height,width),
+                       Point2f(0,width), Point2f(0,0) };
 
+  Size endSize(height,width); /* Size(rows,cols)*/
   persTrans = getPerspectiveTransform ( tvsrc, tvdst );
-  warpPerspective ( this->img, this->normImg, persTrans, this->img.size() );
+  warpPerspective ( this->img, this->normImg, persTrans, endSize );
 }
 
 void

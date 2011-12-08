@@ -58,11 +58,27 @@ class ILAC_Image{
     /*
      * Pixels per millimeter. Has errors regarding perspective
      * and overall distortion. We will use it to hint at the
-     * sphere detection.*/
+     * sphere detection.
+     */
     double pixPerUU;
     int sphDiamUU; /* sphere diameter in whatever UNIT */
     int sqrSideUU; /* size of square in same UNIT as diamUU */
 
+    /*
+     * The normWidth variable is the width of the normalized image. It can
+     * become non-static in the future. The number 5000 is selected in hope that
+     * most images will have a smaller width. For large images, the normalization
+     * process will not lose resolution. For smaller images, it will replace
+     * non-existing pixels with extrapolations.
+     */
+    static const int normWidth = 5000;
+
+    /*
+     * The relation between width and height in the normalized image. This does
+     * not have to do much with the camera and more to do with the shape of the
+     * plot. Best case scenario: the plot has normRatio as well.
+     */
+    static const int normRatio = 1.5;
 
     static void check_input ( const string&, Size& );
     int calcAngle ( const Point2f&, const Point2f&, const Point2f& );
