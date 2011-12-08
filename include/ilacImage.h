@@ -37,7 +37,7 @@ class ILAC_Image{
     void calcRefPoints ();
     void normalize ();
 
-    void saveNormalized ( const string& );
+    void saveNormalized ( const string&, const bool = false );
     /* Calculate image intrinsics */
     static void calcIntr ( const vector<string>, //image
                            const unsigned int, //size1

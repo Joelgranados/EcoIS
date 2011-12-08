@@ -191,9 +191,14 @@ ILAC_Image::normalize ()
 }
 
 void
-ILAC_Image::saveNormalized ( const string &fileName )
+ILAC_Image::saveNormalized ( const string &fileName, const bool overwrite )
 {
-  //FIXME: check to see if the file already exists.
+  if ( !overwrite )
+  {
+    struct stat file_stat;
+    if ( stat ( fileName.data(), &file_stat ) == 0 )
+      throw ILACExFileError(); /* Do not overwrite */
+  }
   imwrite ( fileName, this->normImg );
 }
 
@@ -298,4 +303,3 @@ ILAC_Image::calcChessCenter ( vector<Point2f> points )
   return retVal;
 }
 /*}}} ILAC_Image*/
-
