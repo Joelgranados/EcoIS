@@ -35,6 +35,7 @@ class IDCalc_SimpleCalc(unittest.TestCase):
 
     def testOutput (self):
         import _ilac
-        icb = _ilac.IlacCB(self.image_file, 5, 6, self.camMat, self.disMat)
+        icb = _ilac.IlacCB(self.image_file, 5, 6, self.camMat, self.disMat,
+            10, 40)
         id = icb.img_id()
         self.assertEqual ( id, [24] )

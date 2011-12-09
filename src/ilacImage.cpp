@@ -32,7 +32,7 @@ ILAC_Image::ILAC_Image (){}
  */
 ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
                          const Mat &camMat, const Mat &disMat,
-                         const int sphDiamUU, const int sqrSideUU,
+                         const int sqrSideUU, const int sphDiamUU,
                          const bool full )
   :camMat(camMat), disMat(disMat), image_file(image),
    sphDiamUU(sphDiamUU), sqrSideUU(sqrSideUU),

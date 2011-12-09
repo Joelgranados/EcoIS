@@ -58,7 +58,8 @@ static int
 IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
 {
   char *image_file;
-  int size1, size2;
+  int sideCorners1, sideCorners2;
+  int sqrSize, sphSize;
   PyObject *camMat_pylist, *disMat_pylist;
   Mat camMat_cvmat, disMat_cvmat;
 
@@ -67,8 +68,9 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
     return 0;
 
   /* parse incoming arguments. */
-  if ( !PyArg_ParseTuple ( args, "sIIOO", &image_file, &size1, &size2,
-                                        &camMat_pylist, &disMat_pylist ) )
+  if ( !PyArg_ParseTuple ( args, "sIIOOII",
+        &image_file, &sideCorners1, &sideCorners2,
+        &camMat_pylist, &disMat_pylist, &sqrSize, &sphSize ) )
   {
     PyErr_SetString ( PyExc_StandardError,
         "Invalid parameters for IlacCB_init.");
@@ -88,9 +90,9 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
 
   /* Instantiate ILAC_Chessboard into an object */
   try{
-    self->ii = new ILAC_Image ( image_file, Size(size1,size2),
+    self->ii = new ILAC_Image ( image_file, Size(sideCorners1,sideCorners2),
                                 camMat_cvmat, disMat_cvmat,
-                                40, 10, false );
+                                sqrSize, sphSize, false );
     self->ii->initChess();
     self->ii->calcPixPerUU ();
     self->ii->calcID();

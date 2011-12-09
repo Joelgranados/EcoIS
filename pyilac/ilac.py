@@ -22,7 +22,8 @@ import shutil
 import sys
 import logging
 
-def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat, disMat ):
+def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat, disMat,
+    sqrSize = 10, sphSize = 40):
     """ Sorts files without processing them
     from_file_name = Full path of the image file
     size1 = Largets chessboard size
@@ -34,7 +35,8 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat, disMat ):
             % (from_file_name, to_dir) )
 
     # Let the exception go to the caller.
-    cb = _ilac.IlacCB( from_file_name, size1, size2, camMat, disMat )
+    cb = _ilac.IlacCB( from_file_name, size1, size2, camMat, disMat,
+        sqrSize, sphSize )
 
     # Create id string that will be the dir name.
     image_id_dir = ""
@@ -81,7 +83,7 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2, camMat, distMat ):
 
 def ilac_process_classify_dir ( from_dir, to_dir, \
                                 size1, size2, camMat, disMat, \
-                                squareSize=80 ):
+                                sqrSize = 10, sphSize = 40):
     """ Classify all files in a directory and normalize the images
     from_dir = Source dir (full path)
     to_dir = Dest dir (full path)
@@ -89,8 +91,6 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
     size2 = Smallest chessboard size.
     camMat = Camera intrinsics.
     disMat = Distortion values.
-    squareSize = The size of the normalized chessboard square.
-                  (defines image size)
     """
     #Check that the two dirs exist.
     for dir in [from_dir, to_dir]:
@@ -101,7 +101,8 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
         for f in files:
             try:
                 from_file_name = os.path.join(root, f)
-                cb = _ilac.IlacCB( from_file_name, size1, size2, camMat, disMat )
+                cb = _ilac.IlacCB( from_file_name, size1, size2,
+                    camMat, disMat, sqrSize, sphSize )
             except Exception, err:
                 ilaclog.error( "File(%s): %s"%(from_file_name, err) )
                 continue
@@ -118,7 +119,7 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
 
             # We need the full to_file_name path
             to_file_name = os.path.join(to_file_dir, f)
-            cb.process_image(squareSize, to_file_name)
+            cb.process_image(to_file_name)
 
             # tell the user about the move
             ilaclog.debug("Moved %s to %s"%(from_file_name, to_file_name))
