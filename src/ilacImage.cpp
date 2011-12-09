@@ -34,8 +34,9 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
                          const Mat &camMat, const Mat &disMat,
                          const int sphDiamUU, const int sqrSideUU,
                          const bool full )
-  :camMat(camMat),disMat(disMat),image_file(image),
-   sphDiamUU(sphDiamUU),sqrSideUU(sqrSideUU)
+  :camMat(camMat), disMat(disMat), image_file(image),
+   sphDiamUU(sphDiamUU), sqrSideUU(sqrSideUU),
+   cb(NULL), pixPerUU(-1), id(), plotCorners()
 {
   /* 1. INITIALIZE VARIABLES*/
   this->dimension.width = max ( boardSize.width, boardSize.height );
@@ -118,7 +119,6 @@ ILAC_Image::calcID ()
 {
   int short_size = 8*sizeof(unsigned short); //assume short is a factor of 8
   int id_offset;
-
   for ( int i = 0 ; i < this->cb->getAssociation().size() ; i++ )
   {
     if ( i % short_size == 0 )
@@ -171,11 +171,27 @@ ILAC_Image::initChess ()
 }
 
 vector<unsigned short>
-ILAC_Image::getID () { return this->id; }
+ILAC_Image::getID () {
+  /* This depends on initChess & calcID */
+  if ( this->cb == NULL )
+    this->initChess ();
+  if ( this->id.size() == 0 )
+    this->calcID ();
+
+  return this->id;
+}
 
 void
 ILAC_Image::normalize ()
 {
+  /* This depends on plotPoints, chessboard & pixPerUU */
+  if ( this->cb == NULL )
+    this->initChess ();
+  if ( this->pixPerUU == -1 )
+    this->calcPixPerUU ();
+  if ( this->plotCorners.size() == 0 )
+    this->calcRefPoints();
+
   Mat persTrans;
   int width = ILAC_Image::normWidth;
   int height = width/ILAC_Image::normRatio;
