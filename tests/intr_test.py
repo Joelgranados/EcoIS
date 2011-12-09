@@ -36,7 +36,7 @@ class Intr_SimpleCalc(unittest.TestCase):
                -0.00033490409900301766,
                -0.1263608469044541]]
 
-    def testOutput (self):
+    def test_Intrinsics (self):
         import _ilac
         intrinsics = \
             _ilac.calc_intrinsics(self.files, self.size[0], self.size[1])
