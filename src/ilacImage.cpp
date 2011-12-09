@@ -36,7 +36,7 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
                          const bool full )
   :camMat(camMat), disMat(disMat), image_file(image),
    sphDiamUU(sphDiamUU), sqrSideUU(sqrSideUU),
-   cb(NULL), pixPerUU(-1), id(), plotCorners()
+   cb(NULL), pixPerUU(-1), id(), plotCorners(), normImg()
 {
   /* 1. INITIALIZE VARIABLES*/
   this->dimension.width = max ( boardSize.width, boardSize.height );
@@ -209,6 +209,10 @@ ILAC_Image::normalize ()
 void
 ILAC_Image::saveNormalized ( const string &fileName, const bool overwrite )
 {
+  /* Depends on normalize being executed */
+  if ( this->normImg.size() == Size(0,0) )
+    this->normalize();
+
   if ( !overwrite )
   {
     struct stat file_stat;

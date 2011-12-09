@@ -89,25 +89,9 @@ IlacCB_init(IlacCB *self, PyObject *args, PyObject *kwds)
         PyList_GetItem ( PyList_GetItem ( camMat_pylist, floor(i/3) ), i%3 ) );
 
   /* Instantiate ILAC_Chessboard into an object */
-  try{
-    self->ii = new ILAC_Image ( image_file, Size(sideCorners1,sideCorners2),
-                                camMat_cvmat, disMat_cvmat,
-                                sqrSize, sphSize, false );
-    self->ii->initChess();
-    self->ii->calcPixPerUU ();
-    self->ii->calcID();
-    self->ii->calcRefPoints();
-  }catch(ILACExNoChessboardFound){
-    PyErr_SetString ( PyExc_StandardError, "Chessboard not found." );
-    return -1;
-  }catch(ILACExNoneRedSquare){
-    PyErr_SetString ( PyExc_StandardError, "None red square found." );
-    return -1;
-  }catch(ILACExFileError){
-    PyErr_SetString ( PyExc_StandardError, "Unable to read image file" );
-    return -1;
-  }
-
+  self->ii = new ILAC_Image ( image_file, Size(sideCorners1,sideCorners2),
+                              camMat_cvmat, disMat_cvmat,
+                              sqrSize, sphSize, false );
   return 0;
 }
 
@@ -125,12 +109,19 @@ IlacCB_process_image ( IlacCB *self, PyObject *args )
 }
 
 static PyObject*
-IlacCB_img_id ( IlacCB *self )
+IlacCB_getID ( IlacCB *self )
 {
   PyObject *list_image_id;
   vector<unsigned short> image_id;
 
-  image_id = self->ii->getID();
+  try { image_id = self->ii->getID();
+  }catch(ILACExNoChessboardFound){
+    ILAC_RETERR ( "Chessboard not found." );
+  }catch(ILACExNoneRedSquare){
+    ILAC_RETERR ( "None red square found." );
+  }catch(ILACExFileError){
+    ILAC_RETERR ( "Unable to read image file." );
+  }
 
   /*Construct python list that will hold the image id*/
   list_image_id = PyList_New ( image_id.size() );
@@ -144,13 +135,45 @@ IlacCB_img_id ( IlacCB *self )
   return list_image_id;
 }
 
+static PyObject*
+IlacCB_normalize ( IlacCB *self )
+{
+  try { self->ii->normalize();
+  }catch(ILACExUnknownError){
+    ILAC_RETERR ( "Unknown error when normalizing" );
+  }catch(std::exception){
+    ILAC_RETERR ( "Unknown error when normalizing" );
+  }
+  Py_RETURN_TRUE;
+}
+
+static PyObject*
+IlacCB_save_normalized ( IlacCB *self, PyObject *args )
+{
+  char *outfile;
+  if ( !PyArg_ParseTuple ( args, "s", &outfile ) )
+    ILAC_RETERR("Invalid parameters for IlacCB_save_normalized.");
+
+  try { self->ii->saveNormalized ( outfile );
+  }catch(std::exception){
+    ILAC_RETERR ( "Unknown error when saving normalized" );
+  }
+  Py_RETURN_TRUE;
+}
+
 static PyMemberDef IlacCB_members[] = { {NULL} };
 
 static PyMethodDef IlacCB_methods[] = {
   {"process_image", (PyCFunction)IlacCB_process_image, METH_VARARGS,
     "Saves an processed image to a FILENAME with a given SQUARE SIZE"},
-  {"img_id", (PyCFunction)IlacCB_img_id, METH_NOARGS,
+  {"img_id", (PyCFunction)IlacCB_getID, METH_NOARGS,
     "Return the chessboard id of the image"},
+  {"getID", (PyCFunction)IlacCB_getID, METH_NOARGS,
+    "Return the chessboard id of the image"},
+  {"normalize", (PyCFunction)IlacCB_normalize, METH_NOARGS,
+    "Normalizes the image in the object. You can saveNormalized after this"},
+  {"saveNormalized", (PyCFunction)IlacCB_save_normalized, METH_VARARGS,
+    "Saves normalized image to a FILENAME"},
   {NULL}
 };
 
