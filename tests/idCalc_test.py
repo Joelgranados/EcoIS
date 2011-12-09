@@ -23,19 +23,39 @@ class IDCalc_SimpleCalc(unittest.TestCase):
     and were calulated using opencv.
     """
     def setUp (self):
-        self.camMat = [[3868.352132323942, 0.0, 1793.818904445119],
-                      [0.0, 3861.2653579525527, 1309.1546288312893],
-                      [0.0, 0.0, 1.0]]
-        self.disMat = [-0.23074414076614339,
-                      0.06082764182000765,
-                      0.004686710353697188,
-                      8.29981714263666e-05,
-                      1.8496002163239513]
-        self.image_file = "images/chessSpheres1.jpg"
+        # intrinsics for Nikion 5100 with sigma lens 10mm to 20mm
+        self.camMatS10mm20mm = [[3868.352132323942, 0.0, 1793.818904445119],
+                                [0.0, 3861.2653579525527, 1309.1546288312893],
+                               [0.0, 0.0, 1.0]]
+        self.disMatS10mm20mm = [-0.23074414076614339,
+                                0.06082764182000765,
+                                0.004686710353697188,
+                                8.29981714263666e-05,
+                                1.8496002163239513]
+        self.ifS10mm20mm = "images/chessSpheres1.jpg"
 
-    def testOutput (self):
+        # intrinsics for Lumix 35 Equiv
+        self.camMatLumix = [[3868.352132323942, 0.0, 1793.818904445119],
+                            [0.0, 3861.2653579525527, 1309.1546288312893],
+                            [0.0, 0.0, 1.0]]
+        self.disMatLumix = [-0.23074414076614339,
+                            0.06082764182000765,
+                            0.004686710353697188,
+                            8.29981714263666e-05,
+                            1.8496002163239513]
+        self.ifLumix = "images/chessboard1.jpg"
+
+    def test_Sigma (self):
         import _ilac
-        icb = _ilac.IlacCB(self.image_file, 5, 6, self.camMat, self.disMat,
-            10, 40)
-        id = icb.img_id()
+        icb = _ilac.IlacCB(self.ifS10mm20mm, 5, 6,
+                self.camMatS10mm20mm, self.disMatS10mm20mm, 10, 40)
+        id = icb.getID()
         self.assertEqual ( id, [24] )
+
+    def test_Lumix (self):
+        import _ilac
+        icb = _ilac.IlacCB(self.ifLumix, 5, 6,
+                self.camMatLumix, self.disMatLumix, 10, 40)
+        id = icb.getID()
+        self.assertEqual ( id, [4] )
+
