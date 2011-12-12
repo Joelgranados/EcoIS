@@ -37,6 +37,8 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 # Try to find the opencv stuff
 find_package (OpenCV REQUIRED)
 find_package (PythonLibs REQUIRED)
+include (FindPkgConfig)
+pkg_search_module (EXIV2 exiv2 REQUIRED)
 
 # for including python
 include_directories(${PYTHON_INCLUDE_PATH})
@@ -57,7 +59,7 @@ add_library (_ilac SHARED
 set_target_properties (_ilac PROPERTIES PREFIX "") #get rid of the lib*
 
 # Make sure we link to the found opencv stuff.
-target_link_libraries (_ilac ${OpenCV_LIBS})
+target_link_libraries (_ilac ${OpenCV_LIBS} ${EXIV2_LIBRARIES})
 
 # Create the test target.
 file(COPY "${PROJECT_SOURCE_DIR}/tests" DESTINATION "${PROJECT_BINARY_DIR}")

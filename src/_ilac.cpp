@@ -157,6 +157,8 @@ IlacCB_save_normalized ( IlacCB *self, PyObject *args )
     ILAC_RETERR("Invalid parameters for IlacCB_save_normalized.");
 
   try { self->ii->saveNormalized ( outfile );
+  }catch(ILACExFileError){
+    ILAC_RETERR ( "The file already exists" );
   }catch(std::exception){
     ILAC_RETERR ( "Unknown error when saving normalized" );
   }

@@ -19,6 +19,7 @@
 #include "ilacImage.h"
 #include <opencv2/opencv.hpp>
 #include <sys/stat.h>
+#include <exiv2/exiv2.hpp>
 
 /*{{{ ILAC_Image*/
 ILAC_Image::ILAC_Image (){}
@@ -206,9 +207,14 @@ ILAC_Image::normalize ()
   warpPerspective ( this->img, this->normImg, persTrans, endSize );
 }
 
+/*
+ * 1. SAVE NORMALIZED IMAGE
+ * 2. ADD EXIF DATA TO THE NEWLY CREATED IMAGE
+ */
 void
 ILAC_Image::saveNormalized ( const string &fileName, const bool overwrite )
 {
+  /* 1. SAVE NORMALIZED IMAGE */
   /* Depends on normalize being executed */
   if ( this->normImg.size() == Size(0,0) )
     this->normalize();
@@ -220,6 +226,15 @@ ILAC_Image::saveNormalized ( const string &fileName, const bool overwrite )
       throw ILACExFileError(); /* Do not overwrite */
   }
   imwrite ( fileName, this->normImg );
+
+  /* 2. ADD EXIF DATA TO THE NEWLY CREATED IMAGE */
+  Exiv2::Image::AutoPtr srcImg = Exiv2::ImageFactory::open(this->image_file);
+  Exiv2::Image::AutoPtr dstImg = Exiv2::ImageFactory::open(fileName);
+
+  //FIXME: catch the warnings from the output.
+  srcImg->readMetadata ();
+  dstImg->setExifData ( srcImg->exifData() );
+  dstImg->writeMetadata ();
 }
 
 void
