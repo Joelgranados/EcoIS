@@ -17,12 +17,15 @@
 import unittest
 
 class Intr_SimpleCalc(unittest.TestCase):
-    """ Designed to test simple id calculation intrinsic parameters.
-
-    Our images are in images/intr{1,2,3,4,5,6}.jpg
-    """
+    """ Designed to test simple id calculation intrinsic parameters."""
     def setUp (self):
         self.files = []
+        self.size = []
+        self.expected = []
+
+    def test_Intrinsics (self):
+        import _ilac
+
         for i in range(6):
             self.files.append("images/intr%d.jpg"%(i+1))
         self.size = [7, 10]
@@ -36,8 +39,26 @@ class Intr_SimpleCalc(unittest.TestCase):
                -0.00033490409900301766,
                -0.1263608469044541]]
 
-    def test_Intrinsics (self):
+        intrinsics = \
+            _ilac.calc_intrinsics(self.files, self.size[0], self.size[1])
+        self.assertEqual ( self.expectedResult, intrinsics )
+
+    def test_kodakIntr (self):
         import _ilac
+
+        for i in range(6):
+            self.files.append("images/kodakIntr%d.jpg"%(i+1))
+        self.size = [7,10]
+        self.expectedResult = \
+                [[[676.5781926854147, 0.0, 395.52926192378436],
+                  [0.0, 677.2952780926865, 218.51201310572563],
+                  [0.0, 0.0, 1.0]],
+                 [-0.11604572360793801,
+                  0.6220373333073841,
+                  -0.006066776328165834,
+                  -0.002219970761699905,
+                  -3.0430144976827744]]
+
         intrinsics = \
             _ilac.calc_intrinsics(self.files, self.size[0], self.size[1])
         self.assertEqual ( self.expectedResult, intrinsics )
