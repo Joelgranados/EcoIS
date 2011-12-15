@@ -20,6 +20,7 @@
 #include <opencv2/opencv.hpp>
 #include <sys/stat.h>
 #include <exiv2/exiv2.hpp>
+#include <time.h>
 
 /*{{{ ILAC_Image*/
 ILAC_Image::ILAC_Image (){}
@@ -228,12 +229,20 @@ ILAC_Image::saveNormalized ( const string &fileName, const bool overwrite )
   imwrite ( fileName, this->normImg );
 
   /* 2. ADD EXIF DATA TO THE NEWLY CREATED IMAGE */
+  //FIXME: catch the warnings from the output.
+  string userComment;
+  time_t rawtime;
+  time (&rawtime);
+  userComment.append( "charset=Ascii normalized on " );
+  userComment.append( ctime(&rawtime) );
+
   Exiv2::Image::AutoPtr srcImg = Exiv2::ImageFactory::open(this->image_file);
   Exiv2::Image::AutoPtr dstImg = Exiv2::ImageFactory::open(fileName);
 
-  //FIXME: catch the warnings from the output.
   srcImg->readMetadata ();
-  dstImg->setExifData ( srcImg->exifData() );
+  Exiv2::ExifData &srcExifData = srcImg->exifData();
+  srcExifData ["Exif.Photo.UserComment"] = userComment;
+  dstImg->setExifData ( srcExifData );
   dstImg->writeMetadata ();
 }
 
