@@ -38,7 +38,7 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
                          const bool full )
   :camMat(camMat), disMat(disMat), image_file(image),
    sphDiamUU(sphDiamUU), sqrSideUU(sqrSideUU),
-   cb(NULL), pixPerUU(-1), id(), plotCorners(), normImg()
+   cb(NULL), pixPerUU(-1), id((unsigned long)-1), plotCorners(), normImg()
 {
   /* 1. INITIALIZE VARIABLES*/
   this->dimension.width = max ( boardSize.width, boardSize.height );
@@ -77,7 +77,7 @@ ILAC_Image::calcPixPerUU ()
     hAccum += this->cb->getSquare(i).getImg().size().height;
   }
 
-  /* Averate square side size in pixels:
+  /* Average square side size in pixels:
    * averageSide = (averageWidth + averageHeight) / 2 */
   double avePixSide = (wAccum + hAccum)/(2*this->cb->getSquaresSize());
   this->pixPerUU = avePixSide / (double)this->sqrSideUU;
@@ -119,19 +119,11 @@ ILAC_Image::calcRefPoints ()
 void
 ILAC_Image::calcID ()
 {
-  int short_size = 8*sizeof(unsigned short); //assume short is a factor of 8
-  int id_offset;
-  for ( int i = 0 ; i < this->cb->getAssociation().size() ; i++ )
+  /* Reset the class id value */
+  this->id = (unsigned long)0;
+
+  for ( int i = this->cb->getAssociation().size() - 1 ; i >= 0 ; i-- )
   {
-    if ( i % short_size == 0 )
-    {
-      /* Move to the next position in id when i > multiple of short_size */
-      id_offset = (int)(i/short_size);
-
-      /* Make sure value = 0 */
-      this->id.push_back ( (unsigned short)0 );
-    }
-
     /* Don't consider case 2,3,4 because red is on*/
     int r, g, b;
     switch ( this->cb->getAssociation()[i])
@@ -147,20 +139,20 @@ ILAC_Image::calcID ()
         break;
       default:
         r=0;g=0;b=0;
-        ;
+       break;
     }
 
     /* All the colored squares should have red bit on.*/
     if ( r != 1 ) throw ILACExNoneRedSquare();
 
-    /* bit shift for green and blue */
-    this->id[id_offset] = this->id[id_offset]<<2;
-
     /* modify the blue bit */
-    if ( b ) this->id[id_offset] = this->id[id_offset] | (unsigned short)1;
+    if ( b ) this->id = this->id | (unsigned long)1;
 
     /* modify the green bit */
-    if ( g ) this->id[id_offset] = this->id[id_offset] | (unsigned short)2;
+    if ( g ) this->id = this->id | (unsigned long)2;
+
+    /* bit shift for green and blue */
+    this->id = this->id<<2;
   }
 }
 
@@ -172,12 +164,12 @@ ILAC_Image::initChess ()
                                  ILAC_Chessboard::CB_MEDIAN );
 }
 
-vector<unsigned short>
+unsigned long
 ILAC_Image::getID () {
   /* This depends on initChess & calcID */
   if ( this->cb == NULL )
     this->initChess ();
-  if ( this->id.size() == 0 )
+  if ( this->id == -1 )
     this->calcID ();
 
   return this->id;

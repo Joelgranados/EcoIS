@@ -30,7 +30,7 @@ class ILAC_Image{
                  const bool = true );
     ~ILAC_Image ();
 
-    vector<unsigned short> getID ();
+    unsigned long getID ();
     void initChess ();
     void calcPixPerUU ();
     void calcID ();
@@ -51,7 +51,7 @@ class ILAC_Image{
     Mat normImg; //Normalized image
     Mat camMat; //Camera intrinsics
     Mat disMat; //Distortion intrinsics.
-    vector<unsigned short> id;
+    long id;
     vector<Point2f> plotCorners;
     Size dimension;
 

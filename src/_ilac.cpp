@@ -111,8 +111,8 @@ IlacCB_process_image ( IlacCB *self, PyObject *args )
 static PyObject*
 IlacCB_getID ( IlacCB *self )
 {
-  PyObject *list_image_id;
-  vector<unsigned short> image_id;
+  PyObject *PyImage_id;
+  unsigned long image_id;
 
   try { image_id = self->ii->getID();
   }catch(ILACExNoChessboardFound){
@@ -123,16 +123,11 @@ IlacCB_getID ( IlacCB *self )
     ILAC_RETERR ( "Unable to read image file." );
   }
 
-  /*Construct python list that will hold the image id*/
-  list_image_id = PyList_New ( image_id.size() );
-  if ( list_image_id == NULL ){ILAC_RETERR("Error creating a new list.");}
+  PyImage_id = Py_BuildValue( "k", image_id );
+  if ( PyImage_id == NULL )
+      ILAC_RETERR("Error creating id.");
 
-  for ( int i = 0 ; i < image_id.size() ; i++ )
-    if ( PyList_SetItem ( list_image_id, i, Py_BuildValue("H", image_id[i]) )
-         == -1 )
-      ILAC_RETERR("Error creating id list elem.");
-
-  return list_image_id;
+  return PyImage_id;
 }
 
 static PyObject*
