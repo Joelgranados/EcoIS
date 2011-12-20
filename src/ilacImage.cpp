@@ -222,18 +222,22 @@ ILAC_Image::saveNormalized ( const string &fileName, const bool overwrite )
 
   /* 2. ADD EXIF DATA TO THE NEWLY CREATED IMAGE */
   //FIXME: catch the warnings from the output.
-  string userComment;
+
   time_t rawtime;
   time (&rawtime);
-  userComment.append( "charset=Ascii normalized on " );
-  userComment.append( ctime(&rawtime) );
+
+  std::stringstream userComment;
+  userComment << "charset=Ascii ,normalized="
+              << ctime(&rawtime)
+              << ",plotid="
+              << this->id;
 
   Exiv2::Image::AutoPtr srcImg = Exiv2::ImageFactory::open(this->image_file);
   Exiv2::Image::AutoPtr dstImg = Exiv2::ImageFactory::open(fileName);
 
   srcImg->readMetadata ();
   Exiv2::ExifData &srcExifData = srcImg->exifData();
-  srcExifData ["Exif.Photo.UserComment"] = userComment;
+  srcExifData ["Exif.Photo.UserComment"] = userComment.str();
   dstImg->setExifData ( srcExifData );
   dstImg->writeMetadata ();
 }
