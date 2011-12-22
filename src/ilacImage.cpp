@@ -227,7 +227,7 @@ ILAC_Image::saveNormalized ( const string &fileName, const bool overwrite )
   std::string date = ctime(&rawtime); /*We need to remove trailing \n*/
 
   std::stringstream userComment;
-  userComment << "charset=Ascii ,normalized="
+  userComment << "charset=Ascii normalized="
               << date.substr(0,date.find_last_of('\n'))
               << ",plotid="
               << this->id;
