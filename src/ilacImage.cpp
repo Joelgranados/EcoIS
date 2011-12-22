@@ -222,13 +222,13 @@ ILAC_Image::saveNormalized ( const string &fileName, const bool overwrite )
 
   /* 2. ADD EXIF DATA TO THE NEWLY CREATED IMAGE */
   //FIXME: catch the warnings from the output.
-
   time_t rawtime;
   time (&rawtime);
+  std::string date = ctime(&rawtime); /*We need to remove trailing \n*/
 
   std::stringstream userComment;
   userComment << "charset=Ascii ,normalized="
-              << ctime(&rawtime)
+              << date.substr(0,date.find_last_of('\n'))
               << ",plotid="
               << this->id;
 
