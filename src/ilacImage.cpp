@@ -230,7 +230,8 @@ ILAC_Image::saveNormalized ( const string &fileName, const bool overwrite )
   userComment << "charset=Ascii normalized="
               << date.substr(0,date.find_last_of('\n'))
               << ",plotid="
-              << this->id;
+              << this->id
+              << ",";
 
   Exiv2::Image::AutoPtr srcImg = Exiv2::ImageFactory::open(this->image_file);
   Exiv2::Image::AutoPtr dstImg = Exiv2::ImageFactory::open(fileName);
