@@ -44,7 +44,8 @@ ILAC_Image::ILAC_Image ( const string &image, const Size &boardSize,
   this->dimension.width = max ( boardSize.width, boardSize.height );
   this->dimension.height = min ( boardSize.width, boardSize.height );
   check_input ( image, this->dimension );
-  undistort ( imread(this->image_file), this->img, camMat, disMat );
+  this->img = imread(this->image_file);
+  //undistort ( imread(this->image_file), this->img, camMat, disMat );
 
   if ( full )
   {
