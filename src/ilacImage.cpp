@@ -133,7 +133,7 @@ ILAC_Image::calcID ()
     /* bit shift for green and blue */
     this->id = this->id<<2;
 
-    /* Don't consider case 2,3,4 because red is on*/
+    /* Don't consider 3,4 because red is on, 2 is exception.*/
     int r, g, b;
     switch ( this->cb->getAssociation()[i])
     {
@@ -142,6 +142,9 @@ ILAC_Image::calcID ()
         break;
       case 1:
         r=1;g=1;b=0;
+        break;
+      case 2:
+        r=1;g=1;b=1;
         break;
       case 5:
         r=1;g=0;b=1;
