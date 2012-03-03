@@ -117,6 +117,11 @@ ILAC_Image::calcRefPoints ()
            this->plotCorners.end() );
 }
 
+/*
+ * Reading ID from chessboard: Each square has a "gb" value: red->00,
+ * yellow->10, magenta->01, green->11. Concatenate these values from
+ * left-to-right to form binary
+ */
 void
 ILAC_Image::calcID ()
 {
@@ -150,10 +155,10 @@ ILAC_Image::calcID ()
     if ( r != 1 ) throw ILACExNoneRedSquare();
 
     /* modify the blue bit */
-    if ( b ) this->id = this->id | (unsigned long)1;
+    if ( b ) this->id = this->id | (unsigned long)2;
 
     /* modify the green bit */
-    if ( g ) this->id = this->id | (unsigned long)2;
+    if ( g ) this->id = this->id | (unsigned long)1;
   }
 }
 
