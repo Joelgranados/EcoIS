@@ -50,12 +50,12 @@ class IDCalc_SimpleCalc(unittest.TestCase):
         icb = _ilac.IlacCB(self.ifS10mm20mm, 5, 6,
                 self.camMatS10mm20mm, self.disMatS10mm20mm, 10, 40)
         id = icb.getID()
-        self.assertEqual ( id, 36 )
+        self.assertEqual ( id, 9 )
 
     def test_Lumix (self):
         import _ilac
         icb = _ilac.IlacCB(self.ifLumix, 5, 6,
                 self.camMatLumix, self.disMatLumix, 10, 40)
         id = icb.getID()
-        self.assertEqual ( id, 16 )
+        self.assertEqual ( id, 4 )
 

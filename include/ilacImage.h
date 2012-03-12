@@ -51,7 +51,7 @@ class ILAC_Image{
     Mat normImg; //Normalized image
     Mat camMat; //Camera intrinsics
     Mat disMat; //Distortion intrinsics.
-    long id;
+    unsigned long id;
     vector<Point2f> plotCorners;
     Size dimension;
 

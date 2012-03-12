@@ -125,6 +125,9 @@ ILAC_Image::calcID ()
 
   for ( int i = this->cb->getAssociation().size() - 1 ; i >= 0 ; i-- )
   {
+    /* bit shift for green and blue */
+    this->id = this->id<<2;
+
     /* Don't consider case 2,3,4 because red is on*/
     int r, g, b;
     switch ( this->cb->getAssociation()[i])
@@ -151,9 +154,6 @@ ILAC_Image::calcID ()
 
     /* modify the green bit */
     if ( g ) this->id = this->id | (unsigned long)2;
-
-    /* bit shift for green and blue */
-    this->id = this->id<<2;
   }
 }
 
