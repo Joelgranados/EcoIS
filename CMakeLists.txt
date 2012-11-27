@@ -40,7 +40,7 @@ find_package (PythonLibs REQUIRED)
 include (FindPkgConfig)
 pkg_search_module (EXIV2 exiv2 REQUIRED)
 
-# for including python
+# for including python 2.X
 include_directories(${PYTHON_INCLUDE_PATH})
 
 # add an option for debug.
