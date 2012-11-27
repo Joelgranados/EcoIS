@@ -30,17 +30,17 @@ class Intr_SimpleCalc(unittest.TestCase):
             self.files.append("images/intr%d.jpg"%(i+1))
         self.size = [7, 10]
         self.expectedResult = \
-            [[[439.7124571450218, 0.0, 508.09121466942526],
-              [0.0, 439.52587749737506, 338.8996339931403],
-              [0.0, 0.0, 1.0]],
-             [-0.05265642376912142,
-               0.13362192333442172,
-               0.0011102772334400505,
-               -0.00033490409900301766,
-               -0.1263608469044541]]
+            [[[439, 0, 508],
+              [0.0, 439, 338],
+              [0, 0, 1]],
+             [-0,0,0,-0,-0]]
 
         intrinsics = \
             _ilac.calc_intrinsics(self.files, self.size[0], self.size[1])
+        intrinsics[0][0] = map(int, intrinsics[0][0])
+        intrinsics[0][1] = map(int, intrinsics[0][1])
+        intrinsics[0][2] = map(int, intrinsics[0][2])
+        intrinsics[1] = map(int, intrinsics[1])
         self.assertEqual ( self.expectedResult, intrinsics )
 
     def test_kodakIntr (self):
@@ -50,15 +50,15 @@ class Intr_SimpleCalc(unittest.TestCase):
             self.files.append("images/kodakIntr%d.jpg"%(i+1))
         self.size = [7,10]
         self.expectedResult = \
-                [[[676.5781926854147, 0.0, 395.52926192378436],
-                  [0.0, 677.2952780926865, 218.51201310572563],
-                  [0.0, 0.0, 1.0]],
-                 [-0.11604572360793801,
-                  0.6220373333073841,
-                  -0.006066776328165834,
-                  -0.002219970761699905,
-                  -3.0430144976827744]]
+                [[[676, 0, 395],
+                  [0, 677, 218],
+                  [0, 0, 1]],
+                 [-0,0,-0,-0,-3]]
 
         intrinsics = \
             _ilac.calc_intrinsics(self.files, self.size[0], self.size[1])
+        intrinsics[0][0] = map(int, intrinsics[0][0])
+        intrinsics[0][1] = map(int, intrinsics[0][1])
+        intrinsics[0][2] = map(int, intrinsics[0][2])
+        intrinsics[1] = map(int, intrinsics[1])
         self.assertEqual ( self.expectedResult, intrinsics )
