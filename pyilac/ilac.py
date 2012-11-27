@@ -22,8 +22,8 @@ import shutil
 import sys
 import logging
 
-def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat, disMat,
-    sqrSize = 10, sphSize = 40):
+def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat,
+        disMat, sqrSize = 10, sphSize = 40):
     """ Sorts files without processing them
     from_file_name = Full path of the image file
     size1 = Largets chessboard size
@@ -49,9 +49,10 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat, disMat,
         os.mkdir( to_file_dir )
 
     # We need the full to_file_name path
-    to_file_name = os.path.join(to_file_dir, os.path.basename(from_file_name))
+    to_file_name = os.path.join(to_file_dir, \
+            os.path.basename(from_file_name))
 
-    # shutil uses rename if on the same fielsystem (python doc), copy2 otherwise
+    # shutil uses rename on same fielsystem (doc), copy2 otherwise
     shutil.move( from_file_name, to_file_name )
 
     # tell the user about the move
@@ -77,7 +78,8 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2, camMat, distMat ):
         for file in files:
             try:
                 ilac_classify_file( os.path.join(root,file), \
-                                    size1, size2, to_dir, camMat, disMat )
+                                    size1, size2, to_dir, \
+                                    camMat, disMat )
             except Exception, err:
                 ilaclog.error( err )
 
@@ -122,7 +124,8 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
             cb.process_image(to_file_name)
 
             # tell the user about the move
-            ilaclog.debug("Moved %s to %s"%(from_file_name, to_file_name))
+            ilaclog.debug("Moved %s to %s"% \
+                    (from_file_name, to_file_name))
 
 def ilac_calc_intrinsics ( img_dir, size1, size2 ):
     filenames = [];
@@ -148,7 +151,8 @@ def initLogger():
     #FIXME: Add a file log when we add the config file.
     #handler = logging.FileHandler(config.log.filename)
 
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    fstr = "%(asctime)s - %(levelname)s - %(message)s"
+    formatter = logging.Formatter(fstr)
     handler.setFormatter(formatter)
     Logger.addHandler(handler)
 
