@@ -21,6 +21,7 @@ import os.path
 import shutil
 import sys
 import logging
+import pyexiv2
 
 def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat,
         disMat, sqrSize = 10, sphSize = 40):
@@ -133,6 +134,40 @@ def ilac_calc_intrinsics ( img_dir, size1, size2 ):
         if os.path.isfile( os.path.join(img_dir,img_file) ):
             filenames.append ( os.path.join(img_dir,img_file) )
     return _ilac.calc_intrinsics ( filenames, size1, size2 )
+
+def ilac_rename_images ( img_dir ):
+    """Prefix date and time to image filename if present.
+    Rename to the same img_dir."""
+
+    # Check if directory exists.
+    if not os.path.isdir(img_dir):
+        raise ILACDirException(img_dir)
+
+    for img_file in os.listdir(img_dir):
+        img_pth = os.path.join(img_dir,img_file)
+        im = pyexiv2.ImageMetadata(img_pth)
+        try:
+            im.read()
+        except Exception, e:
+            ilaclog.error( "File %s not found: %s"%(img_pth,e) )
+            continue
+
+        if not "Exif.Photo.DateTimeOriginal" in im.exif_keys:
+            ilaclog.error("Exiv of %s is missing " \
+                            "Exif.Photo.DateTimeOriginal" % (img_file,))
+            continue
+
+        d = im["Exif.Photo.DateTimeOriginal"].value
+        prestr = d.strftime("%Y-%m-%d_%H-%M-%S_")
+        newimg_file = prestr+img_file
+
+        try:
+            ilaclog.debug ("Renaming: %s -> %s"% \
+                    (img_file, newimg_file))
+            os.rename( img_pth, os.path.join(img_dir, newimg_file) )
+        except Exception, e:
+            ilaclog.error ( "Rename error: %s"%(e,))
+            continue
 
 class ILACException(Exception):
     def __init__(self):
