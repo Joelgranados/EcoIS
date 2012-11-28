@@ -56,7 +56,7 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat,
     ilaclog.debug( "Moved %s to %s" % (from_file_name, to_file_name) )
 
 
-def ilac_classify_dir( from_dir, to_dir, size1, size2, camMat, distMat ):
+def ilac_classify_dir( from_dir, to_dir, size1, size2, camMat, disMat ):
     """  Sorts all files contained an a directory without processing them.
     from_dir = Full path of the source dir.
     to_dir = Full path of the destination dir.
