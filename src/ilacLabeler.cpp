@@ -26,22 +26,24 @@ ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
                        const Point2f lr, const Point2f ll,
                        const Mat& img )
 {
-  /* Calculate the enclosing rectangle. referenced to the original image */
+  /* Calculate enclosing rectangle. referenced to the original image */
   Rect t_rect = Rect( /* helper rectangle (x, y, width, height) */
-    FLOOR_MIN (ul.x, ur.x, lr.x, ll.x), FLOOR_MIN (ul.y, ur.y, lr.y, ll.y),
-    CEIL_DIST (ul.x, ur.x, lr.x, ll.x), CEIL_DIST (ul.y, ur.y, lr.y, ll.y) );
+    FLOOR_MIN(ul.x, ur.x, lr.x, ll.x), FLOOR_MIN(ul.y, ur.y, lr.y, ll.y),
+    CEIL_DIST(ul.x, ur.x, lr.x, ll.x), CEIL_DIST(ul.y, ur.y, lr.y, ll.y)
+    );
 
-  /* Calculate source and destination points for the perspective transform.*/
+  /* Calculate source|destination points for perspective transform.*/
   Point2f s[4] = {ul, ur, lr, ll};
   for ( int i = 0 ; i < 4 ; i++ )
   {
-    /* Remember that ul and its brothers refer to the position with respect to
-     * the chessboard, not the image. */
+    /* Remember that ul and its brothers refer to the position
+     * with respect to the chessboard, not the image. */
     s[i].x = floor(s[i].x - t_rect.x);
     s[i].y = floor(s[i].y - t_rect.y);
   }
   Point2f d[4]={Point2f(0,0), Point2f(t_rect.width,0),
-                Point2f(t_rect.width, t_rect.height), Point2f(0,t_rect.height)};
+                Point2f(t_rect.width, t_rect.height),
+                Point2f(0,t_rect.height)};
 
   /* Calculate the perspective transform and create a subimage. */
   Mat t_img = Mat( img, t_rect );
@@ -250,8 +252,8 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
   }
 
   /*
-   * Range will be -+ 1 standard deviation. This has aprox 68% of the data
-   * (http://en.wikipedia.org/wiki/Standard_deviation)
+   * Range will be -+ 1 standard deviation. This has aprox 68% of
+   * the data (http://en.wikipedia.org/wiki/Standard_deviation)
    */
   Mat lowerb = mean - stddev;
   Mat upperb = mean + stddev;
@@ -272,19 +274,20 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
   /* 3. SMOOTH STUFF USING MORPHOLOGY */
   {
     /*
-     * Morphological open is 1.Erode and 2.Dilate. We use 1/4 of the sphere
-     * diameter in the hope that its big enough to clean the noise, but not big
-     * enough to remove the big sphere blob.
+     * Morphological open is 1.Erode and 2.Dilate. We use 1/4 of
+     * the sphere diameter in the hope that its big enough to clean
+     * the noise, but not big enough to remove the big sphere blob.
      */
     int openSize = pixSphDiam/4;
-    Mat se = getStructuringElement ( MORPH_ELLIPSE, Size(openSize,openSize) );
+    Mat se = getStructuringElement ( MORPH_ELLIPSE,
+                                     Size(openSize,openSize) );
     morphologyEx ( mask, mask, MORPH_OPEN, se );
 
 
     /*
      * We dilate with half of the sphere diameter and hope for a blob
-     * that is approx double the radius of the original blob. The edges are more
-     * roundy this way.
+     * that is approx double the radius of the original blob. The
+     * edges are more roundy this way.
      */
     int dilateSize = pixSphDiam/2;
     se = getStructuringElement ( MORPH_ELLIPSE,
@@ -299,7 +302,8 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
   int minCircDist = 3*pixSphDiam/2;
 
   GaussianBlur ( mask, mask, Size(15, 15), 2, 2 );
-  HoughCircles ( mask, circles, CV_HOUGH_GRADIENT, 2, minCircDist, 100, 40);
+  HoughCircles ( mask, circles, CV_HOUGH_GRADIENT,
+                 2, minCircDist, 100, 40);
 
   for( size_t i = 0; i < circles.size(); i++ )
   {
@@ -309,7 +313,8 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
     spheres.push_back(temp);
 
     for ( int j = i ;
-         j > 0 && spheres[j].getRadius() < spheres[j-1].getRadius() ; j-- )
+         j > 0 && spheres[j].getRadius() < spheres[j-1].getRadius() ;
+         j-- )
       std::swap( spheres[j], spheres[j-1] );
   }
 
