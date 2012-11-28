@@ -28,6 +28,7 @@ class NormCalc_SimpleCalc(unittest.TestCase):
                             8.29981714263666e-05,
                             1.8496002163239513]
         self.ifLumix = "images/chessboard1.jpg"
+        self.ifSpheres = "images/chessSpheres1.jpg"
 
     def test_NoSpheres (self):
         import _ilac
@@ -37,3 +38,9 @@ class NormCalc_SimpleCalc(unittest.TestCase):
           icb.normalize()
         except Exception as err:
           self.assertEqual ( err.message, "Not enough spheres in image" )
+
+    def test_WithSpheres (self):
+        import _ilac
+        icb = _ilac.IlacCB(self.ifSpheres, 5, 6,
+                self.camMatLumix, self.disMatLumix, 10, 40)
+        self.assertTrue(icb.normalize())
