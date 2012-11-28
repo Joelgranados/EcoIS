@@ -39,12 +39,8 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat,
     cb = _ilac.IlacCB( from_file_name, size1, size2, camMat, disMat,
         sqrSize, sphSize )
 
-    # Create id string that will be the dir name.
-    image_id_dir = ""
-    for dirpart in cb.img_id():
-        image_id_dir = image_id_dir + str(dirpart)
-
     # Make sure the "new" to_file_dir exists.
+    image_id_dir = str(cb.img_id())
     to_file_dir = os.path.join(to_dir, image_id_dir)
     if ( not os.path.isdir( to_file_dir ) ):
         os.mkdir( to_file_dir )
@@ -110,12 +106,8 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
                 ilaclog.error( "File(%s): %s"%(from_file_name, err) )
                 continue
 
-            # Create id string that will be the dir name.
-            id_dir = ""
-            for dirpart in cb.img_id():
-                id_dir = id_dir + str(dirpart)
-
             # Make sure the "new" to_file_dir exists.
+            id_dir = str(cb.img_id())
             to_file_dir = os.path.join(to_dir, id_dir)
             if ( not os.path.isdir( to_file_dir ) ):
                 os.mkdir( to_file_dir )
