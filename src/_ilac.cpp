@@ -102,7 +102,15 @@ IlacCB_process_image ( IlacCB *self, PyObject *args )
   if ( !PyArg_ParseTuple ( args, "s", &outfile ) )
     ILAC_RETERR("Invalid parameters for ilac_calc_process_image.");
 
-  self->ii->normalize ();
+  try { self->ii->normalize();
+  }catch(ILACExLessThanThreeSpheres){
+    ILAC_RETERR ( "Not enough spheres in image" );
+  }catch(ILACExUnknownError){
+    ILAC_RETERR ( "Unknown error when normalizing" );
+  }catch(std::exception){
+    ILAC_RETERR ( "Unknown error when normalizing" );
+  }
+
   self->ii->saveNormalized ( outfile );
 
   Py_RETURN_TRUE;
