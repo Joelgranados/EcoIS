@@ -100,6 +100,7 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
         for f in files:
             try:
                 from_file_name = os.path.join(root, f)
+                ilaclog.debug("Processing file(%s)."%from_file_name)
                 cb = _ilac.IlacCB( from_file_name, size1, size2,
                     camMat, disMat, sqrSize, sphSize )
             except Exception, err:
