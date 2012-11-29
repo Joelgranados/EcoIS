@@ -172,6 +172,9 @@ class ILACDirException(ILACException):
 
 def initLogger():
     Logger = logging.getLogger("ilac")
+    if ( len(Logger.handler) > 0 ):
+        return Logger
+
     Logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler(sys.stdout)
 
@@ -183,5 +186,4 @@ def initLogger():
     handler.setFormatter(formatter)
     Logger.addHandler(handler)
 
-initLogger()
-ilaclog = logging.getLogger("ilac")
+ilaclog = initLogger()
