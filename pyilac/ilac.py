@@ -108,14 +108,23 @@ def ilac_process_classify_dir ( from_dir, to_dir, \
                 continue
 
             # Make sure the "new" to_file_dir exists.
-            id_dir = str(cb.img_id())
+            try:
+                id_dir = str(cb.img_id())
+            except Exception, err:
+                ilaclog.error( "File(%s): %s"%(from_file_name, err) )
+                continue
+
             to_file_dir = os.path.join(to_dir, id_dir)
             if ( not os.path.isdir( to_file_dir ) ):
                 os.mkdir( to_file_dir )
 
             # We need the full to_file_name path
             to_file_name = os.path.join(to_file_dir, f)
-            cb.process_image(to_file_name)
+            try:
+                cb.process_image(to_file_name)
+            except Exception, err:
+                ilaclog.error( "File(%s): %s"%(from_file_name, err) )
+                continue
 
             # tell the user about the move
             ilaclog.debug("Moved %s to %s"% \
