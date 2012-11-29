@@ -172,7 +172,7 @@ class ILACDirException(ILACException):
 
 def initLogger():
     Logger = logging.getLogger("ilac")
-    if ( len(Logger.handler) > 0 ):
+    if ( len(Logger.handlers) > 0 ):
         return Logger
 
     Logger.setLevel(logging.DEBUG)
