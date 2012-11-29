@@ -72,13 +72,13 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2, camMat, disMat ):
 
     # classify file for all the /root/files
     for root, dirs, files in os.walk(from_dir):
-        for file in files:
+        for f in files:
             try:
-                ilac_classify_file( os.path.join(root,file), \
+                ilac_classify_file( os.path.join(root,f), \
                                     size1, size2, to_dir, \
                                     camMat, disMat )
             except Exception, err:
-                ilaclog.error( err )
+                ilaclog.error( "Error in File(%s):%s"%(f,err) )
 
 def ilac_process_classify_dir ( from_dir, to_dir, \
                                 size1, size2, camMat, disMat, \
