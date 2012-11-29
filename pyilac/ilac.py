@@ -196,4 +196,6 @@ def initLogger():
     handler.setFormatter(formatter)
     Logger.addHandler(handler)
 
+    return Logger
+
 ilaclog = initLogger()
