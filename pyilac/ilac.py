@@ -23,8 +23,9 @@ import sys
 import logging
 import pyexiv2
 
-def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat,
-        disMat, sqrSize = 10, sphSize = 40):
+def ilac_classify_file( from_file_name, size1, size2, to_dir,
+        camMat=[[1,0,0],[0,1,0],[0,0,1]], disMat=[0,0,0,0,0],
+        sqrSize = 10, sphSize = 40):
     """ Sorts files without processing them
     from_file_name = Full path of the image file
     size1 = Largets chessboard size
@@ -56,7 +57,8 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir, camMat,
     ilaclog.debug( "Moved %s to %s" % (from_file_name, to_file_name) )
 
 
-def ilac_classify_dir( from_dir, to_dir, size1, size2, camMat, disMat ):
+def ilac_classify_dir( from_dir, to_dir, size1, size2,
+        camMat=[[1,0,0],[0,1,0],[0,0,1]], disMat=[0,0,0,0,0] ):
     """  Sorts all files contained an a directory without processing them.
     from_dir = Full path of the source dir.
     to_dir = Full path of the destination dir.
@@ -80,9 +82,9 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2, camMat, disMat ):
             except Exception, err:
                 ilaclog.error( "Error in File(%s):%s"%(f,err) )
 
-def ilac_process_classify_dir ( from_dir, to_dir, \
-                                size1, size2, camMat, disMat, \
-                                sqrSize = 10, sphSize = 40):
+def ilac_process_classify_dir ( from_dir, to_dir, size1, size2,
+        camMat=[[1,0,0],[0,1,0],[0,0,1]], disMat=[0,0,0,0,0],
+        sqrSize = 10, sphSize = 40):
     """ Classify all files in a directory and normalize the images
     from_dir = Source dir (full path)
     to_dir = Dest dir (full path)
