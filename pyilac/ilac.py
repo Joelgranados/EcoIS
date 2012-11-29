@@ -186,13 +186,15 @@ def initLogger():
         return Logger
 
     Logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler(sys.stdout)
-
-    #FIXME: Add a file log when we add the config file.
-    #handler = logging.FileHandler(config.log.filename)
-
     fstr = "%(asctime)s - %(levelname)s - %(message)s"
     formatter = logging.Formatter(fstr)
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+    Logger.addHandler(handler)
+
+    # FIXME: User should be able to modify this.
+    handler = logging.FileHandler("ilac.log")
     handler.setFormatter(formatter)
     Logger.addHandler(handler)
 
