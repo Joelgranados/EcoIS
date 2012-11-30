@@ -278,24 +278,39 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
   /* 3. SMOOTH STUFF USING MORPHOLOGY */
   {
     /*
-     * Morphological open is 1.Erode and 2.Dilate. We use 1/4 of
-     * the sphere diameter in the hope that its big enough to clean
-     * the noise, but not big enough to remove the big sphere blob.
+     * Get rid of small noise. Assume sphere region to have foreground blobs
+     * greater than 2% of the pixSphDiam.
      */
-    int openSize = pixSphDiam/4;
-    Mat se = getStructuringElement ( MORPH_ELLIPSE,
-                                     Size(openSize,openSize) );
+    int seSize = (int)pixSphDiam*0.05;
+    if (seSize < 5) seSize = 5;
+    Mat se = getStructuringElement ( MORPH_RECT, Size(seSize,seSize) );
     morphologyEx ( mask, mask, MORPH_OPEN, se );
 
+    /*
+     * Morphological close is 1.Dilate and 2.Erode. We use the full size of
+     * the sphere diameter (pixSphDiam).
+     */
+    se = getStructuringElement ( MORPH_ELLIPSE,
+                                 Size(pixSphDiam,pixSphDiam) );
+    morphologyEx ( mask, mask, MORPH_CLOSE, se );
+
+    /*
+     * Morphological open "removes all object pixels than cannot be
+     * covered by the structuring element when it fits the object
+     * pixels." (Computer Vision & Applications) With this in mind we
+     * try to make an se that is smaller than the object.
+     */
+    seSize = (int)(pixSphDiam/4);
+    se = getStructuringElement ( MORPH_ELLIPSE, Size(seSize,seSize) );
+    morphologyEx ( mask, mask, MORPH_OPEN, se );
 
     /*
      * We dilate with half of the sphere diameter and hope for a blob
      * that is approx double the radius of the original blob. The
      * edges are more roundy this way.
      */
-    int dilateSize = pixSphDiam/2;
-    se = getStructuringElement ( MORPH_ELLIPSE,
-                                 Size(dilateSize,dilateSize) );
+    seSize = (int)pixSphDiam/2;
+    se = getStructuringElement ( MORPH_ELLIPSE, Size(seSize,seSize) );
     dilate ( mask, mask, se );
   }
 
