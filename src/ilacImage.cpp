@@ -111,9 +111,10 @@ ILAC_Image::calcRefPoints ()
 
   /* 2. ORDER THE POINTS ACCORDINGLY */
   convexHull ( tmpCor, this->plotCorners ); /*counter clockwise by default*/
-  while ( this->plotCorners[0] == tmpCor[0] ) /* put chessboard at [0]*/
+  for ( int i = 0 ;/* put chessboard at [0]*/
+        i < 4 & this->plotCorners[0] != tmpCor[0] ; i++ )
     rotate(this->plotCorners.begin(),
-           this->plotCorners.end(),
+           this->plotCorners.begin()+3,
            this->plotCorners.end() );
 }
 
