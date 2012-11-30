@@ -28,9 +28,15 @@ def ilac_classify_file( from_file_name, size1, size2, to_dir,
         sqrSize = 10, sphSize = 40):
     """ Sorts files without processing them
     from_file_name = Full path of the image file
-    size1 = Largets chessboard size
-    size2 = Smallest chessboard size
+    size1 = # chessboard intersections (largest)
+    size2 = # chessboard intersections (smalles)
     to_dir = Full path of the destination dir
+    camMat = Camera intrinsics
+    disMat = Distortion values.
+    sqrSize = Size of one square in the chessboard
+    sphSize = Size of the sphere
+
+    Units of sqrSize and sphSize need to be the same.
     """
     # tell the user when we start.
     ilaclog.debug( "ilac_classify_file, from_file:%s, to_dir:%s" \
@@ -62,8 +68,8 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2,
     """  Sorts all files contained an a directory without processing them.
     from_dir = Full path of the source dir.
     to_dir = Full path of the destination dir.
-    size1 = Largest chessboard size.
-    size2 = Smallest chessboard size.
+    size1 = # chessboard intersections (largest)
+    size2 = # chessboard intersections (smalles)
     camMat = Camera intrinsics
     disMat = Distortion values.
     """
@@ -88,10 +94,14 @@ def ilac_process_classify_dir ( from_dir, to_dir, size1, size2,
     """ Classify all files in a directory and normalize the images
     from_dir = Source dir (full path)
     to_dir = Dest dir (full path)
-    size1 = Largest chessboard size.
-    size2 = Smallest chessboard size.
+    size1 = # chessboard intersections (largest)
+    size2 = # chessboard intersections (smalles)
     camMat = Camera intrinsics.
     disMat = Distortion values.
+    sqrSize = Size of one square in the chessboard
+    sphSize = Size of the sphere
+
+    Units of sqrSize and sphSize need to be the same.
     """
     #Check that the two dirs exist.
     for dir in [from_dir, to_dir]:
@@ -133,6 +143,11 @@ def ilac_process_classify_dir ( from_dir, to_dir, size1, size2,
                     (from_file_name, to_file_name))
 
 def ilac_calc_intrinsics ( img_dir, size1, size2 ):
+    """
+    img_dir = Source dir (full path)
+    size1 = # chessboard intersections (largest)
+    size2 = # chessboard intersections (smalles)
+    """
     filenames = [];
     for img_file in os.listdir(img_dir):
         if os.path.isfile( os.path.join(img_dir,img_file) ):
