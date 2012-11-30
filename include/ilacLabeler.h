@@ -33,6 +33,7 @@ public:
   ILAC_Square ( const Point2f, const Point2f, const Point2f, const Point2f,
               const Mat& );
   Mat& getImg ();
+  Rect enc_rect; /* Enclosing rectangle */
 
 private:
   Mat img; /* RGB image of the square*/

@@ -27,7 +27,7 @@ ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
                        const Mat& img )
 {
   /* Calculate enclosing rectangle. referenced to the original image */
-  Rect t_rect = Rect( /* helper rectangle (x, y, width, height) */
+  this->enc_rect = Rect( /* helper rectangle (x, y, width, height) */
     FLOOR_MIN(ul.x, ur.x, lr.x, ll.x), FLOOR_MIN(ul.y, ur.y, lr.y, ll.y),
     CEIL_DIST(ul.x, ur.x, lr.x, ll.x), CEIL_DIST(ul.y, ur.y, lr.y, ll.y)
     );
@@ -38,15 +38,15 @@ ILAC_Square::ILAC_Square ( const Point2f ul, const Point2f ur,
   {
     /* Remember that ul and its brothers refer to the position
      * with respect to the chessboard, not the image. */
-    s[i].x = floor(s[i].x - t_rect.x);
-    s[i].y = floor(s[i].y - t_rect.y);
+    s[i].x = floor(s[i].x - this->enc_rect.x);
+    s[i].y = floor(s[i].y - this->enc_rect.y);
   }
-  Point2f d[4]={Point2f(0,0), Point2f(t_rect.width,0),
-                Point2f(t_rect.width, t_rect.height),
-                Point2f(0,t_rect.height)};
+  Point2f d[4]={Point2f(0,0), Point2f(this->enc_rect.width,0),
+                Point2f(this->enc_rect.width, this->enc_rect.height),
+                Point2f(0,this->enc_rect.height)};
 
   /* Calculate the perspective transform and create a subimage. */
-  Mat t_img = Mat( img, t_rect );
+  Mat t_img = Mat( img, this->enc_rect );
   warpPerspective( t_img, this->img,
                    getPerspectiveTransform(s,d), t_img.size() );
 }
@@ -270,6 +270,10 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
 
   Mat mask = Mat::ones(img.rows, img.cols, CV_8UC1);
   inRange(himg, lowerb, upperb, mask);
+  rectangle( mask, Point(square.enc_rect.x, square.enc_rect.y),
+      Point(square.enc_rect.x+square.enc_rect.width,
+            square.enc_rect.y+square.enc_rect.height),
+      Scalar(0,0,0), CV_FILLED );
 
   /* 3. SMOOTH STUFF USING MORPHOLOGY */
   {
