@@ -44,7 +44,7 @@ class ILAC_Chessboard{
     /*
      * This method always runs through all the points.
      */
-    Rect getEnclosingRect ();
+    Rect getEnclosingRect ( Size );
 
     static const size_t numSamples = 6;
 

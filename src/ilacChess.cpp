@@ -117,7 +117,7 @@ vector<int>
 ILAC_Chessboard::getAssociation () { return this->association; }
 
 Rect
-ILAC_Chessboard::getEnclosingRect ()
+ILAC_Chessboard::getEnclosingRect ( Size img_size )
 {
   if ( this->cbPoints.size() < 1 )
     throw ILACExPointsMissing();
@@ -133,7 +133,27 @@ ILAC_Chessboard::getEnclosingRect ()
     if ( (*point).y > lr.y ) lr.y = (*point).y;
   }
 
-  return Rect ( ul.x, ul.y, (int)(lr.x-ul.x), (int)(lr.y-ul.y) );
+  /*
+   * Expand the enclosing rectangle in proportion to its widht
+   * and height. Make sure we are within the image bounderies.
+   */
+  int rwidth = (int)(lr.x-ul.x);
+  int rheight = (int)(lr.y-ul.y);
+  ul.x = ul.x - rwidth;
+  if ( ul.x < 0 ) ul.x = 0;
+
+  ul.y = ul.y - rheight;
+  if ( ul.y < 0 ) ul.y = 0;
+
+  rwidth = rwidth*3; /* 3 times the original square */
+  if ( ul.x + rwidth > img_size.width )
+    rwidth = img_size.width - 1 - ul.x;
+
+  rheight = rheight*3;
+  if ( ul.y + rheight > img_size.height )
+    rheight = img_size.height - 1 - ul.y;
+
+  return Rect ( ul.x, ul.y, rwidth, rheight );
 }
 
 ILAC_Chess_SD::ILAC_Chess_SD():ILAC_Chessboard(){}

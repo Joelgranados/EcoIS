@@ -99,7 +99,7 @@ ILAC_Image::calcRefPoints ()
   vector<ILAC_Sphere> spheres =
     sf.findSpheres ( this->cb->getSphereSquare(), this->img,
                      this->sphDiamUU*this->pixPerUU,
-                     this->cb->getEnclosingRect() );
+                     this->cb->getEnclosingRect( this->img.size() ) );
   if ( spheres.size() < 3 )
     throw ILACExLessThanThreeSpheres();
   else if ( spheres.size() > 3 )
