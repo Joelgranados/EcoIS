@@ -41,6 +41,11 @@ class ILAC_Chessboard{
 
     vector<int> getAssociation ();
 
+    /*
+     * This method always runs through all the points.
+     */
+    Rect getEnclosingRect ();
+
     static const size_t numSamples = 6;
 
   protected:

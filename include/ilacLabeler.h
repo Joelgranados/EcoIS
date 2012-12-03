@@ -86,6 +86,12 @@ class ILAC_SphereFinder{
   public:
     ILAC_SphereFinder();
 
-    /* Might be a good idea to virtualize in the future */
-    vector<ILAC_Sphere> findSpheres ( ILAC_Square&, Mat&, const size_t );
+    /*
+     * Might be a good idea to virtualize in the future
+     * ILAC_Square : square containing the color sample
+     * Mat : the image
+     * size_t : Size of sphere in pixels.
+     * Rect : Enclosing rectangle for the whole chessboard.
+     */
+    vector<ILAC_Sphere> findSpheres ( ILAC_Square&, Mat&, const size_t, Rect );
 };

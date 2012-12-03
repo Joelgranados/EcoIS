@@ -238,7 +238,8 @@ ILAC_SphereFinder::ILAC_SphereFinder () {}
  */
 vector<ILAC_Sphere>
 ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
-                                 const size_t pixSphDiam )
+                                 const size_t pixSphDiam,
+                                 Rect cbReEnclose )
 {
   /* 1. CALCULATE RANGE FROM MEAN AND STANDARD DEVIATION */
   Mat mean, stddev;
@@ -270,9 +271,9 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
 
   Mat mask = Mat::ones(img.rows, img.cols, CV_8UC1);
   inRange(himg, lowerb, upperb, mask);
-  rectangle( mask, Point(square.enc_rect.x, square.enc_rect.y),
-      Point(square.enc_rect.x+square.enc_rect.width,
-            square.enc_rect.y+square.enc_rect.height),
+  rectangle( mask, Point(cbReEnclose.x, cbReEnclose.y),
+      Point(cbReEnclose.x+cbReEnclose.width,
+            cbReEnclose.y+cbReEnclose.height),
       Scalar(0,0,0), CV_FILLED );
 
   /* 3. SMOOTH STUFF USING MORPHOLOGY */

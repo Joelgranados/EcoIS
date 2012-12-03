@@ -116,6 +116,26 @@ ILAC_Chessboard::getPoints () { return this->cbPoints; }
 vector<int>
 ILAC_Chessboard::getAssociation () { return this->association; }
 
+Rect
+ILAC_Chessboard::getEnclosingRect ()
+{
+  if ( this->cbPoints.size() < 1 )
+    throw ILACExPointsMissing();
+
+  Point2f ul = Point2f(this->cbPoints[0]);
+  Point2f lr = Point2f(this->cbPoints[0]);
+  for ( vector<Point2f>::iterator point = this->cbPoints.begin() ;
+        point != this->cbPoints.end() ; point++ )
+  {
+    if ( (*point).x < ul.x ) ul.x = (*point).x;
+    if ( (*point).y < ul.y ) ul.y = (*point).y;
+    if ( (*point).x > lr.x ) lr.x = (*point).x;
+    if ( (*point).y > lr.y ) lr.y = (*point).y;
+  }
+
+  return Rect ( ul.x, ul.y, (int)(lr.x-ul.x), (int)(lr.y-ul.y) );
+}
+
 ILAC_Chess_SD::ILAC_Chess_SD():ILAC_Chessboard(){}
 
 /*

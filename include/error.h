@@ -84,3 +84,7 @@ class ILACExCouldNotCreateQuadType:public std::exception{
 class ILACExOutOfBounds:public std::exception{
   virtual const char* what() const throw(){return "Out of bounds exception.";}
 };
+
+class ILACExPointsMissing:public std::exception{
+  virtual const char* what() const throw(){return "Points not initialized.";}
+};
