@@ -196,7 +196,7 @@ def moveToError ( file_path, to_dir ):
     # Make sure dir exists
     if not os.path.isdir(to_dir):
         raise ILACDirException(to_dir)
-    if not os.path.isfile(file_path)
+    if not os.path.isfile(file_path):
         raise ILACFileException(file_path)
 
     error_dir = os.path.join(to_dir, "error")
