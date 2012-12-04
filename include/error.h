@@ -88,3 +88,8 @@ class ILACExOutOfBounds:public std::exception{
 class ILACExPointsMissing:public std::exception{
   virtual const char* what() const throw(){return "Points not initialized.";}
 };
+
+class ILACExBadMaskProcess:public std::exception{
+  virtual const char* what() const throw()
+  {return "Noise in the image could not be eliminated.";}
+};

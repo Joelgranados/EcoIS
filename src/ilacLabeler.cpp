@@ -277,15 +277,56 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
       Scalar(0,0,0), CV_FILLED );
 
   /* 3. SMOOTH STUFF USING MORPHOLOGY */
+  Mat se; /* structuring elemnt */
   {
     /*
-     * Get rid of small noise. Assume sphere region to have foreground blobs
-     * greater than 2% of the pixSphDiam.
+     * Get rid of small noise.
+     * colRat = sum(projected column)/height
+     * rowRat = sum(projected row)/width
+     * Incrementally increase the open structuring elment size until
+     * the difference between increments is less than a threshold
+     * (for {col,row}Ratio). As a heuristic {col,row}Ratio < 15%,
+     * which means that the physical spheres need to be smallish :)
      */
-    int seSize = (int)pixSphDiam*0.05;
-    if (seSize < 5) seSize = 5;
-    Mat se = getStructuringElement ( MORPH_RECT, Size(seSize,seSize) );
-    morphologyEx ( mask, mask, MORPH_OPEN, se );
+    Mat reduced;
+    //Mat tmp_msk = Mat::ones(img.rows, img.cols, CV_8UC1);
+    Mat tmp_msk;
+    mask.copyTo(tmp_msk);
+    int seSize;
+    float rowRat = 2.0;
+    float colRat = 2.0;
+    float prevRowRat, prevColRat;
+    float minCutRat = 0.15; /*min ratio to accpet*/
+    float minCutDif = 0.01; /*min diff to accept*/
+    for ( int i = 0 ; i < 16 ; i++ )
+    {
+      if ( i == 16 )
+        throw ILACExBadMaskProcess();
+
+      seSize = (int)pixSphDiam*(0.05+((float)i/100));
+      if (seSize < 5) seSize = 5;
+
+      se = getStructuringElement ( MORPH_RECT, Size(seSize,seSize) );
+      morphologyEx ( tmp_msk, mask, MORPH_OPEN, se );
+
+      /* Calculate colRat and rowRat */
+      reduce ( mask, reduced, 0, CV_REDUCE_MAX ); // to a single row
+      prevRowRat = rowRat;
+      rowRat = (sum(reduced)[0]/255)/(float)(mask.size().width);
+
+      reduce ( mask, reduced, 1, CV_REDUCE_MAX ); // to a single col
+      prevColRat = colRat;
+      colRat = (sum(reduced)[0]/255)/(float)(mask.size().height);
+
+      /* If both ratios higher than .15 there is too much noise */
+      if ( rowRat > minCutRat || colRat > minCutRat )
+        continue;
+
+      /* Search for a small difference between runs */
+      if ( std::fabs(prevRowRat - rowRat) < minCutDif
+           && std::fabs(prevColRat - colRat ) < minCutDif )
+        break;
+    }
 
     /*
      * Morphological close is 1.Dilate and 2.Erode. We use the full size of
