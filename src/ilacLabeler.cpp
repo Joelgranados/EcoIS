@@ -242,22 +242,23 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
                                  Rect cbReEnclose )
 {
   /* 1. CALCULATE RANGE FROM MEAN AND STANDARD DEVIATION */
-  Scalar mean, stddev;
+  Scalar lowerb, upperb;
   {/* Isolate the Hue */
+    Scalar mean, stddev;
     Mat tmpImg;
     vector<Mat> tmp_dim;
     cvtColor ( square.getImg(), tmpImg, CV_BGR2HSV_FULL );
     split( tmpImg, tmp_dim );
     tmpImg = tmp_dim[0];
     meanStdDev ( tmpImg, mean, stddev );
-  }
 
-  /*
-   * Range will be -+ 1 standard deviation. This has aprox 68% of
-   * the data (http://en.wikipedia.org/wiki/Standard_deviation)
-   */
-  Scalar lowerb = mean - stddev;
-  Scalar upperb = mean + stddev;
+    /*
+     * Range will be -+ 1 standard deviation. This has aprox 68% of
+     * the data (http://en.wikipedia.org/wiki/Standard_deviation)
+     */
+    lowerb = mean - stddev;
+    upperb = mean + stddev;
+  }
 
   /* 2. CREATE A MASK FROM THE RANGE */
   Mat himg;
