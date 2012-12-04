@@ -105,6 +105,8 @@ IlacCB_process_image ( IlacCB *self, PyObject *args )
   try { self->ii->normalize();
   }catch(ILACExLessThanThreeSpheres){
     ILAC_RETERR ( "Not enough spheres in image" );
+  }catch(ILACExBadMaskProcess){
+    ILAC_RETERR ( "Could not remove noise" );
   }catch(ILACExUnknownError){
     ILAC_RETERR ( "Unknown error when normalizing" );
   }catch(std::exception){
@@ -144,6 +146,8 @@ IlacCB_normalize ( IlacCB *self )
   try { self->ii->normalize();
   }catch(ILACExLessThanThreeSpheres){
     ILAC_RETERR ( "Not enough spheres in image" );
+  }catch(ILACExBadMaskProcess){
+    ILAC_RETERR ( "Could not remove noise" );
   }catch(ILACExUnknownError){
     ILAC_RETERR ( "Unknown error when normalizing" );
   }catch(std::exception){
