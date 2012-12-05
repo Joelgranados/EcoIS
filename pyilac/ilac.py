@@ -87,7 +87,7 @@ def ilac_classify_dir( from_dir, to_dir, size1, size2,
                                     camMat, disMat )
             except Exception, err:
                 ilaclog.error( "Error in File(%s):%s"%(f,err) )
-                moveToError(os.path.join(root,f), to_dir)
+                copyToError(os.path.join(root,f), to_dir)
 
 def ilac_process_classify_dir ( from_dir, to_dir, size1, size2,
         camMat=[[1,0,0],[0,1,0],[0,0,1]], disMat=[0,0,0,0,0],
@@ -118,7 +118,7 @@ def ilac_process_classify_dir ( from_dir, to_dir, size1, size2,
                     camMat, disMat, sqrSize, sphSize )
             except Exception, err:
                 ilaclog.error( "File(%s): %s"%(from_file_name, err) )
-                moveToError(from_file_name, to_dir)
+                copyToError(from_file_name, to_dir)
                 continue
 
             # Make sure the "new" to_file_dir exists.
@@ -126,7 +126,7 @@ def ilac_process_classify_dir ( from_dir, to_dir, size1, size2,
                 id_dir = str(cb.img_id())
             except Exception, err:
                 ilaclog.error( "File(%s): %s"%(from_file_name, err) )
-                moveToError(from_file_name, to_dir)
+                copyToError(from_file_name, to_dir)
                 continue
 
             to_file_dir = os.path.join(to_dir, id_dir)
@@ -139,7 +139,7 @@ def ilac_process_classify_dir ( from_dir, to_dir, size1, size2,
                 cb.process_image(to_file_name)
             except Exception, err:
                 ilaclog.error( "File(%s): %s"%(from_file_name, err) )
-                moveToError(from_file_name, to_dir)
+                copyToError(from_file_name, to_dir)
                 continue
 
             # tell the user about the move
@@ -192,7 +192,7 @@ def ilac_rename_images ( img_dir ):
             ilaclog.error ( "Rename error: %s"%(e,))
             continue
 
-def moveToError ( file_path, to_dir ):
+def copyToError ( file_path, to_dir ):
     # Make sure dir exists
     if not os.path.isdir(to_dir):
         raise ILACDirException(to_dir)
@@ -204,8 +204,8 @@ def moveToError ( file_path, to_dir ):
         os.mkdir( error_dir )
 
     # shutil uses rename on same fielsystem (doc), copy2 otherwise
-    shutil.move( file_path, error_dir )
-    ilaclog.debug ( "Moved %s to error dir %s." % (file_path, error_dir) )
+    shutil.copy2( file_path, error_dir )
+    ilaclog.debug ( "Copied %s to error dir %s." % (file_path, error_dir) )
 
 class ILACException(Exception):
     def __init__(self):
