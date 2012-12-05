@@ -241,64 +241,64 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
                                  const size_t pixSphDiam,
                                  Rect cbReEnclose )
 {
-  /* 1. CALCULATE RANGE FROM MEAN AND STANDARD DEVIATION */
-  Scalar lowerb, upperb;
-  {/* Isolate the Hue */
-    Scalar mean, stddev;
-    Mat tmpImg;
-    vector<Mat> tmp_dim;
-    cvtColor ( square.getImg(), tmpImg, CV_BGR2HSV_FULL );
-    split( tmpImg, tmp_dim );
-    tmpImg = tmp_dim[0];
-    meanStdDev ( tmpImg, mean, stddev );
+  Mat mask = Mat::ones(img.rows, img.cols, CV_8UC1);
+  Mat tmpMat1, tmpMat2;
+  int fromto[] = {1,0, 2,1};
 
-    /*
-     * Range will be -+ 1 standard deviation. This has aprox 68% of
-     * the data (http://en.wikipedia.org/wiki/Standard_deviation)
-     */
+  /*vars for 3*/
+  Mat se; /* structuring elemnt */
+  Mat reduced;
+  int seSize;
+  float rowRat = 2.0; /*rowRat = sum(projected row)/width */
+  float colRat = 2.0; /* colRat = sum(projected column)/height */
+  float prevRowRat, prevColRat;
+  float minCutRat = 0.15; /*min ratio to accpet*/
+  float minCutDif = 0.01; /*min diff to accept*/
+
+  /*vars for 4*/
+  vector<Vec3f> circles;
+  vector<ILAC_Sphere> spheres;
+  int minCircDist = 3*pixSphDiam/2;
+
+  /* 1. CALCULATE RANGE FROM MEAN AND STANDARD DEVIATION */
+  Scalar lowerb, upperb, mean, stddev;
+  {
+    tmpMat2.create ( square.getImg().size(), CV_8UC2 );
+    cvtColor ( square.getImg(), tmpMat1, CV_BGR2Lab );
+    mixChannels ( &tmpMat1, 1, &tmpMat2, 1, fromto, 2 );
+    meanStdDev ( tmpMat2, mean, stddev );
+    tmpMat2.release();tmpMat1.release();
+
+    /* Choose values within [lowerb, upperb] */
     lowerb = mean - stddev;
     upperb = mean + stddev;
   }
 
   /* 2. CREATE A MASK FROM THE RANGE */
-  Mat himg;
   {
-    Mat tmpImg;
-    vector<Mat> tmp_dim;
-    cvtColor ( img, tmpImg, CV_BGR2HSV_FULL );
-    split ( tmpImg, tmp_dim );
-    himg = tmp_dim[0];
+    tmpMat2.create ( img.size(), CV_8UC2 );
+    cvtColor ( img, tmpMat1, CV_BGR2Lab );
+    mixChannels ( &tmpMat1, 1, &tmpMat2, 1, fromto, 2);
+    inRange(tmpMat2, lowerb, upperb, mask); /*create mask*/
+    tmpMat2.release();tmpMat1.release();
+
+    /*Remove chessboard*/
+    rectangle( mask, Point(cbReEnclose.x, cbReEnclose.y),
+        Point(cbReEnclose.x+cbReEnclose.width,
+              cbReEnclose.y+cbReEnclose.height),
+        Scalar(0,0,0), CV_FILLED );
   }
 
-  Mat mask = Mat::ones(img.rows, img.cols, CV_8UC1);
-  inRange(himg, lowerb, upperb, mask);
-  rectangle( mask, Point(cbReEnclose.x, cbReEnclose.y),
-      Point(cbReEnclose.x+cbReEnclose.width,
-            cbReEnclose.y+cbReEnclose.height),
-      Scalar(0,0,0), CV_FILLED );
-
   /* 3. SMOOTH STUFF USING MORPHOLOGY */
-  Mat se; /* structuring elemnt */
   {
     /*
      * Get rid of small noise.
-     * colRat = sum(projected column)/height
-     * rowRat = sum(projected row)/width
      * Incrementally increase the open structuring elment size until
      * the difference between increments is less than a threshold
      * (for {col,row}Ratio). As a heuristic {col,row}Ratio < 15%,
      * which means that the physical spheres need to be smallish :)
      */
-    Mat reduced;
-    //Mat tmp_msk = Mat::ones(img.rows, img.cols, CV_8UC1);
-    Mat tmp_msk;
-    mask.copyTo(tmp_msk);
-    int seSize;
-    float rowRat = 2.0;
-    float colRat = 2.0;
-    float prevRowRat, prevColRat;
-    float minCutRat = 0.15; /*min ratio to accpet*/
-    float minCutDif = 0.01; /*min diff to accept*/
+    mask.copyTo(tmpMat1);
     for ( int i = 0 ; i < 16 ; i++ )
     {
       if ( i == 16 )
@@ -308,7 +308,8 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
       if (seSize < 5) seSize = 5;
 
       se = getStructuringElement ( MORPH_RECT, Size(seSize,seSize) );
-      morphologyEx ( tmp_msk, mask, MORPH_OPEN, se );
+      morphologyEx ( tmpMat1, mask, MORPH_OPEN, se );
+      tmpMat1.release();
 
       /* Calculate colRat and rowRat */
       reduce ( mask, reduced, 0, CV_REDUCE_MAX ); // to a single row
@@ -358,12 +359,8 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
   }
 
   /* 4. DETECT THE CIRCLES */
-  /* Play with the arguments for HoughCircles. */
-  vector<Vec3f> circles;
-  vector<ILAC_Sphere> spheres;
-  int minCircDist = 3*pixSphDiam/2;
-
   GaussianBlur ( mask, mask, Size(15, 15), 2, 2 );
+  /* Play with the arguments for HoughCircles. */
   HoughCircles ( mask, circles, CV_HOUGH_GRADIENT,
                  2, minCircDist, 100, 40);
 
