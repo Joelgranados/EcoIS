@@ -299,6 +299,7 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
      * which means that the physical spheres need to be smallish :)
      */
     mask.copyTo(tmpMat1);
+    mask.copyTo(tmpMat2);
     for ( int i = 0 ; i < 16 ; i++ )
     {
       if ( i == 16 )
@@ -308,17 +309,16 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
       if (seSize < 5) seSize = 5;
 
       se = getStructuringElement ( MORPH_RECT, Size(seSize,seSize) );
-      morphologyEx ( tmpMat1, mask, MORPH_OPEN, se );
-      tmpMat1.release();
+      morphologyEx ( tmpMat1, tmpMat2, MORPH_OPEN, se );
 
       /* Calculate colRat and rowRat */
-      reduce ( mask, reduced, 0, CV_REDUCE_MAX ); // to a single row
+      reduce ( tmpMat2, reduced, 0, CV_REDUCE_MAX ); // to a single row
       prevRowRat = rowRat;
-      rowRat = (sum(reduced)[0]/255)/(float)(mask.size().width);
+      rowRat = (sum(reduced)[0]/255)/(float)(tmpMat2.size().width);
 
-      reduce ( mask, reduced, 1, CV_REDUCE_MAX ); // to a single col
+      reduce ( tmpMat2, reduced, 1, CV_REDUCE_MAX ); // to a single col
       prevColRat = colRat;
-      colRat = (sum(reduced)[0]/255)/(float)(mask.size().height);
+      colRat = (sum(reduced)[0]/255)/(float)(tmpMat2.size().height);
 
       /* If both ratios higher than .15 there is too much noise */
       if ( rowRat > minCutRat || colRat > minCutRat )
@@ -327,8 +327,11 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
       /* Search for a small difference between runs */
       if ( std::fabs(prevRowRat - rowRat) < minCutDif
            && std::fabs(prevColRat - colRat ) < minCutDif )
-        break;
+        break; /*We choose previous mask*/
+
+      tmpMat2.copyTo(mask);
     }
+    tmpMat1.release();tmpMat2.release();
 
     /*
      * Morphological close is 1.Dilate and 2.Erode. We use the full size of
