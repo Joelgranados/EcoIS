@@ -252,7 +252,8 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
   float rowRat = 2.0; /*rowRat = sum(projected row)/width */
   float colRat = 2.0; /* colRat = sum(projected column)/height */
   float prevRowRat, prevColRat;
-  float minCutRat = 0.15; /*min ratio to accpet*/
+  float maxCutRat = 0.15; /*upper limit of acceptance*/
+  float minCutRat = 0.05; /*lower limit*/
   float minCutDif = 0.01; /*min diff to accept*/
 
   /*vars for 4*/
@@ -321,8 +322,12 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
       colRat = (sum(reduced)[0]/255)/(float)(tmpMat2.size().height);
 
       /* If both ratios higher than .15 there is too much noise */
-      if ( rowRat > minCutRat || colRat > minCutRat )
+      if ( rowRat > maxCutRat || colRat > maxCutRat )
         continue;
+
+      /* Don't let any of the ratios get under minCutRat */
+      if ( rowRat < minCutRat || colRat < minCutRat )
+        break;
 
       /* Search for a small difference between runs */
       if ( std::fabs(prevRowRat - rowRat) < minCutDif
@@ -331,7 +336,7 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
 
       tmpMat2.copyTo(mask);
     }
-    tmpMat1.release();tmpMat2.release();
+    tmpMat1.release();
 
     /*
      * Morphological close is 1.Dilate and 2.Erode. We use the full size of
