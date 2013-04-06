@@ -1,0 +1,168 @@
+#!/usr/bin/env python
+#coding=utf-8
+
+import math
+
+class plotMarker:
+
+    # rectSize is given in pixels.
+    def __init__(self, numMarkers, h_val, v_val, plid=0, rectSize=36):
+        self.numMarkers = numMarkers
+        self.plid = plid
+        self.h_val = h_val
+        self.v_val = v_val
+        self.ss = rectSize
+        self.svgWidth = (5+self.h_val)*self.ss
+        self.svgHeight = (5+self.v_val)*self.ss
+        self.Brects = [] # Black rectangles
+        self.Crects = [] # Color rectangles
+        self.margins = []
+        self.svgheader = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+"""
+        self.svgstart = """
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="%s"
+   height="%s"
+   sodipodi:docname="chessboard.svg">
+""" % (self.svgWidth, self.svgHeight)
+        self.svgend = """</svg>"""
+        self.sodipodiheader = """
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     units="mm"
+     inkscape:window-maximized="1">
+  </sodipodi:namedview>
+"""
+        self.metadata = """
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+"""
+        self.initMargin()
+        self.initBlack()
+        self.initColor()
+
+    def __str__(self):
+        svgStr = self.svgheader + self.svgstart \
+                    + self.sodipodiheader + self.metadata
+        for margin in self.margins:
+            svgStr = svgStr + str(margin)
+        for rect in self.Brects:
+            svgStr = svgStr + str(rect)
+        for rect in self.Crects:
+            svgStr = svgStr + str(rect)
+        svgStr = svgStr + self.svgend
+        return (svgStr)
+
+    def initMargin (self):
+        # bottom margin
+        self.margins.append( Rectangle("#000000", "topM",
+            0, 0, (5+self.h_val)*self.ss, self.ss) )
+        # top margin
+        self.margins.append( Rectangle("#000000", "bottomM",
+            0, (4+self.v_val)*self.ss, (5+self.h_val)*self.ss, self.ss) )
+        # left margin
+        self.margins.append( Rectangle("#000000", "leftM",
+            0, self.ss, self.ss, (3+self.v_val)*self.ss) )
+        # right margin
+        self.margins.append( Rectangle("#000000", "rightM",
+            (4+self.h_val)*self.ss, self.ss, self.ss, (3+self.v_val)*self.ss) )
+
+    def initBlack (self):
+        # Create iner squares
+        for sq in range( (self.h_val+1) * (self.v_val+1) ):
+            V = math.floor(float(sq)/(self.h_val+1))
+            # Start from left when even. Start from right when uneven.
+            H = abs((sq % (self.h_val+1)) - ((V%2)*self.h_val))
+            y = (V+2)*self.ss
+            x = (H+2)*self.ss
+            if (sq%2) == 0:
+                self.Brects.append ( Rectangle("#000000", "B%s"%sq,
+                    x, y, self.ss, self.ss) )
+
+    def initColor (self):
+        for v in range(self.v_val-1):
+            for h in range(self.h_val-1):
+                x = (h+3)*self.ss
+                y = (v+3)*self.ss
+                if (v%2) == abs((h%2)-1):
+                    self.Crects.append ( Rectangle("#666666",
+                        "C(%s,%s)"%(v,h), x, y, self.ss, self.ss,
+                        opacity="0.5") )
+
+        cols = ["#ff0000", "#ffff00", "#00ff00",
+                "#00ffff", "#0000ff", "#ff00ff"]
+        for i in range(6):
+            self.Crects[i].color = cols[i]
+            self.Crects[i].opacity = "0.5"
+        self.Crects[6].color = "#ffffff"
+        self.Crects[6].opacity = "1"
+
+class Rectangle(object):
+    def __init__(self, color, id, x, y, width, height, opacity="1"):
+        self._color = color
+        self.id = id
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self._opacity = opacity
+        self.style = "fill:%s;fill-opacity:%s;stroke:None" \
+                % (self._color, self._opacity)
+    @property
+    def color(self):
+        return (self._color)
+
+    @color.setter
+    def color(self, value):
+        self._color = value
+        self.style = "fill:%s;fill-opacity:%s;stroke:None" \
+                % (self._color, self._opacity)
+
+    @property
+    def opacity(self):
+        return (self._opacity)
+
+    @opacity.setter
+    def opacity(self, value):
+        self._opacity = value
+        self.style = "fill:%s;fill-opacity:%s;stroke:None" \
+                % (self._color, self._opacity)
+
+    def __str__(self):
+        return ("""
+    <rect
+       style="%s"
+       id="%s"
+       width="%s"
+       height="%s"
+       x="%s"
+       y="%s" />
+""" % (self.style, self.id, self.width, self.height, self.x, self.y))
+
+
+pmc = plotMarker(10, 10, 5)
+print (pmc)
