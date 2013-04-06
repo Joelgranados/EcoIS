@@ -6,8 +6,15 @@ import math
 class plotMarker:
 
     # rectSize is given in pixels.
-    def __init__(self, numMarkers, h_val, v_val, plid=0, rectSize=36):
-        self.numMarkers = numMarkers
+    def __init__(self, h_val, v_val, plid=0, rectSize=36):
+        if ( h_val < 4 or v_val < 4 ):
+            raise PM_AxisTooSmallException()
+
+        # Do I have enough bits for the plid?
+        power = math.floor( ((h_val-1) * (v_val -1))/2 ) - 7
+        if ( power < 1 or pow(2,power) < plid ):
+            raise PM_InsuficientBitsException(plid)
+
         self.plid = plid
         self.h_val = h_val
         self.v_val = v_val
@@ -17,6 +24,11 @@ class plotMarker:
         self.Brects = [] # Black rectangles
         self.Crects = [] # Color rectangles
         self.margins = []
+
+        self.initMargin()
+        self.initBlack()
+        self.initColor()
+
         self.svgheader = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 """
         self.svgstart = """
@@ -61,9 +73,6 @@ class plotMarker:
     </rdf:RDF>
   </metadata>
 """
-        self.initMargin()
-        self.initBlack()
-        self.initColor()
 
     def __str__(self):
         svgStr = self.svgheader + self.svgstart \
@@ -109,7 +118,7 @@ class plotMarker:
                 x = (h+3)*self.ss
                 y = (v+3)*self.ss
                 if (v%2) == abs((h%2)-1):
-                    self.Crects.append ( Rectangle("#666666",
+                    self.Crects.append ( Rectangle("#ff0000",
                         "C(%s,%s)"%(v,h), x, y, self.ss, self.ss,
                         opacity="0.5") )
 
@@ -163,6 +172,18 @@ class Rectangle(object):
        y="%s" />
 """ % (self.style, self.id, self.width, self.height, self.x, self.y))
 
+class PMException(Exception):
+    def __init__(self):
+        pass
+    def __str__(self):
+        return ("PM_ERROR: %s" % self.message)
+class PM_InsuficientBitsException(PMException):
+    def __init__(self, v):
+        self.message = "There are not enough bits for this int %d."%v
+class PM_AxisTooSmallException(PMException):
+    def __init__(self):
+        self.message = "Axis of the chessboard are too small."
 
-pmc = plotMarker(10, 10, 5)
+
+pmc = plotMarker(6, 5, plid=4)
 print (pmc)
