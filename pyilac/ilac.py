@@ -203,8 +203,8 @@ def ilac_create_marker ( id, width, height, rectSize=36, dir="./" ):
                  + "_.svg" )
 
     ilaclog.debug ( "Creating plot number %d." % id )
-    pm = plotMarker ( width, height, plid=id )
     pmfn = os.path.join ( dir, get_filename ( width, height, id ) )
+    pm = plotMarker ( width, height, plid=id, svgname=pmfn )
 
     pmfd = open ( pmfn, "w" )
     pmfd.write ( str(pm) )

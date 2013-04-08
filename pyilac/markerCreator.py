@@ -6,7 +6,8 @@ import math
 class plotMarker:
 
     # rectSize is given in pixels.
-    def __init__(self, c_width, c_height, plid=0, rectSize=36):
+    def __init__(self, c_width, c_height, plid=0, rectSize=36,
+            svgname="chessboard.svg"):
         if ( c_width < 4 or c_height < 4 ):
             raise PM_AxisTooSmallException()
 
@@ -15,6 +16,7 @@ class plotMarker:
         if ( power < 1 or pow(2,power) < plid ):
             raise PM_InsuficientBitsException(plid)
 
+        self.svgname = svgname
         self.plid = plid
         self.c_width = c_width
         self.c_height = c_height
@@ -42,8 +44,8 @@ class plotMarker:
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="%s"
    height="%s"
-   sodipodi:docname="chessboard.svg">
-""" % (self.svgWidth, self.svgHeight)
+   sodipodi:docname="%s">
+""" % (self.svgWidth, self.svgHeight, self.svgname)
         self.svgend = """</svg>"""
         self.sodipodiheader = """
   <sodipodi:namedview
