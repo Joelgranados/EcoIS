@@ -1,4 +1,9 @@
+EcoIS stands for Ecological Image Serialize. It takes pictures taken of plots
+(fitted with special markers) creates image series out of them. It can
+additionally detect the ID of each of the plots. It was named image labeler
+and some of the functions still have this convention.
+
 BUGS:
 Checkout the BUGS file for any outstanding issues.
-Report any bugs to https://github.com/Joelgranados/imagelabel/issues
+Report any bugs to https://github.com/Joelgranados/EcoIS/issues
 
