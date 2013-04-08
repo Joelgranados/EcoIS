@@ -11,7 +11,7 @@ class plotMarker:
             raise PM_AxisTooSmallException()
 
         # Do I have enough bits for the plid?
-        power = math.floor( ((h_val-1) * (v_val -1))/2 ) - 7
+        power = (math.floor( ((h_val-1) * (v_val -1))/2 ) - 7) * 2
         if ( power < 1 or pow(2,power) < plid ):
             raise PM_InsuficientBitsException(plid)
 
@@ -20,7 +20,7 @@ class plotMarker:
         self.v_val = v_val
         self.ss = rectSize
         self.svgWidth = (5+self.h_val)*self.ss
-        self.svgHeight = (5+self.v_val)*self.ss
+        self.svgHeight = (6+self.v_val)*self.ss # 6 for the ID text
         self.Brects = [] # Black rectangles
         self.Crects = [] # Color rectangles
         self.margins = []
@@ -73,6 +73,21 @@ class plotMarker:
     </rdf:RDF>
   </metadata>
 """
+        self.idText = """
+  <text
+     xml:space="preserve"
+     style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol"
+     x="%d"
+     y="%d"
+     id="text3018"
+     sodipodi:linespacing="125%%"><tspan
+       sodipodi:role="line"
+       id="tspan3020"
+       x="%d"
+       y="%d">ID:%d</tspan>
+  </text>
+""" % (20, (6+self.v_val)*self.ss, 20, (6+self.v_val)*self.ss, self.plid)
+
 
     def __str__(self):
         svgStr = self.svgheader + self.svgstart \
@@ -83,6 +98,7 @@ class plotMarker:
             svgStr = svgStr + str(rect)
         for rect in self.Crects:
             svgStr = svgStr + str(rect)
+        svgStr = svgStr + self.idText
         svgStr = svgStr + self.svgend
         return (svgStr)
 
@@ -127,8 +143,17 @@ class plotMarker:
         for i in range(6):
             self.Crects[i].color = cols[i]
             self.Crects[i].opacity = "0.5"
-        self.Crects[6].color = "#ffffff"
+        self.Crects[6]._color = "#ffffff"
         self.Crects[6].opacity = "1"
+
+        # format the binary representation of self.plid
+        binPlid = bin(self.plid)[2:][::-1] #reverse the bin representation
+        for i in range(len(binPlid)):
+            ro = int(math.floor(i/2) + 7) # rectangle offset
+            if i%2 == 0: # even is green
+                self.Crects[ro].green = int(binPlid[i])
+            else: # uneven is blue
+                self.Crects[ro].blue = int(binPlid[i])
 
 class Rectangle(object):
     def __init__(self, color, id, x, y, width, height, opacity="1"):
@@ -148,6 +173,8 @@ class Rectangle(object):
     @color.setter
     def color(self, value):
         self._color = value
+        if value == "#ffffff":
+            self._color = "#00ff00" # we replace white with green
         self.style = "fill:%s;fill-opacity:%s;stroke:None" \
                 % (self._color, self._opacity)
 
@@ -160,6 +187,39 @@ class Rectangle(object):
         self._opacity = value
         self.style = "fill:%s;fill-opacity:%s;stroke:None" \
                 % (self._color, self._opacity)
+
+    @property
+    def red(self):
+        return (self._color[1:3])
+
+    @red.setter
+    def red(self, value):
+        r = "ff"
+        if value <= 0:
+            r="00"
+        self.color = "#" + r + self._color[3:]
+
+    @property
+    def blue(self):
+        return (self._color[3:5])
+
+    @blue.setter
+    def blue(self, value):
+        b = "00"
+        if value > 0:
+            b = "ff"
+        self.color = self._color[:5] + b
+
+    @property
+    def green(self):
+        return (self._color[5:])
+
+    @green.setter
+    def green(self, value):
+        g = "00"
+        if value > 0:
+            g = "ff"
+        self.color = self._color[:3] + g + self._color[5:]
 
     def __str__(self):
         return ("""
@@ -185,5 +245,5 @@ class PM_AxisTooSmallException(PMException):
         self.message = "Axis of the chessboard are too small."
 
 
-pmc = plotMarker(6, 5, plid=4)
+pmc = plotMarker(6, 5, plid=24)
 print (pmc)
