@@ -243,7 +243,3 @@ class PM_InsuficientBitsException(PMException):
 class PM_AxisTooSmallException(PMException):
     def __init__(self):
         self.message = "Axis of the chessboard are too small."
-
-
-pmc = plotMarker(6, 5, plid=24)
-print (pmc)

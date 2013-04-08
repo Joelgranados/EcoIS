@@ -22,6 +22,8 @@ import shutil
 import sys
 import logging
 import pyexiv2
+import math
+from markerCreator import plotMarker
 
 def ilac_classify_file( from_file_name, size1, size2, to_dir,
         camMat=[[1,0,0],[0,1,0],[0,0,1]], disMat=[0,0,0,0,0],
@@ -191,6 +193,34 @@ def ilac_rename_images ( img_dir ):
         except Exception, e:
             ilaclog.error ( "Rename error: %s"%(e,))
             continue
+
+
+def ilac_create_marker ( id, width, height, rectSize=36, dir="./" ):
+    def get_filename ( width, height, id ):
+        return ( "marker_width:" + str(width)
+                 + "_height:" + str(height)
+                 + "_id:" + str(id)
+                 + "_.svg" )
+
+    ilaclog.debug ( "Creating plot number %d." % id )
+    pm = plotMarker ( width, height, plid=id )
+    pmfn = os.path.join ( dir, get_filename ( width, height, id ) )
+
+    pmfd = open ( pmfn, "w" )
+    pmfd.write ( str(pm) )
+    pmfd.close()
+
+def ilac_create_markers ( numMar, rectSize=36, dir="./" ):
+    tbn = math.floor(math.log(numMar, 2))+1 # total bits needed
+    # total colored squares. 7 additional for the samples.
+    tsq = int(math.ceil(tbn/float(2)) + 7)
+    # Try to make it a square.
+    height = int(math.floor(float(tsq)/2))
+    # Remember: numColoredSq = floor( (h-1)(w-1)/2 )
+    width = int(math.ceil(2*tsq/float(height-1)) + 1)
+
+    for i in range(numMar):
+        ilac_create_marker ( i, width, height, rectSize=rectSize, dir=dir )
 
 def copyToError ( file_path, to_dir ):
     # Make sure dir exists
