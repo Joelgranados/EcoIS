@@ -6,21 +6,21 @@ import math
 class plotMarker:
 
     # rectSize is given in pixels.
-    def __init__(self, h_val, v_val, plid=0, rectSize=36):
-        if ( h_val < 4 or v_val < 4 ):
+    def __init__(self, c_width, c_height, plid=0, rectSize=36):
+        if ( c_width < 4 or c_height < 4 ):
             raise PM_AxisTooSmallException()
 
         # Do I have enough bits for the plid?
-        power = (math.floor( ((h_val-1) * (v_val -1))/2 ) - 7) * 2
+        power = (math.floor( ((c_width-1) * (c_height -1))/2 ) - 7) * 2
         if ( power < 1 or pow(2,power) < plid ):
             raise PM_InsuficientBitsException(plid)
 
         self.plid = plid
-        self.h_val = h_val
-        self.v_val = v_val
+        self.c_width = c_width
+        self.c_height = c_height
         self.ss = rectSize
-        self.svgWidth = (5+self.h_val)*self.ss
-        self.svgHeight = (6+self.v_val)*self.ss # 6 for the ID text
+        self.svgWidth = (5+self.c_width)*self.ss
+        self.svgHeight = (6+self.c_height)*self.ss # 6 for the ID text
         self.Brects = [] # Black rectangles
         self.Crects = [] # Color rectangles
         self.margins = []
@@ -86,7 +86,7 @@ class plotMarker:
        x="%d"
        y="%d">ID:%d</tspan>
   </text>
-""" % (20, (6+self.v_val)*self.ss, 20, (6+self.v_val)*self.ss, self.plid)
+""" % (20, (6+self.c_height)*self.ss, 20, (6+self.c_height)*self.ss, self.plid)
 
 
     def __str__(self):
@@ -105,23 +105,23 @@ class plotMarker:
     def initMargin (self):
         # bottom margin
         self.margins.append( Rectangle("#000000", "topM",
-            0, 0, (5+self.h_val)*self.ss, self.ss) )
+            0, 0, (5+self.c_width)*self.ss, self.ss) )
         # top margin
         self.margins.append( Rectangle("#000000", "bottomM",
-            0, (4+self.v_val)*self.ss, (5+self.h_val)*self.ss, self.ss) )
+            0, (4+self.c_height)*self.ss, (5+self.c_width)*self.ss, self.ss) )
         # left margin
         self.margins.append( Rectangle("#000000", "leftM",
-            0, self.ss, self.ss, (3+self.v_val)*self.ss) )
+            0, self.ss, self.ss, (3+self.c_height)*self.ss) )
         # right margin
         self.margins.append( Rectangle("#000000", "rightM",
-            (4+self.h_val)*self.ss, self.ss, self.ss, (3+self.v_val)*self.ss) )
+            (4+self.c_width)*self.ss, self.ss, self.ss, (3+self.c_height)*self.ss) )
 
     def initBlack (self):
         # Create iner squares
-        for sq in range( (self.h_val+1) * (self.v_val+1) ):
-            V = math.floor(float(sq)/(self.h_val+1))
+        for sq in range( (self.c_width+1) * (self.c_height+1) ):
+            V = math.floor(float(sq)/(self.c_width+1))
             # Start from left when even. Start from right when uneven.
-            H = abs((sq % (self.h_val+1)) - ((V%2)*self.h_val))
+            H = abs((sq % (self.c_width+1)) - ((V%2)*self.c_width))
             y = (V+2)*self.ss
             x = (H+2)*self.ss
             if (sq%2) == 0:
@@ -129,8 +129,8 @@ class plotMarker:
                     x, y, self.ss, self.ss) )
 
     def initColor (self):
-        for v in range(self.v_val-1):
-            for h in range(self.h_val-1):
+        for v in range(self.c_height-1):
+            for h in range(self.c_width-1):
                 x = (h+3)*self.ss
                 y = (v+3)*self.ss
                 if (v%2) == abs((h%2)-1):
