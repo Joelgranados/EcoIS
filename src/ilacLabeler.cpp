@@ -271,6 +271,7 @@ ILAC_SphereFinder::findSpheres ( ILAC_Square &square, Mat &img,
     tmpMat2.release();tmpMat1.release();
 
     /* Choose values within [lowerb, upperb] */
+    /* FIXME: should we use 1.96*stddev ? to inclulde the 95% of elements*/
     lowerb = mean - stddev;
     upperb = mean + stddev;
   }
