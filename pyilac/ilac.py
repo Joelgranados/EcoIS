@@ -15,14 +15,30 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import _ilac
+import warnings
 import os
 import os.path
-import shutil
 import sys
 import logging
-import pyexiv2
 import math
+
+try:
+    import _ilac
+except ImportError:
+    warnings.warn("_ilac is not compiled. "
+            "You may only use the chessboard generation code")
+try:
+    import shutil
+except ImportError:
+    warnings.warn("shutil is not present. "
+            "Execution will fail when copying files")
+
+try:
+    import pyexiv2
+except ImportError:
+    warnings.warn("pyexiv2 is not present. "
+        "Execution will fail when accessing image metadata")
+
 from markerCreator import plotMarker
 
 def ilac_classify_file( from_file_name, size1, size2, to_dir,
